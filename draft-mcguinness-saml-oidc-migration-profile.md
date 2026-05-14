@@ -172,10 +172,14 @@ existing trust relationship matters:
 
 * **Stack modernization and post-quantum readiness.** SAML XML signature
   libraries are not well positioned for post-quantum cryptography migration.
-  By submitting assertions to the authorization server and receiving JOSE-based
-  tokens in return, the relying party can retire its XML processing stack and
-  adopt post-quantum-ready JWT libraries without waiting for PQ support to land
-  in SAML tooling.
+  By submitting assertions to the authorization server and receiving
+  JOSE-based tokens in return, the relying party can retire its XML
+  processing stack and adopt post-quantum-ready JWT libraries without
+  waiting for PQ support to land in SAML tooling. The supply-side actors
+  (the SAML IdP and the authorization server, which are often operated by
+  the same authority and may even be the same component) retain their SAML
+  XML processing and migrate it on a coordinated timeline; this profile
+  shifts the PQ burden away from the long tail of relying parties.
 
 * **Non-disruptive migration.** An SP wants to adopt OAuth 2.0 and OpenID
   Connect without forcing end users to reauthenticate or requiring
@@ -302,10 +306,13 @@ This profile is defined only for confidential clients. Public clients MUST
 NOT use the Token Exchange or direct SAML assertion introspection patterns
 defined here.
 
-This profile binds exactly one `saml_idp_entity_id` to an OAuth issuer.
-Deployments that need to bridge multiple SAML Identity Providers require
-separate OAuth issuer instances, each with its own `saml_idp_entity_id`
-binding.
+This profile binds an OAuth issuer to a single SAML 2.0 IdP deployment.
+That deployment is identified by `saml_idp_entity_id`, which may be
+published at the authorization server metadata level as the default and
+MAY be overridden per client registration when the SAML IdP issues
+per-SP entityIDs (see {{client-registration-saml-idp-entity-id}}).
+Deployments that need to bridge multiple SAML IdP deployments require
+separate OAuth issuer instances.
 
 # Migration Binding Rationale {#migration-binding-rationale}
 
@@ -431,6 +438,41 @@ administrative configuration rather than a client registration request.
 Because this profile is defined only for confidential clients, an authorization
 server MUST NOT enable this profile for a public client registration.
 
+### Authorizing the `saml_sp_entity_id` Binding {#client-registration-saml-sp-entity-id-authorization}
+
+The `saml_sp_entity_id` binding is security-critical. It determines which
+SAML assertions the client may exchange and which subject continuity and
+claim release relationships the client inherits from the existing SAML
+deployment. Establishing this binding through an unauthenticated or
+self-asserted client registration request is incompatible with this profile.
+
+For statically registered clients, the binding MUST be established through
+administrative configuration controlled by the authority that operates or
+governs the SAML deployment.
+
+For clients registered through dynamic client registration {{RFC7591}}, the
+authorization server MUST require at least one of the following before
+accepting a registration that sets `saml_sp_entity_id`:
+
+* a software statement {{RFC7591}} signed by a trust anchor administratively
+  associated with the bound `saml_sp_entity_id`, where the software
+  statement asserts the requesting party's entitlement to that value;
+* a registration credential (such as an initial access token, mTLS client
+  certificate, or equivalent) administratively bound to the permitted
+  `saml_sp_entity_id` value or to a set of values that includes the
+  requested one; or
+* an equivalent administrative authorization established before the
+  registration request.
+
+The authorization server MUST NOT accept a dynamic registration request
+that sets `saml_sp_entity_id` solely on the basis of the request's own
+contents. Anonymous or open dynamic client registration MUST NOT be enabled
+for clients that bind a `saml_sp_entity_id` under this profile.
+
+The same authorization rules apply to subsequent client configuration
+updates: a request that adds, removes, or changes `saml_sp_entity_id` MUST
+satisfy the same authorization requirements as the original registration.
+
 When multiple OAuth clients share the same `saml_sp_entity_id`, the
 authorization server MUST treat them as the same relying-party context for
 claim release and subject continuity under this profile.
@@ -458,6 +500,63 @@ profile. If a client registration includes both `saml_sp_entity_id` and
 as the bound `saml_sp_entity_id` or reject the registration or request as
 inconsistent.
 
+## `saml_idp_entity_id` {#client-registration-saml-idp-entity-id}
+
+This document also defines `saml_idp_entity_id` as an OPTIONAL client
+metadata parameter. It carries the same syntax and semantics as the
+authorization server metadata parameter of the same name
+({{metadata-saml-idp-entity-id}}), but applies to a single client
+registration.
+
+Per-client `saml_idp_entity_id` exists for SAML deployments in which the
+IdP issues per-SP entityIDs rather than a single global entityID. Common
+examples include multi-tenant SaaS IdPs that emit per-tenant or
+per-relationship entityIDs, federation hubs that present different
+entityIDs to different SPs, and enterprise IdPs configured for per-SP
+audit or compliance isolation. In such deployments, the assertion
+`Issuer` for the relying-party relationship represented by
+`saml_sp_entity_id` is different from the authorization server's
+default `saml_idp_entity_id` and is specific to that historical SP-IdP
+pair.
+
+When `saml_idp_entity_id` is present in a client registration, it
+overrides the authorization server metadata value for assertions
+submitted by the authenticated client. The authorization server MUST
+validate the SAML Assertion Issuer (and, when a `Response` wrapper is
+submitted, the SAML Response Issuer) against the effective
+`saml_idp_entity_id` for the authenticated client: the client-level
+value if present, otherwise the authorization server metadata value.
+
+The per-client `saml_idp_entity_id` binding is security-critical for the
+same reasons as `saml_sp_entity_id`: it determines which SAML Issuer the
+client may rely on for assertion validation. The authorization rules in
+{{client-registration-saml-sp-entity-id-authorization}} apply equally
+to the per-client `saml_idp_entity_id` parameter. Anonymous or open
+dynamic client registration MUST NOT be permitted to set or change this
+value.
+
+## `saml_metadata_uri` {#client-registration-saml-metadata-uri}
+
+This document also defines `saml_metadata_uri` as an OPTIONAL client
+metadata parameter. It carries the same syntax and semantics as the
+authorization server metadata parameter of the same name
+({{metadata-saml-metadata-uri}}), but applies to a single client
+registration.
+
+Per-client `saml_metadata_uri` is intended for deployments that use
+per-client `saml_idp_entity_id`
+({{client-registration-saml-idp-entity-id}}) and exchange SAML metadata
+on a per-relationship basis. When registered, the URI MUST resolve to a
+SAML metadata document whose `EntityDescriptor` `entityID` exactly
+matches the client's effective `saml_idp_entity_id`. The validation
+rules in {{metadata-saml-metadata-uri}} (HTTPS scheme requirement,
+EntityDescriptor verification, signature handling) apply unchanged.
+
+When `saml_metadata_uri` is present in a client registration, it
+overrides the authorization server metadata value for purposes of SAML
+key material and other IdP metadata used to validate assertions
+submitted by this client.
+
 # Authorization Server Metadata {#as-metadata}
 
 ## `saml_idp_entity_id` {#metadata-saml-idp-entity-id}
@@ -470,17 +569,27 @@ Entity ID bound to the OAuth issuer.
 
 When `saml_idp_entity_id` is present:
 
-* it MUST equal the SAML IdP Entity ID used by the corresponding SAML IdP;
-* it MUST identify the SAML IdP that is operated by or under the administrative
+* it MUST equal a SAML IdP Entity ID used by the corresponding SAML IdP;
+* it MUST identify a SAML IdP that is operated by or under the administrative
   control of the same entity that operates the OAuth authorization server
   identified by this OAuth issuer;
-* it MUST be the value against which incoming SAML assertion issuers are
-  validated when this profile processes SAML assertions directly.
+* it is the default value against which incoming SAML assertion issuers are
+  validated when no per-client `saml_idp_entity_id`
+  ({{client-registration-saml-idp-entity-id}}) is registered for the
+  authenticated client.
+
+In deployments where every Migration Client registers a per-client
+`saml_idp_entity_id` override, the authorization server metadata value
+MAY be omitted. The authorization server MUST nevertheless ensure, for
+every authenticated client, that an effective `saml_idp_entity_id` is
+configured before consuming SAML input from that client; absence of both
+the AS-level and client-level values for an authenticated client MUST
+cause the SAML input to be rejected.
 
 The OpenID Connect `iss` claim and OAuth authorization server `issuer` metadata
-value remain OAuth issuer identifiers. They are not required to equal the SAML
-IdP Entity ID, and they commonly will not, because OAuth issuer values are
-HTTPS URLs with OAuth-specific discovery semantics.
+value remain OAuth issuer identifiers. They are not required to equal any
+SAML IdP Entity ID, and they commonly will not, because OAuth issuer values
+are HTTPS URLs with OAuth-specific discovery semantics.
 
 ## `saml_metadata_uri` {#metadata-saml-metadata-uri}
 
@@ -488,16 +597,24 @@ This document defines the `saml_metadata_uri` authorization server metadata
 parameter.
 
 The `saml_metadata_uri` value is an HTTPS URI that resolves to the SAML
-metadata document describing the SAML IdP Entity ID bound to the OAuth issuer.
+metadata document describing the default SAML IdP entity bound to the OAuth
+issuer. When per-client `saml_idp_entity_id` overrides are in use, this
+authorization server metadata value is the default; clients MAY register a
+per-client `saml_metadata_uri` override
+({{client-registration-saml-metadata-uri}}) for SAML metadata describing
+their specific SP-IdP relationship.
 
 When `saml_metadata_uri` is present:
 
-* the referenced SAML metadata MUST describe the same `saml_idp_entity_id`;
+* the referenced SAML metadata MUST describe the effective
+  `saml_idp_entity_id` for the same context (the authorization server
+  metadata `saml_idp_entity_id` for the AS-level URI, or the client-level
+  `saml_idp_entity_id` for a per-client URI);
 * any implementation that fetches `saml_metadata_uri` MUST verify that the
   retrieved document is a well-formed SAML metadata document containing an
-  `EntityDescriptor` whose `entityID` attribute exactly matches
-  `saml_idp_entity_id`; if this validation fails, the retrieved document
-  MUST NOT be used;
+  `EntityDescriptor` whose `entityID` attribute exactly matches the
+  effective `saml_idp_entity_id` for the same context; if this validation
+  fails, the retrieved document MUST NOT be used;
 * if the retrieved SAML metadata document includes an XML signature,
   implementations SHOULD validate that signature against a pre-configured
   trust anchor before using the document;
@@ -645,10 +762,23 @@ replayed.
 
 ## Encrypted Content {#encrypted-content}
 
-This profile does not define processing of encrypted subject or attribute
-content inside an otherwise accepted assertion, including `EncryptedID` and
-`EncryptedAttribute`. An authorization server consuming SAML input under this
-profile MUST reject any effective assertion containing such elements.
+This profile does not define processing of encrypted SAML content. The
+authorization server MUST reject any submitted SAML input that is itself an
+`EncryptedAssertion`, and MUST reject any effective assertion containing
+`EncryptedID` or `EncryptedAttribute` elements.
+
+In SAML deployments that require encryption between the IdP and SP, the
+Migration Client, acting as the SAML SP, is responsible for decrypting the
+SAML input using the SP's decryption key before submitting it under this
+profile. The plaintext SAML input the Migration Client submits MUST satisfy
+the signature requirements in {{saml-input-validation}}. In practice, this
+means the IdP MUST sign the inner `Assertion` independently, since a
+signature on the enclosing `Response` element does not survive decryption
+of an `EncryptedAssertion` it contains.
+
+The introspection pattern does not eliminate the SAML SP-side decryption
+key in encryption-required deployments, because that key is held by the
+SAML SP and not by the authorization server.
 
 ## SAML and OAuth Issuer Boundary {#issuer-binding}
 
@@ -658,8 +788,11 @@ This profile uses distinct issuer identifiers from different protocol contexts:
   SAML `Response` wrapper is submitted;
 * SAML Assertion Issuer: the value of the effective SAML `Assertion/Issuer`
   element;
-* Trusted SAML IdP Entity ID: the `saml_idp_entity_id` value bound to the OAuth
-  issuer identifier; and
+* Trusted SAML IdP Entity ID: the effective `saml_idp_entity_id` for the
+  authenticated client, which is the client-level `saml_idp_entity_id`
+  ({{client-registration-saml-idp-entity-id}}) when registered, otherwise
+  the authorization server metadata value
+  ({{metadata-saml-idp-entity-id}}); and
 * OAuth issuer identifier: the authorization server issuer value used in OAuth
   authorization server metadata and as the OpenID Connect ID Token `iss` claim.
 
@@ -675,6 +808,12 @@ SAML Response Issuer.
 The authorization server MUST NOT copy a SAML issuer value into the ID Token
 `iss` claim or use a SAML issuer value as a substitute for OAuth issuer
 metadata.
+
+The OAuth issuer identifier and the Trusted SAML IdP Entity ID MAY have
+identical string values when a deployment co-locates the SAML IdP and the
+OAuth authorization server. Such equality is incidental: each value is
+still used in its own protocol context, and validation still uses each
+value through its own metadata and signature path.
 
 ## Signature, SAML Issuer, and Audience Binding {#signature-issuer-audience-binding}
 
@@ -763,6 +902,11 @@ reuse within that window is accepted, rejected, or further constrained by the
 authenticated client and bound `saml_sp_entity_id` is a deployment policy
 decision; a stricter rule, where stated below, takes precedence.
 
+The replay-detection state MUST be shared across all endpoints that consume
+SAML input under this profile; an `Assertion/@ID` consumed at the Token
+Exchange endpoint MUST be visible to replay detection at the introspection
+endpoint, and vice versa.
+
 If the SAML assertion's `Conditions` element includes a `OneTimeUse`
 condition, the authorization server MUST treat the assertion as exhausted
 immediately after its first successful use and MUST reject any subsequent
@@ -823,7 +967,6 @@ The following non-normative example requests an ID Token from a SAML assertion:
 ~~~ http
 POST /token HTTP/1.1
 Host: as.example.edu
-Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Atoken-exchange
@@ -831,6 +974,8 @@ grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Atoken-exchange
 &subject_token=PHNhbWxwOlJlc3BvbnNlLi4u
 &requested_token_type=urn%3Aietf%3Aparams%3Aoauth%3Atoken-type%3Aid_token
 &scope=openid%20profile%20email
+&client_assertion_type=urn%3Aietf%3Aparams%3Aoauth%3Aclient-assertion-type%3Ajwt-bearer
+&client_assertion=eyJhbGciOiJSUzI1NiIs...
 ~~~
 
 The request parameters are summarized below:
@@ -859,11 +1004,14 @@ REQUIRED. The base64url-encoded octet sequence, as defined in Section 5 of
 * a signed SAML 2.0 `<Response>` containing exactly one bearer `<Assertion>`
   for that relationship.
 
-The encoded value MUST NOT be line wrapped and MUST NOT include padding
+The encoded value MUST NOT be line wrapped and SHOULD NOT include padding
 characters (`=`). This encoding convention follows the operational form used by
-{{RFC7522}}. When a SAML `<Response>` is supplied, it is used only as a signed
-wrapper from which this profile extracts the effective assertion, according to
-{{saml-input-validation}}.
+{{RFC7522}}. Many base64 libraries emit padding by default; clients using
+such libraries SHOULD strip the trailing `=` characters before sending.
+Authorization servers SHOULD accept padded values to maximize interoperability
+with such libraries. When a SAML `<Response>` is supplied, it is used only as
+a signed wrapper from which this profile extracts the effective assertion,
+according to {{saml-input-validation}}.
 
 `subject_token_type`:
 
@@ -1048,8 +1196,10 @@ the standard OAuth 2.0 `refresh_token` grant at the same authorization server.
 
 When the authorization server issues a replacement refresh token as part of
 refresh token rotation, the replacement token MUST be bound to the same Local
-Account as the original refresh token and MUST produce the same `sub` value
-under {{subject-identifier-mapping}} when used by the same migrated client.
+Account as the original refresh token, MUST produce the same `sub` value
+under {{subject-identifier-mapping}} when used by the same migrated client,
+and MUST NOT extend the SAML session bound established by the originating
+assertion (see {{authentication-event-claims}}).
 
 When the granted scope includes `openid`, the authorization server SHOULD
 return an ID Token in the first successful refresh token response for that
@@ -1096,6 +1246,13 @@ policy authorizes, using `invalid_scope` or `invalid_target` as appropriate.
 The SAML SP relationship determines whether the Migration Client may
 bootstrap a session under this profile; it does not by itself impose a
 ceiling on later use of the resulting refresh token.
+
+Subsequent refresh token grants are not re-validated against the original
+SAML assertion. The assertion may have expired, may have been issued for a
+different purpose, or may no longer satisfy this profile's input-validation
+rules; none of that affects the validity of refresh token use, which is
+governed solely by authorization server policy and the `SessionNotOnOrAfter`
+cap (when one was established).
 
 When a refresh token issued under this profile expires or is revoked, the client
 MAY obtain a new SAML assertion through the SAML 2.0 deployment and perform a
@@ -1244,11 +1401,12 @@ SAML assertion and return normalized JSON claims and SAML protocol metadata:
 ~~~ http
 POST /introspect HTTP/1.1
 Host: as.example.edu
-Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
 Content-Type: application/x-www-form-urlencoded
 
 token=PHNhbWxwOlJlc3BvbnNlLi4u
 &token_type_hint=urn%3Aietf%3Aparams%3Aoauth%3Atoken-type%3Asaml2
+&client_assertion_type=urn%3Aietf%3Aparams%3Aoauth%3Aclient-assertion-type%3Ajwt-bearer
+&client_assertion=eyJhbGciOiJSUzI1NiIs...
 ~~~
 
 The request parameters are summarized below:
@@ -1268,11 +1426,14 @@ REQUIRED. The base64url-encoded octet sequence, as defined in Section 5 of
 * a signed SAML 2.0 `<Response>` containing exactly one bearer `<Assertion>`
   for that relationship.
 
-The encoded value MUST NOT be line wrapped and MUST NOT include padding
+The encoded value MUST NOT be line wrapped and SHOULD NOT include padding
 characters (`=`). This encoding convention follows the operational form used by
-{{RFC7522}}. When a SAML `<Response>` is supplied, it is used only as a signed
-wrapper from which this profile extracts the effective assertion, according to
-{{saml-input-validation}}.
+{{RFC7522}}. Many base64 libraries emit padding by default; clients using
+such libraries SHOULD strip the trailing `=` characters before sending.
+Authorization servers SHOULD accept padded values to maximize interoperability
+with such libraries. When a SAML `<Response>` is supplied, it is used only as
+a signed wrapper from which this profile extracts the effective assertion,
+according to {{saml-input-validation}}.
 
 `token_type_hint`:
 
@@ -1325,17 +1486,24 @@ For an active SAML assertion, the authorization server MUST return an
 introspection response as defined by {{RFC7662}} with:
 
 * `active` set to `true`;
-* `claims` set to a JSON object containing the normalized claims derived from
-  the SAML assertion for this client; and
+* `identity_claims` set to a JSON object containing the normalized
+  identity claims derived from the SAML assertion for this client; and
 * `saml`, when returned, set to a JSON object containing normalized SAML
   protocol metadata as defined below.
 
-The `claims` member is intentionally nested rather than returned at the top
-level of the introspection response. This separates the token-validity metadata
-(`active`) from end-user identity claims derived from the SAML assertion, and
-avoids ambiguity with existing or future top-level {{RFC7662}} response members.
+The `identity_claims` member is intentionally nested rather than returned at
+the top level of the introspection response. This separates the token-validity
+metadata (`active`) from end-user identity claims derived from the SAML
+assertion, and avoids ambiguity with existing or future top-level {{RFC7662}}
+response members.
 
-The `claims` object:
+The `identity_claims` object contains values that have been processed by the
+authorization server under {{local-subject-resolution}}, {{subject-identifier-mapping}},
+and {{claim-mapping}}, including subject resolution and claim release policy.
+These values are not a literal mirror of SAML assertion content; the protocol
+mirror of the assertion is the `saml` object.
+
+The `identity_claims` object:
 
 * MUST include the mapped `sub` value defined by {{subject-identifier-mapping}};
 * MAY include `auth_time`, `acr`, `amr`, `sid`, and attribute-derived claims
@@ -1347,7 +1515,8 @@ The authorization server SHOULD return only the minimum normalized claims
 necessary for the authorized client and applicable relying-party policy.
 
 The `saml` object contains protocol metadata, not end-user identity claims. The
-authorization server MUST NOT return those values inside the `claims` object.
+authorization server MUST NOT return those values inside the `identity_claims`
+object.
 
 When the `saml` object is returned:
 
@@ -1432,21 +1601,50 @@ When present, the `assertion` object MAY contain these members:
 `not_on_or_after`:
 : String. The value of `Assertion/Conditions/@NotOnOrAfter`.
 
-`subject_confirmation_method`:
-: String. The `Method` value of the bearer `SubjectConfirmation` that the
+`subject_confirmation`:
+: JSON object. The fields from the bearer `SubjectConfirmation` that the
   authorization server treated as usable under {{bearer-subject-confirmation}}.
+  The object MAY contain these members:
 
-`subject_confirmation_recipient`:
-: String. The `Recipient` value from the `SubjectConfirmationData` associated
-  with the usable bearer `SubjectConfirmation`.
+    `method`:
+    : String. The `Method` value of the usable bearer `SubjectConfirmation`.
 
-`subject_confirmation_in_response_to`:
-: String. The `InResponseTo` value from the `SubjectConfirmationData`
-  associated with the usable bearer `SubjectConfirmation`.
+    `recipient`:
+    : String. The `Recipient` value from the `SubjectConfirmationData`.
 
-`subject_confirmation_not_on_or_after`:
-: String. The `NotOnOrAfter` value from the `SubjectConfirmationData`
-  associated with the usable bearer `SubjectConfirmation`.
+    `in_response_to`:
+    : String. The `InResponseTo` value from the `SubjectConfirmationData`.
+
+    `not_on_or_after`:
+    : String. The `NotOnOrAfter` value from the `SubjectConfirmationData`.
+
+    The authorization server MUST omit any member for which it has no
+    extracted value.
+
+`name_id`:
+: JSON object. The `NameID` element from the assertion's `Subject`, when
+  present. The object MUST include a `value` member containing the textual
+  NameID value, and MAY include `format`, `name_qualifier`,
+  `sp_name_qualifier`, and `sp_provided_id` members carrying the
+  corresponding XML attributes when present. The authorization server MUST
+  omit the `name_id` member if the `Subject` does not contain a usable
+  `NameID`. Encrypted NameID forms are rejected under {{encrypted-content}}
+  and MUST NOT appear in this member.
+
+`attributes`:
+: Array of JSON objects. Each object mirrors one logical SAML attribute
+  derived from the assertion's `AttributeStatement` elements after the
+  combining rules in {{attribute-claims}}. Each object MUST include a `name`
+  member (the SAML `Name` value) and a `values` member (a JSON array of the
+  attribute's `AttributeValue` contents), and MAY include `name_format`
+  (the `NameFormat` URI when present) and `friendly_name` (the
+  `FriendlyName` when present). Values inside `values` MUST follow the
+  typing rules defined in {{attribute-claims}}; in particular, XML schema
+  booleans MAY be emitted as JSON booleans and numeric types as JSON
+  numbers when the XML type is unambiguous, with all other values emitted
+  as JSON strings. The `attributes` member is intended for clients that
+  require the wire-form SAML attribute names (for example, `urn:oid:`
+  identifiers) in addition to the normalized claims in `identity_claims`.
 
 Date and time values in the `saml` object SHOULD be represented as strings
 preserving the SAML dateTime semantics. Implementations MAY normalize
@@ -1711,16 +1909,12 @@ SHOULD map its contents as follows:
       Level of Assurance scheme, that mapping MUST be applied;
     * otherwise, the authorization server SHOULD copy the SAML URI without
       transformation;
-    * if the authorization server publishes `acr_values_supported`, it MUST
-      NOT emit an `acr` value that is not in that list. When the asserted
-      `AuthnContextClassRef` URI is not in `acr_values_supported`, `acr`
-      MUST be omitted rather than emit an unrecognized value.
-
-    An OpenID Provider publishing `acr_values_supported` SHOULD include every
-    `acr` value it can emit under this profile, including pass-through SAML
-    `AuthnContextClassRef` URIs when that set is enumerable. If it cannot
-    publish a reliable list, it SHOULD omit `acr_values_supported` rather
-    than publish incomplete or misleading metadata.
+    * the authorization server MUST NOT advertise an `acr` value in
+      `acr_values_supported` that it cannot emit. If `acr_values_supported`
+      enumerates only the mapped Level-of-Assurance values, the authorization
+      server MAY still emit pass-through SAML `AuthnContextClassRef` URIs
+      that are not enumerated, provided the asserted URI satisfies the
+      pass-through rule above.
 
     Clients receiving raw SAML authentication context class URIs as `acr`
     values (for example,
@@ -1756,18 +1950,15 @@ authentication context class. Therefore:
   `amr` as a JSON array of strings.
 
 If multiple `AuthnStatement` elements are present, the authorization server
-MUST select the statement corresponding to the authentication event that is
-authoritative for the OAuth or OpenID Connect transaction. When no other basis
-for selection exists, the authorization server SHOULD prefer the statement with
-the most recent `AuthnInstant` value. If the authorization server cannot
-determine the authoritative statement unambiguously, it SHOULD omit ambiguous
-derived claims rather than misstate them.
-
-In assertions produced by SAML identity proxying, the most recent
-`AuthnInstant` may reflect the proxying IdP's re-issuance event rather than
-the original end-user authentication. Deployments using proxied assertions
-SHOULD establish an explicit policy for which `AuthnStatement` is authoritative
-and configure the authorization server accordingly.
+MUST select the statement that local policy designates as authoritative for
+the OAuth or OpenID Connect transaction. If no local policy designates an
+authoritative statement, the authorization server MUST omit derived
+authentication claims (`auth_time`, `acr`, `amr`, and `sid`) rather than
+emit values from an arbitrary statement. The authorization server MUST NOT
+default to selecting by `AuthnInstant` alone, because the most recent
+statement may reflect a SAML identity proxying re-issuance rather than the
+original end-user authentication. Deployments using proxied assertions
+MUST configure which `AuthnStatement` is authoritative.
 
 If the selected `AuthnStatement` contains `SessionNotOnOrAfter`, the
 authorization server MUST treat that instant as an upper bound on operations
@@ -1877,6 +2068,11 @@ Attribute processing MUST follow these rules:
 * if multiple distinct SAML attributes could map to the same registered claim,
   the authorization server MUST apply a deterministic precedence rule based on
   SAML attribute identifiers or omit that claim;
+* when multiple SAML attributes from the same logical attribute set could
+  map to the same registered OpenID Connect claim and they differ only by
+  `NameFormat`, the authorization server SHOULD prefer the attribute whose
+  `NameFormat` is `urn:oasis:names:tc:SAML:2.0:attrname-format:uri` (the
+  canonical federation form) over `:basic` or `:unspecified` forms;
 * the authorization server MUST NOT emit a JSON array for a registered
   single-valued claim; and
 * generic attribute mapping MUST NOT overwrite `sub`, `auth_time`, `acr`,
@@ -1985,13 +2181,20 @@ servers SHOULD require RSA with SHA-256 or stronger and SHOULD document their
 minimum acceptable algorithm requirements.
 
 When an authorization server or migration tooling fetches the
-`saml_metadata_uri`, the fetch target is derived from a configuration value
-that may be attacker-influenced in some deployment models. Implementations
-MUST restrict fetches to URIs that use the HTTPS scheme and MUST NOT follow
-redirects to non-HTTPS URIs. Deployments SHOULD additionally constrain
-permitted fetch targets to a pre-approved allowlist of hosts, in order to
-prevent Server-Side Request Forgery (SSRF) attacks that could expose internal
-services.
+`saml_metadata_uri` at either the authorization server metadata level or
+the client registration level, the fetch target is derived from a
+configuration value that may be attacker-influenced in some deployment
+models. Per-client `saml_metadata_uri` values registered through dynamic
+client registration are particularly exposed, since they originate from a
+registering party. Implementations MUST restrict fetches to URIs that use
+the HTTPS scheme and MUST NOT follow redirects to non-HTTPS URIs.
+Deployments SHOULD additionally constrain permitted fetch targets to a
+pre-approved allowlist of hosts, in order to prevent Server-Side Request
+Forgery (SSRF) attacks that could expose internal services. The
+registration authorization rules in
+{{client-registration-saml-sp-entity-id-authorization}} apply to
+per-client `saml_metadata_uri` values, so an attacker registering through
+dynamic client registration cannot freely set this value.
 
 Mixing SAML trust inputs and OAuth trust inputs creates a risk of protocol
 confusion. Implementations MUST validate SAML assertions using SAML metadata and
@@ -2026,10 +2229,17 @@ performed outside this profile before the enclosed assertion is used to issue
 tokens or return claims.
 
 The bindings defined by `saml_sp_entity_id` and `saml_idp_entity_id` are
-security-critical. If a client can register an arbitrary `saml_sp_entity_id`, it
-may be able to inherit claim release policy or pairwise identifiers intended for
-another relying party. Authorization servers therefore MUST protect registration
-and administrative mapping of these values.
+security-critical, both at the authorization server metadata level and at
+the per-client registration level. If a client can register an arbitrary
+`saml_sp_entity_id` or `saml_idp_entity_id`, it may be able to exchange
+any SAML assertion captured for that SP-IdP pair into OAuth tokens or
+claims under the bound relying-party relationship, collapsing the
+three-way binding defined in {{migration-binding-rationale}}. Authorization
+servers MUST therefore protect registration and administrative mapping of
+both values according to the rules in
+{{client-registration-saml-sp-entity-id-authorization}}. In particular,
+anonymous or open dynamic client registration MUST NOT be permitted to
+set either `saml_sp_entity_id` or `saml_idp_entity_id`.
 
 When multiple OAuth clients share the same `saml_sp_entity_id`, the
 authorization server is intentionally treating them as the same relying-party
@@ -2108,14 +2318,28 @@ indirection of token issuance.
 
 ## OAuth Dynamic Client Registration Metadata {#iana-client-registration-metadata}
 
-This document requests registration of the following value in the OAuth Dynamic
-Client Registration Metadata registry established by {{RFC7591}}:
+This document requests registration of the following values in the OAuth
+Dynamic Client Registration Metadata registry established by {{RFC7591}}:
 
 * Client Metadata Name: `saml_sp_entity_id`
 * Client Metadata Description: Identifier of the SAML 2.0 Service Provider
   entity bound to the client for migration and subject continuity
 * Change Controller: IESG
 * Specification Document(s): This document, {{client-registration-saml-sp-entity-id}}
+
+* Client Metadata Name: `saml_idp_entity_id`
+* Client Metadata Description: Per-client override for the identifier of the
+  SAML 2.0 Identity Provider entity expected to issue assertions for this
+  client, when the SAML IdP emits per-SP entityIDs
+* Change Controller: IESG
+* Specification Document(s): This document, {{client-registration-saml-idp-entity-id}}
+
+* Client Metadata Name: `saml_metadata_uri`
+* Client Metadata Description: Per-client override for the HTTPS URI of the
+  SAML metadata document describing the SAML 2.0 Identity Provider entity
+  expected to issue assertions for this client
+* Change Controller: IESG
+* Specification Document(s): This document, {{client-registration-saml-metadata-uri}}
 
 ## OAuth Authorization Server Metadata {#iana-as-metadata}
 
@@ -2164,9 +2388,9 @@ endpoints, which use a separate registry.
 This document requests registration of the following values in the OAuth Token
 Introspection Response registry established by {{RFC7662}}:
 
-* Response Name: `claims`
-* Response Description: JSON object containing normalized subject and claim
-  values derived from the introspected SAML assertion for the authorized client
+* Response Name: `identity_claims`
+* Response Description: JSON object containing normalized identity claims
+  derived from the introspected SAML assertion for the authorized client
 * Change Controller: IESG
 * Specification Document(s): This document, {{introspection-successful-response}}
 
@@ -2182,8 +2406,9 @@ Introspection Response registry established by {{RFC7662}}:
 
 This appendix is non-normative.
 
-Unless otherwise noted, these examples use HTTP Basic client authentication for
-brevity. Encoded SAML values are shortened placeholders.
+Unless otherwise noted, these examples use the `private_key_jwt` client
+authentication method as defined by {{OIDC-CORE}}. Encoded SAML values and
+client assertion JWTs are shortened placeholders.
 
 The examples focus on the three primary deployment scenarios for this profile:
 converting SAML input into an ID Token, delegating SAML validation to the
@@ -2198,9 +2423,27 @@ All examples assume a confidential client with the following registration:
   "redirect_uris": [
     "https://calendar.example.com/callback"
   ],
-  "token_endpoint_auth_method": "client_secret_basic",
+  "token_endpoint_auth_method": "private_key_jwt",
+  "token_endpoint_auth_signing_alg": "RS256",
+  "jwks_uri": "https://calendar.example.com/jwks.json",
   "subject_type": "pairwise",
   "saml_sp_entity_id": "https://calendar.example.com/saml/sp"
+}
+~~~
+
+Each request below carries `client_assertion_type` and `client_assertion`
+parameters as the client authentication mechanism. The decoded
+`client_assertion` JWT payload is shown once below; subsequent examples
+reuse a shortened placeholder for the encoded JWT.
+
+~~~ json
+{
+  "iss": "s6BhdRkqt3",
+  "sub": "s6BhdRkqt3",
+  "aud": "https://login.example.com/token",
+  "jti": "5f3d8c2f-7e9a-4b1d-9c7e-0a1f2b3c4d5e",
+  "exp": 1776804960,
+  "iat": 1776804900
 }
 ~~~
 
@@ -2250,13 +2493,14 @@ Exchange response.
 POST /token HTTP/1.1
 Host: login.example.com
 Content-Type: application/x-www-form-urlencoded
-Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
 
 grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 &requested_token_type=urn:ietf:params:oauth:token-type:id_token
 &scope=openid+profile+email
 &subject_token=PHNhbWwyOkFzc2VydGlvbiB4bWxuczpzYW1sMj0iLi4uIj4uLi48L3NhbWwyOkFzc2VydGlvbj4
 &subject_token_type=urn:ietf:params:oauth:token-type:saml2
+&client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+&client_assertion=eyJhbGciOiJSUzI1NiIsImtpZCI6ImNsaWVudC0xIn0...
 ~~~
 
 ~~~ json
@@ -2297,10 +2541,10 @@ local state including the request ID and ACS URL. When the IdP returns a signed
 SAML Response to the ACS, the application submits it directly to the AS's
 introspection endpoint rather than parsing it. The AS validates the XML
 signatures, checks the assertion against all profile rules, and returns
-normalized claims alongside SAML protocol metadata as JSON. The application
-then correlates the returned `saml` values against its stored request state to
-confirm the response was intended for this flow, and uses the `claims` object
-to establish Alice's session.
+normalized identity claims alongside SAML protocol metadata as JSON. The
+application then correlates the returned `saml` values against its stored
+request state to confirm the response was intended for this flow, and uses
+the `identity_claims` object to establish Alice's session.
 
 Before redirecting Alice to the IdP, the SP stores local request state such as:
 
@@ -2320,10 +2564,11 @@ to the introspection endpoint:
 POST /introspect HTTP/1.1
 Host: login.example.com
 Content-Type: application/x-www-form-urlencoded
-Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
 
 token=PHNhbWwycDpSZXNwb25zZSB4bWxuczpzYW1sMj0iLi4uIiB4bWxuczpzYW1sMnA9Ii4uLiI-Li4uPC9zYW1sMnA6UmVzcG9uc2U-
 &token_type_hint=urn:ietf:params:oauth:token-type:saml2
+&client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+&client_assertion=eyJhbGciOiJSUzI1NiIsImtpZCI6ImNsaWVudC0xIn0...
 ~~~
 
 ~~~ json
@@ -2349,13 +2594,41 @@ token=PHNhbWwycDpSZXNwb25zZSB4bWxuczpzYW1sMj0iLi4uIiB4bWxuczpzYW1sMnA9Ii4uLiI-Li
       ],
       "not_before": "2026-04-21T17:55:00Z",
       "not_on_or_after": "2026-04-21T18:05:00Z",
-      "subject_confirmation_method": "urn:oasis:names:tc:SAML:2.0:cm:bearer",
-      "subject_confirmation_recipient": "https://calendar.example.com/saml/acs",
-      "subject_confirmation_in_response_to": "_sp-authnrequest-8f3a",
-      "subject_confirmation_not_on_or_after": "2026-04-21T18:05:00Z"
+      "subject_confirmation": {
+        "method": "urn:oasis:names:tc:SAML:2.0:cm:bearer",
+        "recipient": "https://calendar.example.com/saml/acs",
+        "in_response_to": "_sp-authnrequest-8f3a",
+        "not_on_or_after": "2026-04-21T18:05:00Z"
+      },
+      "name_id": {
+        "value": "alice-pairwise-7c3f",
+        "format": "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent",
+        "name_qualifier": "https://login.example.com/idp",
+        "sp_name_qualifier": "https://calendar.example.com/saml/sp"
+      },
+      "attributes": [
+        {
+          "name": "urn:oid:0.9.2342.19200300.100.1.3",
+          "name_format": "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
+          "friendly_name": "mail",
+          "values": ["alice@example.com"]
+        },
+        {
+          "name": "urn:oid:2.5.4.42",
+          "name_format": "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
+          "friendly_name": "givenName",
+          "values": ["Alice"]
+        },
+        {
+          "name": "urn:oid:2.5.4.4",
+          "name_format": "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
+          "friendly_name": "sn",
+          "values": ["Ng"]
+        }
+      ]
     }
   },
-  "claims": {
+  "identity_claims": {
     "sub": "p7b4cf5d-9c2f-4f22-a6b9-6e3d8df5a1b0",
     "auth_time": 1776794400,
     "acr": "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport",
@@ -2377,12 +2650,12 @@ saml.response.issuer == stored.idp_entity_id
 saml.assertion.issuer == stored.idp_entity_id
 saml.response.destination == stored.acs_url
 saml.response.in_response_to == stored.request_id
-saml.assertion.subject_confirmation_recipient == stored.acs_url
-saml.assertion.subject_confirmation_in_response_to == stored.request_id
+saml.assertion.subject_confirmation.recipient == stored.acs_url
+saml.assertion.subject_confirmation.in_response_to == stored.request_id
 stored.sp_entity_id is in saml.assertion.audiences
 saml.response.status_code == "urn:oasis:names:tc:SAML:2.0:status:Success"
 saml.response.has_nested_status_code == false
-current_time < saml.assertion.subject_confirmation_not_on_or_after
+current_time < saml.assertion.subject_confirmation.not_on_or_after
 current_time < saml.assertion.not_on_or_after
 ~~~
 
@@ -2402,7 +2675,6 @@ requests only the scopes required for that service:
 POST /token HTTP/1.1
 Host: login.example.com
 Content-Type: application/x-www-form-urlencoded
-Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
 
 grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 &requested_token_type=urn:ietf:params:oauth:token-type:access_token
@@ -2411,6 +2683,8 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 &audience=payments-api
 &subject_token=PHNhbWwyOkFzc2VydGlvbiB4bWxuczpzYW1sMj0iLi4uIj4uLi48L3NhbWwyOkFzc2VydGlvbj4
 &subject_token_type=urn:ietf:params:oauth:token-type:saml2
+&client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+&client_assertion=eyJhbGciOiJSUzI1NiIsImtpZCI6ImNsaWVudC0xIn0...
 ~~~
 
 ~~~ json
@@ -2433,13 +2707,14 @@ and ID Tokens without requiring a new SAML assertion:
 POST /token HTTP/1.1
 Host: login.example.com
 Content-Type: application/x-www-form-urlencoded
-Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
 
 grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 &requested_token_type=urn:ietf:params:oauth:token-type:refresh_token
 &scope=openid+offline_access+profile+email
 &subject_token=PHNhbWwycDpSZXNwb25zZSB4bWxuczpzYW1sMj0iLi4uIiB4bWxuczpzYW1sMnA9Ii4uLiI-Li4uPC9zYW1sMnA6UmVzcG9uc2U-
 &subject_token_type=urn:ietf:params:oauth:token-type:saml2
+&client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+&client_assertion=eyJhbGciOiJSUzI1NiIsImtpZCI6ImNsaWVudC0xIn0...
 ~~~
 
 ~~~ json
