@@ -4,8 +4,8 @@
 
 Network Working Group                                      K. McGuinness
 Internet-Draft                                               Independent
-Intended status: Informational                               14 May 2026
-Expires: 15 November 2026
+Intended status: Informational                               15 May 2026
+Expires: 16 November 2026
 
 
               OpenID Connect to SAML 2.0 Migration Profile
@@ -58,7 +58,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 15 November 2026.
+   This Internet-Draft will expire on 16 November 2026.
 
 Copyright Notice
 

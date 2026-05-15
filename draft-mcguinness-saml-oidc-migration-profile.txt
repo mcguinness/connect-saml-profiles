@@ -4,8 +4,8 @@
 
 Network Working Group                                      K. McGuinness
 Internet-Draft                                               Independent
-Intended status: Informational                               14 May 2026
-Expires: 15 November 2026
+Intended status: Informational                               15 May 2026
+Expires: 16 November 2026
 
 
        SAML 2.0 to OpenID Connect and OAuth 2.0 Migration Profile
@@ -56,7 +56,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 15 November 2026.
+   This Internet-Draft will expire on 16 November 2026.
 
 Copyright Notice
 
@@ -677,6 +677,17 @@ Table of Contents
 
    *  clients and migration tooling MAY use the metadata to correlate
       the OAuth issuer with the pre-existing SAML trust configuration.
+
+   The SAML metadata document referenced by saml_metadata_uri SHOULD
+   include an AdditionalMetadataLocation element pointing at the
+   authorization server metadata document for the bound OAuth issuer,
+   with the namespace attribute set to a URI identifying the relevant
+   metadata format (for example, https://datatracker.ietf.org/doc/html/
+   rfc8414 for OAuth authorization server metadata, or
+   https://openid.net/specs/openid-connect-discovery-1_0.html for OpenID
+   Provider configuration).  This forms a bidirectional binding between
+   the SAML IdP entity and the OAuth issuer, both of which can be
+   verified through their respective protocol metadata.
 
 7.3.  token_exchange_requested_token_types_supported
 
