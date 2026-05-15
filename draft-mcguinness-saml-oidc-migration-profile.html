@@ -1342,7 +1342,7 @@ changing the underlying SSO trust model or relinking existing user accounts.<a h
                 <p id="section-toc.1-1.13.2.2.1"><a href="#section-13.2" class="auto internal xref">13.2</a>.  <a href="#name-attribute-claims" class="internal xref">Attribute Claims</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13.2.3">
-                <p id="section-toc.1-1.13.2.3.1"><a href="#section-13.3" class="auto internal xref">13.3</a>.  <a href="#name-userinfo-responses-and-oidc" class="internal xref">UserInfo Responses and OIDC Output Consistency</a></p>
+                <p id="section-toc.1-1.13.2.3.1"><a href="#section-13.3" class="auto internal xref">13.3</a>.  <a href="#name-userinfo-responses" class="internal xref">UserInfo Responses</a></p>
 </li>
             </ul>
 </li>
@@ -2070,21 +2070,19 @@ authorization server metadata parameter.<a href="#section-7.4-1" class="pilcrow"
 Each string is a token type URI identifying a token format that the
 authorization server accepts for direct introspection at its introspection
 endpoint according to <a href="#saml-assertion-introspection" class="auto internal xref">Section 10</a>.<a href="#section-7.4-2" class="pilcrow">¶</a></p>
-<p id="section-7.4-3">If this metadata value is omitted, no support is implied for direct
-introspection of additional token types under this profile.<a href="#section-7.4-3" class="pilcrow">¶</a></p>
-<p id="section-7.4-4">When <code>introspection_token_types_supported</code> includes
-<code>urn:ietf:params:oauth:token-type:saml2</code>:<a href="#section-7.4-4" class="pilcrow">¶</a></p>
+<p id="section-7.4-3">When <code>introspection_token_types_supported</code> includes
+<code>urn:ietf:params:oauth:token-type:saml2</code>:<a href="#section-7.4-3" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-7.4-5.1">
-            <p id="section-7.4-5.1.1">the authorization server's <code>introspection_endpoint</code> metadata <span class="bcp14">MUST</span> be present;<a href="#section-7.4-5.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-7.4-4.1">
+            <p id="section-7.4-4.1.1">the authorization server's <code>introspection_endpoint</code> metadata <span class="bcp14">MUST</span> be present;<a href="#section-7.4-4.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-7.4-5.2">
-            <p id="section-7.4-5.2.1">the introspection endpoint <span class="bcp14">MUST</span> accept the request pattern defined in
-<a href="#saml-assertion-introspection" class="auto internal xref">Section 10</a>;<a href="#section-7.4-5.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-7.4-4.2">
+            <p id="section-7.4-4.2.1">the introspection endpoint <span class="bcp14">MUST</span> accept the request pattern defined in
+<a href="#saml-assertion-introspection" class="auto internal xref">Section 10</a>;<a href="#section-7.4-4.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-7.4-5.3">
-            <p id="section-7.4-5.3.1">the authorization server <span class="bcp14">SHOULD</span> accept
-<code>token_type_hint=urn:ietf:params:oauth:token-type:saml2</code>.<a href="#section-7.4-5.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-7.4-4.3">
+            <p id="section-7.4-4.3.1">the authorization server <span class="bcp14">SHOULD</span> accept
+<code>token_type_hint=urn:ietf:params:oauth:token-type:saml2</code>.<a href="#section-7.4-4.3.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
@@ -2108,15 +2106,21 @@ capabilities defined by this profile.<a href="#section-7.5-1" class="pilcrow">¶
           </thead>
           <tbody>
             <tr>
-              <td class="text-left" rowspan="1" colspan="1">SAML issuer binding</td>
+              <td class="text-left" rowspan="1" colspan="1">SAML issuer binding (AS-level default)</td>
               <td class="text-left" rowspan="1" colspan="1">
-                <code>saml_idp_entity_id</code>
-</td>
+                <code>saml_idp_entity_id</code> when no client uses a per-client override</td>
               <td class="text-left" rowspan="1" colspan="1">
                 <code>saml_metadata_uri</code>
 </td>
               <td class="text-left" rowspan="1" colspan="1">
-                <code>saml_idp_entity_id</code> identifies the SAML IdP bound to the OAuth issuer. <code>saml_metadata_uri</code> is optional but, when present, <span class="bcp14">MUST</span> describe the same SAML IdP Entity ID.</td>
+                <code>saml_idp_entity_id</code> identifies the default SAML IdP bound to the OAuth issuer. <code>saml_metadata_uri</code> is optional but, when present, <span class="bcp14">MUST</span> describe the effective <code>saml_idp_entity_id</code> for the same context.</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">SAML issuer binding (per-client override)</td>
+              <td class="text-left" rowspan="1" colspan="1">Client-level <code>saml_idp_entity_id</code> for deployments where the IdP emits per-SP entityIDs</td>
+              <td class="text-left" rowspan="1" colspan="1">Client-level <code>saml_metadata_uri</code>
+</td>
+              <td class="text-left" rowspan="1" colspan="1">Per-client overrides allow each Migration Client to bind a distinct SAML IdP entityID and metadata document; see <a href="#client-registration-saml-idp-entity-id" class="auto internal xref">Section 6.2</a> and <a href="#client-registration-saml-metadata-uri" class="auto internal xref">Section 6.3</a>.</td>
             </tr>
             <tr>
               <td class="text-left" rowspan="1" colspan="1">Token Exchange with SAML input</td>
@@ -2182,8 +2186,6 @@ elements, while OAuth and OpenID Connect signing keys are published and
 processed through <code>jwks_uri</code> or <code>jwks</code>. Even when the same underlying key
 material is reused, it <span class="bcp14">MUST</span> be published and validated using the metadata and
 encoding rules of each protocol separately.<a href="#section-7.6-2" class="pilcrow">¶</a></p>
-<p id="section-7.6-3"><code>acr_values_supported</code> discovery metadata for OpenID Providers supporting this
-profile is addressed in <a href="#authentication-event-claims" class="auto internal xref">Section 13.1</a>.<a href="#section-7.6-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2389,15 +2391,15 @@ SAML IdP Entity ID defined in <a href="#issuer-binding" class="auto internal xre
 </li>
           <li id="section-8.5-2.7">
             <p id="section-8.5-2.7.1">verify that the bound <code>saml_sp_entity_id</code> appears as an <code>Audience</code> value
-in at least one <code>AudienceRestriction</code> element; additional <code>Audience</code> values
-beyond the bound <code>saml_sp_entity_id</code> are permitted, need not correspond to
-the bound <code>saml_sp_entity_id</code>, and <span class="bcp14">MUST NOT</span> by themselves invalidate the
-assertion; and<a href="#section-8.5-2.7.1" class="pilcrow">¶</a></p>
+in at least one <code>AudienceRestriction</code> element; additional <code>Audience</code>
+values are permitted and <span class="bcp14">MUST NOT</span> by themselves invalidate the assertion;
+and<a href="#section-8.5-2.7.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-8.5-2.8">
-            <p id="section-8.5-2.8.1">reject the SAML input if client authentication, assertion audience, and the
-bound <code>saml_sp_entity_id</code> do not all identify the same relying-party
-migration context.<a href="#section-8.5-2.8.1" class="pilcrow">¶</a></p>
+            <p id="section-8.5-2.8.1">reject the SAML input if the authenticated client, the
+<code>saml_sp_entity_id</code> registered to that client, and the validated
+<code>Audience</code> matching that <code>saml_sp_entity_id</code> do not all align, as
+required by the three-way binding in <a href="#migration-binding-rationale" class="auto internal xref">Section 4</a>.<a href="#section-8.5-2.8.1" class="pilcrow">¶</a></p>
 </li>
         </ol>
 <p id="section-8.5-3">An authorization server consuming SAML input under this profile <span class="bcp14">MUST</span> reject any
@@ -4109,8 +4111,8 @@ and semantics.<a href="#section-13.2-15" class="pilcrow">¶</a></p>
 </div>
 <div id="userinfo-oidc-output-consistency">
 <section id="section-13.3">
-        <h3 id="name-userinfo-responses-and-oidc">
-<a href="#section-13.3" class="section-number selfRef">13.3. </a><a href="#name-userinfo-responses-and-oidc" class="section-name selfRef">UserInfo Responses and OIDC Output Consistency</a>
+        <h3 id="name-userinfo-responses">
+<a href="#section-13.3" class="section-number selfRef">13.3. </a><a href="#name-userinfo-responses" class="section-name selfRef">UserInfo Responses</a>
         </h3>
 <p id="section-13.3-1">If an access token issued under this profile is presented to the OpenID
 Provider's UserInfo endpoint, the OpenID Provider <span class="bcp14">MUST</span> process that request in
@@ -4408,8 +4410,9 @@ Authorization Server Metadata registry established by <span>[<a href="#RFC8414" 
             <p id="section-16.2-2.1.1">Metadata Name: <code>saml_idp_entity_id</code><a href="#section-16.2-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-16.2-2.2">
-            <p id="section-16.2-2.2.1">Metadata Description: Identifier of the SAML 2.0 Identity Provider entity
-bound to the authorization server issuer<a href="#section-16.2-2.2.1" class="pilcrow">¶</a></p>
+            <p id="section-16.2-2.2.1">Metadata Description: Default identifier of the SAML 2.0 Identity Provider
+entity bound to the authorization server issuer; may be overridden per
+client registration<a href="#section-16.2-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-16.2-2.3">
             <p id="section-16.2-2.3.1">Change Controller: IESG<a href="#section-16.2-2.3.1" class="pilcrow">¶</a></p>
@@ -4421,8 +4424,9 @@ bound to the authorization server issuer<a href="#section-16.2-2.2.1" class="pil
             <p id="section-16.2-2.5.1">Metadata Name: <code>saml_metadata_uri</code><a href="#section-16.2-2.5.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-16.2-2.6">
-            <p id="section-16.2-2.6.1">Metadata Description: HTTPS URI for the SAML metadata describing the SAML
-Identity Provider entity bound to the authorization server issuer<a href="#section-16.2-2.6.1" class="pilcrow">¶</a></p>
+            <p id="section-16.2-2.6.1">Metadata Description: Default HTTPS URI for the SAML metadata describing
+the SAML Identity Provider entity bound to the authorization server
+issuer; may be overridden per client registration<a href="#section-16.2-2.6.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-16.2-2.7">
             <p id="section-16.2-2.7.1">Change Controller: IESG<a href="#section-16.2-2.7.1" class="pilcrow">¶</a></p>

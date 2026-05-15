@@ -124,7 +124,7 @@ Table of Contents
    13. Claim Mapping
      13.1.  Authentication Event Claims
      13.2.  Attribute Claims
-     13.3.  UserInfo Responses and OIDC Output Consistency
+     13.3.  UserInfo Responses
    14. Security Considerations
    15. Privacy Considerations
    16. IANA Considerations
@@ -732,9 +732,6 @@ Table of Contents
    that the authorization server accepts for direct introspection at its
    introspection endpoint according to Section 10.
 
-   If this metadata value is omitted, no support is implied for direct
-   introspection of additional token types under this profile.
-
    When introspection_token_types_supported includes
    urn:ietf:params:oauth:token-type:saml2:
 
@@ -755,10 +752,16 @@ Table of Contents
    +=============+==============================================+==============================================+==============================================+
    |Capability   |Required metadata                             |Conditional metadata                          |Notes                                         |
    +=============+==============================================+==============================================+==============================================+
-   |SAML issuer  |saml_idp_entity_id                            |saml_metadata_uri                             |saml_idp_entity_id identifies the SAML IdP    |
-   |binding      |                                              |                                              |bound to the OAuth issuer. saml_metadata_uri  |
-   |             |                                              |                                              |is optional but, when present, MUST describe  |
-   |             |                                              |                                              |the same SAML IdP Entity ID.                  |
+   |SAML issuer  |saml_idp_entity_id when no client uses a per- |saml_metadata_uri                             |saml_idp_entity_id identifies the default SAML|
+   |binding (AS- |client override                               |                                              |IdP bound to the OAuth issuer.                |
+   |level        |                                              |                                              |saml_metadata_uri is optional but, when       |
+   |default)     |                                              |                                              |present, MUST describe the effective          |
+   |             |                                              |                                              |saml_idp_entity_id for the same context.      |
+   +-------------+----------------------------------------------+----------------------------------------------+----------------------------------------------+
+   |SAML issuer  |Client-level saml_idp_entity_id for           |Client-level saml_metadata_uri                |Per-client overrides allow each Migration     |
+   |binding (per-|deployments where the IdP emits per-SP        |                                              |Client to bind a distinct SAML IdP entityID   |
+   |client       |entityIDs                                     |                                              |and metadata document; see Section 6.2 and    |
+   |override)    |                                              |                                              |Section 6.3.                                  |
    +-------------+----------------------------------------------+----------------------------------------------+----------------------------------------------+
    |Token        |grant_types_supported containing              |token_exchange_requested_token_types_supported|token_exchange_requested_token_types_supported|
    |Exchange with|urn:ietf:params:oauth:grant-type:token-       |                                              |SHOULD be published when Token Exchange is    |
@@ -805,9 +808,6 @@ Table of Contents
    same underlying key material is reused, it MUST be published and
    validated using the metadata and encoding rules of each protocol
    separately.
-
-   acr_values_supported discovery metadata for OpenID Providers
-   supporting this profile is addressed in Section 13.1.
 
 8.  SAML Input Validation and Binding
 
@@ -973,13 +973,13 @@ Table of Contents
 
    7.  verify that the bound saml_sp_entity_id appears as an Audience
        value in at least one AudienceRestriction element; additional
-       Audience values beyond the bound saml_sp_entity_id are permitted,
-       need not correspond to the bound saml_sp_entity_id, and MUST NOT
-       by themselves invalidate the assertion; and
+       Audience values are permitted and MUST NOT by themselves
+       invalidate the assertion; and
 
-   8.  reject the SAML input if client authentication, assertion
-       audience, and the bound saml_sp_entity_id do not all identify the
-       same relying-party migration context.
+   8.  reject the SAML input if the authenticated client, the
+       saml_sp_entity_id registered to that client, and the validated
+       Audience matching that saml_sp_entity_id do not all align, as
+       required by the three-way binding in Section 4.
 
    An authorization server consuming SAML input under this profile MUST
    reject any encrypted assertion, any submitted SAML input that is
@@ -2464,7 +2464,7 @@ Table of Contents
    MAY be returned as private claims when both parties have a prior
    agreement on syntax and semantics.
 
-13.3.  UserInfo Responses and OIDC Output Consistency
+13.3.  UserInfo Responses
 
    If an access token issued under this profile is presented to the
    OpenID Provider's UserInfo endpoint, the OpenID Provider MUST process
@@ -2757,8 +2757,9 @@ Table of Contents
 
    *  Metadata Name: saml_idp_entity_id
 
-   *  Metadata Description: Identifier of the SAML 2.0 Identity Provider
-      entity bound to the authorization server issuer
+   *  Metadata Description: Default identifier of the SAML 2.0 Identity
+      Provider entity bound to the authorization server issuer; may be
+      overridden per client registration
 
    *  Change Controller: IESG
 
@@ -2766,9 +2767,10 @@ Table of Contents
 
    *  Metadata Name: saml_metadata_uri
 
-   *  Metadata Description: HTTPS URI for the SAML metadata describing
-      the SAML Identity Provider entity bound to the authorization
-      server issuer
+   *  Metadata Description: Default HTTPS URI for the SAML metadata
+      describing the SAML Identity Provider entity bound to the
+      authorization server issuer; may be overridden per client
+      registration
 
    *  Change Controller: IESG
 
