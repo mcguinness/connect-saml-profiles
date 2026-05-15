@@ -1568,7 +1568,7 @@ mechanism that is established before the SAML input is processed.<a href="#secti
 </div>
 </section>
 </div>
-<div id="applicability">
+<div id="applicability-and-deployment-model">
 <section id="section-3">
       <h2 id="name-applicability-and-deploymen">
 <a href="#section-3" class="section-number selfRef">3. </a><a href="#name-applicability-and-deploymen" class="section-name selfRef">Applicability and Deployment Model</a>
@@ -1622,7 +1622,7 @@ present in the assertion.<a href="#section-3-7" class="pilcrow">¶</a></p>
       </ul>
 <p id="section-3-10">When a signed SAML <code>Response</code> wrapper is used, this profile requires the
 authorization server to validate the <code>Status</code> element as defined in
-<a href="#saml-input-validation" class="auto internal xref">Section 8</a>. Other deployment-required response-level checks
+<a href="#saml-input-validation-and-binding" class="auto internal xref">Section 8</a>. Other deployment-required response-level checks
 (for example, <code>Destination</code> or <code>InResponseTo</code>) remain outside this profile
 unless the deployment has separately established how they are performed.<a href="#section-3-10" class="pilcrow">¶</a></p>
 <p id="section-3-11">This profile is defined only for confidential clients. Public clients <span class="bcp14">MUST NOT</span> use the Token Exchange or direct SAML assertion introspection patterns
@@ -1679,7 +1679,7 @@ front-channel SAML processing before submitting the assertion to the
 authorization server.<a href="#section-4-6" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="authorization-consent-model">
+<div id="authorization-and-consent-model">
 <section id="section-5">
       <h2 id="name-authorization-and-consent-m">
 <a href="#section-5" class="section-number selfRef">5. </a><a href="#name-authorization-and-consent-m" class="section-name selfRef">Authorization and Consent Model</a>
@@ -1925,7 +1925,7 @@ submitted by this client.<a href="#section-6.3-3" class="pilcrow">¶</a></p>
 </div>
 </section>
 </div>
-<div id="as-metadata">
+<div id="authorization-server-metadata">
 <section id="section-7">
       <h2 id="name-authorization-server-metada">
 <a href="#section-7" class="section-number selfRef">7. </a><a href="#name-authorization-server-metada" class="section-name selfRef">Authorization Server Metadata</a>
@@ -2087,7 +2087,7 @@ endpoint according to <a href="#saml-assertion-introspection" class="auto intern
         </ul>
 </section>
 </div>
-<div id="metadata-capability-matrix">
+<div id="capability-and-metadata-matrix">
 <section id="section-7.5">
         <h3 id="name-capability-and-metadata-mat">
 <a href="#section-7.5" class="section-number selfRef">7.5. </a><a href="#name-capability-and-metadata-mat" class="section-name selfRef">Capability and Metadata Matrix</a>
@@ -2190,7 +2190,7 @@ encoding rules of each protocol separately.<a href="#section-7.6-2" class="pilcr
 </div>
 </section>
 </div>
-<div id="saml-input-validation">
+<div id="saml-input-validation-and-binding">
 <section id="section-8">
       <h2 id="name-saml-input-validation-and-b">
 <a href="#section-8" class="section-number selfRef">8. </a><a href="#name-saml-input-validation-and-b" class="section-name selfRef">SAML Input Validation and Binding</a>
@@ -2280,7 +2280,7 @@ authorization server <span class="bcp14">MUST</span> reject any submitted SAML i
 Migration Client, acting as the SAML SP, is responsible for decrypting the
 SAML input using the SP's decryption key before submitting it under this
 profile. The plaintext SAML input the Migration Client submits <span class="bcp14">MUST</span> satisfy
-the signature requirements in <a href="#saml-input-validation" class="auto internal xref">Section 8</a>. In practice, this
+the signature requirements in <a href="#saml-input-validation-and-binding" class="auto internal xref">Section 8</a>. In practice, this
 means the IdP <span class="bcp14">MUST</span> sign the inner <code>Assertion</code> independently, since a
 signature on the enclosing <code>Response</code> element does not survive decryption
 of an <code>EncryptedAssertion</code> it contains.<a href="#section-8.3-2" class="pilcrow">¶</a></p>
@@ -2289,7 +2289,7 @@ key in encryption-required deployments, because that key is held by the
 SAML SP and not by the authorization server.<a href="#section-8.3-3" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="issuer-binding">
+<div id="saml-and-oauth-issuer-boundary">
 <section id="section-8.4">
         <h3 id="name-saml-and-oauth-issuer-bound">
 <a href="#section-8.4" class="section-number selfRef">8.4. </a><a href="#name-saml-and-oauth-issuer-bound" class="section-name selfRef">SAML and OAuth Issuer Boundary</a>
@@ -2333,7 +2333,7 @@ still used in its own protocol context, and validation still uses each
 value through its own metadata and signature path.<a href="#section-8.4-6" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="signature-issuer-audience-binding">
+<div id="signature-saml-issuer-and-audience-binding">
 <section id="section-8.5">
         <h3 id="name-signature-saml-issuer-and-a">
 <a href="#section-8.5" class="section-number selfRef">8.5. </a><a href="#name-signature-saml-issuer-and-a" class="section-name selfRef">Signature, SAML Issuer, and Audience Binding</a>
@@ -2364,7 +2364,7 @@ key material, not JOSE metadata;<a href="#section-8.5-2.2.1" class="pilcrow">¶<
 <ul class="normal">
 <li class="normal" id="section-8.5-2.3.2.1">
                 <p id="section-8.5-2.3.2.1.1">the SAML <code>Response/Issuer</code> value matches the Trusted SAML IdP Entity ID
-defined in <a href="#issuer-binding" class="auto internal xref">Section 8.4</a>;<a href="#section-8.5-2.3.2.1.1" class="pilcrow">¶</a></p>
+defined in <a href="#saml-and-oauth-issuer-boundary" class="auto internal xref">Section 8.4</a>;<a href="#section-8.5-2.3.2.1.1" class="pilcrow">¶</a></p>
 </li>
               <li class="normal" id="section-8.5-2.3.2.2">
                 <p id="section-8.5-2.3.2.2.1">the top-level <code>Response/Status/StatusCode/@Value</code> is
@@ -2383,7 +2383,7 @@ subject confirmation;<a href="#section-8.5-2.4.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-8.5-2.5">
             <p id="section-8.5-2.5.1">verify that the effective SAML <code>Assertion/Issuer</code> value matches the Trusted
-SAML IdP Entity ID defined in <a href="#issuer-binding" class="auto internal xref">Section 8.4</a>;<a href="#section-8.5-2.5.1" class="pilcrow">¶</a></p>
+SAML IdP Entity ID defined in <a href="#saml-and-oauth-issuer-boundary" class="auto internal xref">Section 8.4</a>;<a href="#section-8.5-2.5.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-8.5-2.6">
             <p id="section-8.5-2.6.1">verify that the effective <code>Assertion</code> contains at least one
@@ -2409,7 +2409,7 @@ confirmation method outside this profile. Endpoint-specific error behavior is
 defined by <a href="#token-exchange-error-response" class="auto internal xref">Section 9.3</a> and <a href="#introspection-error-response" class="auto internal xref">Section 10.3</a>.<a href="#section-8.5-3" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="bearer-subject-confirmation">
+<div id="bearer-subject-confirmation-data-validation">
 <section id="section-8.6">
         <h3 id="name-bearer-subject-confirmation">
 <a href="#section-8.6" class="section-number selfRef">8.6. </a><a href="#name-bearer-subject-confirmation" class="section-name selfRef">Bearer Subject Confirmation Data Validation</a>
@@ -2457,7 +2457,7 @@ binding defined in <a href="#migration-binding-rationale" class="auto internal x
 validation.<a href="#section-8.6-3" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="replay-freshness">
+<div id="replay-and-freshness">
 <section id="section-8.7">
         <h3 id="name-replay-and-freshness">
 <a href="#section-8.7" class="section-number selfRef">8.7. </a><a href="#name-replay-and-freshness" class="section-name selfRef">Replay and Freshness</a>
@@ -2499,7 +2499,7 @@ acceptable.<a href="#section-8.7-8" class="pilcrow">¶</a></p>
 </div>
 </section>
 </div>
-<div id="token-exchange">
+<div id="token-exchange-using-a-saml-assertion">
 <section id="section-9">
       <h2 id="name-token-exchange-using-a-saml">
 <a href="#section-9" class="section-number selfRef">9. </a><a href="#name-token-exchange-using-a-saml" class="section-name selfRef">Token Exchange Using a SAML Assertion</a>
@@ -2649,7 +2649,7 @@ such libraries <span class="bcp14">SHOULD</span> strip the trailing <code>=</cod
 Authorization servers <span class="bcp14">SHOULD</span> accept padded values to maximize interoperability
 with such libraries. When a SAML <code>&lt;Response&gt;</code> is supplied, it is used only as
 a signed wrapper from which this profile extracts the effective assertion,
-according to <a href="#saml-input-validation" class="auto internal xref">Section 8</a>.<a href="#section-9.1-11" class="pilcrow">¶</a></p>
+according to <a href="#saml-input-validation-and-binding" class="auto internal xref">Section 8</a>.<a href="#section-9.1-11" class="pilcrow">¶</a></p>
 <p id="section-9.1-12"><code>subject_token_type</code>:<a href="#section-9.1-12" class="pilcrow">¶</a></p>
 <p id="section-9.1-13"><span class="bcp14">REQUIRED</span>. The value <code>urn:ietf:params:oauth:token-type:saml2</code>.
 When a SAML <code>&lt;Response&gt;</code> wrapper is supplied, this token type identifies the
@@ -2736,7 +2736,7 @@ method. The authenticated client <span class="bcp14">MUST</span> be a confidenti
 for the <code>saml_sp_entity_id</code> that matches the SAML assertion audience.<a href="#section-9.1-28" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="token-exchange-as-processing">
+<div id="token-exchange-authorization-server-processing">
 <section id="section-9.2">
         <h3 id="name-authorization-server-proces">
 <a href="#section-9.2" class="section-number selfRef">9.2. </a><a href="#name-authorization-server-proces" class="section-name selfRef">Authorization Server Processing</a>
@@ -2753,7 +2753,7 @@ for the <code>saml_sp_entity_id</code> that matches the SAML assertion audience.
 authentication method;<a href="#section-9.2.1-2.1.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-9.2.1-2.2">
-              <p id="section-9.2.1-2.2.1">validate the SAML input as described in <a href="#saml-input-validation" class="auto internal xref">Section 8</a>;<a href="#section-9.2.1-2.2.1" class="pilcrow">¶</a></p>
+              <p id="section-9.2.1-2.2.1">validate the SAML input as described in <a href="#saml-input-validation-and-binding" class="auto internal xref">Section 8</a>;<a href="#section-9.2.1-2.2.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-9.2.1-2.3">
               <p id="section-9.2.1-2.3.1">verify that the authenticated client is authorized for the
@@ -2841,7 +2841,7 @@ authorization server <span class="bcp14">MAY</span> use a preconfigured default 
 authenticated client and bound <code>saml_sp_entity_id</code>, or it <span class="bcp14">MAY</span> reject the request
 with <code>invalid_target</code>.<a href="#section-9.2.1-10" class="pilcrow">¶</a></p>
 <p id="section-9.2.1-11">For any request that includes <code>scope</code>, the authorization server <span class="bcp14">MUST</span> apply the
-authorization and consent rules in <a href="#authorization-consent-model" class="auto internal xref">Section 5</a>. If no
+authorization and consent rules in <a href="#authorization-and-consent-model" class="auto internal xref">Section 5</a>. If no
 applicable grant policy exists for a requested scope, the authorization server
 <span class="bcp14">MUST</span> reject the request with <code>invalid_scope</code>.<a href="#section-9.2.1-11" class="pilcrow">¶</a></p>
 </section>
@@ -2937,13 +2937,13 @@ not modified by this profile.<a href="#section-9.2.3-8" class="pilcrow">¶</a></
 <p id="section-9.2.3-9">A refresh token issued under this profile is a regular OAuth 2.0 refresh
 token once issued. Its usable scope is bounded by the authorization server's
 policy for the authenticated client and the resolved Local Account, as
-established under <a href="#authorization-consent-model" class="auto internal xref">Section 5</a>, not by the specific scope
+established under <a href="#authorization-and-consent-model" class="auto internal xref">Section 5</a>, not by the specific scope
 or target service set requested in the initial Token Exchange.<a href="#section-9.2.3-9" class="pilcrow">¶</a></p>
 <p id="section-9.2.3-10">The Migration Client <span class="bcp14">MAY</span> therefore request, in subsequent refresh token grant
 requests, any scope, <code>resource</code>, or <code>audience</code> value that policy permits for
 that client and Local Account, including values that were not part of the
 initial Token Exchange. The authorization server <span class="bcp14">MUST</span> apply
-<a href="#authorization-consent-model" class="auto internal xref">Section 5</a> to each such request and <span class="bcp14">MUST</span> reject any
+<a href="#authorization-and-consent-model" class="auto internal xref">Section 5</a> to each such request and <span class="bcp14">MUST</span> reject any
 request whose granted scope, <code>resource</code>, or <code>audience</code> would exceed what
 policy authorizes, using <code>invalid_scope</code> or <code>invalid_target</code> as appropriate.<a href="#section-9.2.3-10" class="pilcrow">¶</a></p>
 <p id="section-9.2.3-11">The SAML SP relationship determines whether the Migration Client may
@@ -3055,7 +3055,7 @@ the granted scope in the Token Exchange response <span class="bcp14">MUST</span>
 request <span class="bcp14">MUST</span> have been rejected.<a href="#section-9.2.5-3" class="pilcrow">¶</a></p>
 <p id="section-9.2.5-4">If an access token issued under this profile is presented to the UserInfo
 endpoint, the UserInfo response <span class="bcp14">MUST</span> conform to
-<a href="#userinfo-oidc-output-consistency" class="auto internal xref">Section 13.3</a>. If the access token was issued without <code>openid</code>, the OpenID
+<a href="#userinfo-responses" class="auto internal xref">Section 13.3</a>. If the access token was issued without <code>openid</code>, the OpenID
 Provider <span class="bcp14">MUST</span> reject its use at the UserInfo endpoint according to
 <span>[<a href="#OIDC-CORE" class="cite xref">OIDC-CORE</a>]</span>.<a href="#section-9.2.5-4" class="pilcrow">¶</a></p>
 <p id="section-9.2.5-5">Any representation of the end-user subject produced from an access token issued
@@ -3098,7 +3098,7 @@ token; and<a href="#section-9.3-4.2.1" class="pilcrow">¶</a></p>
         </ul>
 <p id="section-9.3-5">The authorization server <span class="bcp14">SHOULD</span> also use <code>invalid_request</code> when: the assertion
 cannot be resolved to exactly one active Local Account; the assertion is
-rejected as replay or otherwise exhausted under <a href="#saml-input-validation" class="auto internal xref">Section 8</a>; or a
+rejected as replay or otherwise exhausted under <a href="#saml-input-validation-and-binding" class="auto internal xref">Section 8</a>; or a
 currently asserted stable subject identifier conflicts with an existing persisted
 mapping and no explicitly authorized administrative remapping exists.<a href="#section-9.3-5" class="pilcrow">¶</a></p>
 </section>
@@ -3204,7 +3204,7 @@ such libraries <span class="bcp14">SHOULD</span> strip the trailing <code>=</cod
 Authorization servers <span class="bcp14">SHOULD</span> accept padded values to maximize interoperability
 with such libraries. When a SAML <code>&lt;Response&gt;</code> is supplied, it is used only as
 a signed wrapper from which this profile extracts the effective assertion,
-according to <a href="#saml-input-validation" class="auto internal xref">Section 8</a>.<a href="#section-10.1-9" class="pilcrow">¶</a></p>
+according to <a href="#saml-input-validation-and-binding" class="auto internal xref">Section 8</a>.<a href="#section-10.1-9" class="pilcrow">¶</a></p>
 <p id="section-10.1-10"><code>token_type_hint</code>:<a href="#section-10.1-10" class="pilcrow">¶</a></p>
 <p id="section-10.1-11"><span class="bcp14">OPTIONAL</span>. If sent, the value <span class="bcp14">MUST</span> be
 <code>urn:ietf:params:oauth:token-type:saml2</code>.
@@ -3221,7 +3221,7 @@ server policy. The authenticated client <span class="bcp14">MUST</span> be autho
 <code>saml_sp_entity_id</code> that matches the SAML assertion audience.<a href="#section-10.1-13" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="introspection-as-processing">
+<div id="introspection-authorization-server-processing">
 <section id="section-10.2">
         <h3 id="name-authorization-server-process">
 <a href="#section-10.2" class="section-number selfRef">10.2. </a><a href="#name-authorization-server-process" class="section-name selfRef">Authorization Server Processing</a>
@@ -3237,7 +3237,7 @@ server policy. The authenticated client <span class="bcp14">MUST</span> be autho
               <p id="section-10.2.1-2.1.1">authenticate the client and authorize it to use the introspection endpoint;<a href="#section-10.2.1-2.1.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-10.2.1-2.2">
-              <p id="section-10.2.1-2.2.1">validate the SAML input as described in <a href="#saml-input-validation" class="auto internal xref">Section 8</a>;<a href="#section-10.2.1-2.2.1" class="pilcrow">¶</a></p>
+              <p id="section-10.2.1-2.2.1">validate the SAML input as described in <a href="#saml-input-validation-and-binding" class="auto internal xref">Section 8</a>;<a href="#section-10.2.1-2.2.1" class="pilcrow">¶</a></p>
 </li>
             <li id="section-10.2.1-2.3">
               <p id="section-10.2.1-2.3.1">verify that the authenticated client is authorized for the
@@ -3325,7 +3325,7 @@ object.<a href="#section-10.2.3-8" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-10.2.3-10.1">
               <p id="section-10.2.3-10.1.1">every member value <span class="bcp14">MUST</span> be derived from SAML input that was successfully
-validated under <a href="#saml-input-validation" class="auto internal xref">Section 8</a>;<a href="#section-10.2.3-10.1.1" class="pilcrow">¶</a></p>
+validated under <a href="#saml-input-validation-and-binding" class="auto internal xref">Section 8</a>;<a href="#section-10.2.3-10.1.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-10.2.3-10.2">
               <p id="section-10.2.3-10.2.1">values from a SAML <code>Response</code> wrapper <span class="bcp14">MUST</span> be included only when a signed
@@ -3465,7 +3465,7 @@ conditions in the effective assertion.<a href="#section-10.2.3-17.8.1" class="pi
 <code>subject_confirmation</code>:</dt>
             <dd style="margin-left: 1.5em" id="section-10.2.3-17.14">
               <p id="section-10.2.3-17.14.1">JSON object. The fields from the bearer <code>SubjectConfirmation</code> that the
-authorization server treated as usable under <a href="#bearer-subject-confirmation" class="auto internal xref">Section 8.6</a>.
+authorization server treated as usable under <a href="#bearer-subject-confirmation-data-validation" class="auto internal xref">Section 8.6</a>.
 The object <span class="bcp14">MAY</span> contain these members:<a href="#section-10.2.3-17.14.1" class="pilcrow">¶</a></p>
 <span class="break"></span><dl class="dlParallel" id="section-10.2.3-17.14.2">
                 <dt id="section-10.2.3-17.14.2.1">
@@ -4109,7 +4109,7 @@ returned as private claims when both parties have a prior agreement on syntax
 and semantics.<a href="#section-13.2-15" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="userinfo-oidc-output-consistency">
+<div id="userinfo-responses">
 <section id="section-13.3">
         <h3 id="name-userinfo-responses">
 <a href="#section-13.3" class="section-number selfRef">13.3. </a><a href="#name-userinfo-responses" class="section-name selfRef">UserInfo Responses</a>
@@ -4204,7 +4204,7 @@ the same assertion element being processed; and<a href="#section-14-3.1.1" class
           <p id="section-14-3.2.1">when the authorization server relies on a signed SAML <code>Response</code> wrapper, it
 <span class="bcp14">MUST</span> verify that the element referenced by the signature's <code>Reference/@URI</code>
 is the same <code>Response</code> element being processed, and that the effective
-enclosed assertion selected under <a href="#saml-input-validation" class="auto internal xref">Section 8</a> is the unique
+enclosed assertion selected under <a href="#saml-input-validation-and-binding" class="auto internal xref">Section 8</a> is the unique
 assertion bound to that validated wrapper.<a href="#section-14-3.2.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
@@ -4248,7 +4248,7 @@ specifications that they extend.<a href="#section-14-8" class="pilcrow">¶</a></
 artifacts. Authorization servers <span class="bcp14">MUST</span> detect and prevent replay of the same
 assertion according to the security properties of the underlying SAML
 deployment, any SAML <code>OneTimeUse</code> condition, and the replay rules in
-<a href="#saml-input-validation" class="auto internal xref">Section 8</a>. Client authentication alone is not sufficient
+<a href="#saml-input-validation-and-binding" class="auto internal xref">Section 8</a>. Client authentication alone is not sufficient
 protection against replay of a stolen assertion.<a href="#section-14-9" class="pilcrow">¶</a></p>
 <p id="section-14-10">Authorization servers deployed across multiple nodes <span class="bcp14">MUST</span> share assertion
 identifier state used for replay detection across all nodes, or use
