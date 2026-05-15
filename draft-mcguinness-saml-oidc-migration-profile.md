@@ -672,9 +672,6 @@ Each string is a token type URI identifying a token format that the
 authorization server accepts for direct introspection at its introspection
 endpoint according to {{saml-assertion-introspection}}.
 
-If this metadata value is omitted, no support is implied for direct
-introspection of additional token types under this profile.
-
 When `introspection_token_types_supported` includes
 `urn:ietf:params:oauth:token-type:saml2`:
 
@@ -691,7 +688,8 @@ capabilities defined by this profile.
 
 | Capability | Required metadata | Conditional metadata | Notes |
 | --- | --- | --- | --- |
-| SAML issuer binding | `saml_idp_entity_id` | `saml_metadata_uri` | `saml_idp_entity_id` identifies the SAML IdP bound to the OAuth issuer. `saml_metadata_uri` is optional but, when present, MUST describe the same SAML IdP Entity ID. |
+| SAML issuer binding (AS-level default) | `saml_idp_entity_id` when no client uses a per-client override | `saml_metadata_uri` | `saml_idp_entity_id` identifies the default SAML IdP bound to the OAuth issuer. `saml_metadata_uri` is optional but, when present, MUST describe the effective `saml_idp_entity_id` for the same context. |
+| SAML issuer binding (per-client override) | Client-level `saml_idp_entity_id` for deployments where the IdP emits per-SP entityIDs | Client-level `saml_metadata_uri` | Per-client overrides allow each Migration Client to bind a distinct SAML IdP entityID and metadata document; see {{client-registration-saml-idp-entity-id}} and {{client-registration-saml-metadata-uri}}. |
 | Token Exchange with SAML input | `grant_types_supported` containing `urn:ietf:params:oauth:grant-type:token-exchange` when `grant_types_supported` is published | `token_exchange_requested_token_types_supported` | `token_exchange_requested_token_types_supported` SHOULD be published when Token Exchange is supported under this profile. |
 | Token Exchange issuing ID Tokens | `token_exchange_requested_token_types_supported` containing `urn:ietf:params:oauth:token-type:id_token` | OpenID Connect Discovery metadata required by {{OIDC-DISCOVERY}} | The authorization server MUST be an OpenID Provider. |
 | Token Exchange issuing access tokens | `token_exchange_requested_token_types_supported` containing `urn:ietf:params:oauth:token-type:access_token` | `resource` and `audience` support according to local policy | The authorization server MUST support target-selection processing for access token requests. |
@@ -715,9 +713,6 @@ elements, while OAuth and OpenID Connect signing keys are published and
 processed through `jwks_uri` or `jwks`. Even when the same underlying key
 material is reused, it MUST be published and validated using the metadata and
 encoding rules of each protocol separately.
-
-`acr_values_supported` discovery metadata for OpenID Providers supporting this
-profile is addressed in {{authentication-event-claims}}.
 
 # SAML Input Validation and Binding {#saml-input-validation}
 
@@ -854,13 +849,13 @@ The authorization server MUST:
 6. verify that the effective `Assertion` contains at least one
    `AudienceRestriction` element;
 7. verify that the bound `saml_sp_entity_id` appears as an `Audience` value
-   in at least one `AudienceRestriction` element; additional `Audience` values
-   beyond the bound `saml_sp_entity_id` are permitted, need not correspond to
-   the bound `saml_sp_entity_id`, and MUST NOT by themselves invalidate the
-   assertion; and
-8. reject the SAML input if client authentication, assertion audience, and the
-   bound `saml_sp_entity_id` do not all identify the same relying-party
-   migration context.
+   in at least one `AudienceRestriction` element; additional `Audience`
+   values are permitted and MUST NOT by themselves invalidate the assertion;
+   and
+8. reject the SAML input if the authenticated client, the
+   `saml_sp_entity_id` registered to that client, and the validated
+   `Audience` matching that `saml_sp_entity_id` do not all align, as
+   required by the three-way binding in {{migration-binding-rationale}}.
 
 An authorization server consuming SAML input under this profile MUST reject any
 encrypted assertion, any submitted SAML input that is neither an `Assertion` nor
@@ -2100,7 +2095,7 @@ Attributes that do not correspond to standard OpenID Connect claims MAY be
 returned as private claims when both parties have a prior agreement on syntax
 and semantics.
 
-## UserInfo Responses and OIDC Output Consistency {#userinfo-oidc-output-consistency}
+## UserInfo Responses {#userinfo-oidc-output-consistency}
 
 If an access token issued under this profile is presented to the OpenID
 Provider's UserInfo endpoint, the OpenID Provider MUST process that request in
@@ -2358,14 +2353,16 @@ This document requests registration of the following values in the OAuth
 Authorization Server Metadata registry established by {{RFC8414}}:
 
 * Metadata Name: `saml_idp_entity_id`
-* Metadata Description: Identifier of the SAML 2.0 Identity Provider entity
-  bound to the authorization server issuer
+* Metadata Description: Default identifier of the SAML 2.0 Identity Provider
+  entity bound to the authorization server issuer; may be overridden per
+  client registration
 * Change Controller: IESG
 * Specification Document(s): This document, {{metadata-saml-idp-entity-id}}
 
 * Metadata Name: `saml_metadata_uri`
-* Metadata Description: HTTPS URI for the SAML metadata describing the SAML
-  Identity Provider entity bound to the authorization server issuer
+* Metadata Description: Default HTTPS URI for the SAML metadata describing
+  the SAML Identity Provider entity bound to the authorization server
+  issuer; may be overridden per client registration
 * Change Controller: IESG
 * Specification Document(s): This document, {{metadata-saml-metadata-uri}}
 
