@@ -623,6 +623,17 @@ When `saml_metadata_uri` is present:
 * clients and migration tooling MAY use the metadata to correlate the OAuth
   issuer with the pre-existing SAML trust configuration.
 
+The SAML metadata document referenced by `saml_metadata_uri` SHOULD include
+an `AdditionalMetadataLocation` element pointing at the authorization
+server metadata document for the bound OAuth issuer, with the `namespace`
+attribute set to a URI identifying the relevant metadata format (for
+example, `https://datatracker.ietf.org/doc/html/rfc8414` for OAuth
+authorization server metadata, or
+`https://openid.net/specs/openid-connect-discovery-1_0.html` for OpenID
+Provider configuration). This forms a bidirectional binding between the
+SAML IdP entity and the OAuth issuer, both of which can be verified
+through their respective protocol metadata.
+
 ## `token_exchange_requested_token_types_supported` {#metadata-token-exchange-requested-token-types-supported}
 
 This document defines the `token_exchange_requested_token_types_supported`
