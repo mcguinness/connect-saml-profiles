@@ -2934,11 +2934,10 @@ and authentication claims in a signed, verifiable format. Any returned ID Token:
             <li class="normal" id="section-9.2.3-5.5">
               <p id="section-9.2.3-5.5.1"><span class="bcp14">MAY</span> include the <code>sub_id</code> claim defined in
 <a href="#saml-subject-identifier-claim" class="auto internal xref">Section 12.6</a> when the granted scope includes
-<code>saml_subject</code> and the claim release policy permits its release. When
-<code>sub_id</code> is included, the authorization server <span class="bcp14">MUST</span> derive its members
-from the originally validated SAML NameID context that established
-this refresh token; this requires the authorization server to persist
-that context alongside the refresh token state.<a href="#section-9.2.3-5.5.1" class="pilcrow">¶</a></p>
+<code>saml_subject</code> and policy permits release; if included, its members
+<span class="bcp14">MUST</span> be derived from the SAML NameID context that established the
+refresh token, which the authorization server therefore persists
+alongside the refresh token state.<a href="#section-9.2.3-5.5.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
 <p id="section-9.2.3-6">Subsequent refresh token responses are governed by <span>[<a href="#OIDC-CORE" class="cite xref">OIDC-CORE</a>]</span>. If an
@@ -3043,8 +3042,8 @@ authenticated client identifier; and<a href="#section-9.2.4-2.9.1" class="pilcro
 </li>
             <li class="normal" id="section-9.2.4-2.10">
               <p id="section-9.2.4-2.10.1"><span class="bcp14">MAY</span> include the <code>sub_id</code> claim defined in <a href="#saml-subject-identifier-claim" class="auto internal xref">Section 12.6</a>
-when the granted scope includes <code>saml_subject</code> and the claim release
-policy permits its release.<a href="#section-9.2.4-2.10.1" class="pilcrow">¶</a></p>
+when the granted scope includes <code>saml_subject</code> and policy permits
+release.<a href="#section-9.2.4-2.10.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
 </section>
@@ -3312,23 +3311,22 @@ introspection response as defined by <span>[<a href="#RFC7662" class="cite xref"
               <p id="section-10.2.3-2.1.1"><code>active</code> set to <code>true</code>;<a href="#section-10.2.3-2.1.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-10.2.3-2.2">
-              <p id="section-10.2.3-2.2.1">the normalized identity claims derived from the SAML assertion for this
-client (<code>sub</code> and any of <code>sub_id</code>, <code>auth_time</code>, <code>acr</code>, <code>amr</code>, <code>sid</code>, and
+              <p id="section-10.2.3-2.2.1">the normalized identity claims for this client (<code>sub</code> and, where
+applicable, <code>sub_id</code>, <code>auth_time</code>, <code>acr</code>, <code>amr</code>, <code>sid</code>, and
 attribute-derived claims defined by <a href="#claim-mapping" class="auto internal xref">Section 13</a>) returned as
-top-level members of the response, in parallel with how those claims
-appear in ID Tokens and UserInfo responses; and<a href="#section-10.2.3-2.2.1" class="pilcrow">¶</a></p>
+top-level members, in parallel with how those claims appear in ID
+Tokens and UserInfo responses; and<a href="#section-10.2.3-2.2.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-10.2.3-2.3">
               <p id="section-10.2.3-2.3.1"><code>saml</code>, when returned, set to a JSON object containing normalized SAML
 protocol metadata as defined below.<a href="#section-10.2.3-2.3.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
-<p id="section-10.2.3-3">The identity claims returned at the top level of the introspection response
-contain values that have been processed by the authorization server under
-<a href="#local-subject-resolution" class="auto internal xref">Section 11</a>, <a href="#subject-identifier-mapping" class="auto internal xref">Section 12</a>, and
-<a href="#claim-mapping" class="auto internal xref">Section 13</a>, including subject resolution and claim release policy.
-These values are not a literal mirror of SAML assertion content; the
-protocol mirror of the assertion is the <code>saml</code> object.<a href="#section-10.2.3-3" class="pilcrow">¶</a></p>
+<p id="section-10.2.3-3">The top-level identity claims are values that the authorization server
+has already processed under <a href="#local-subject-resolution" class="auto internal xref">Section 11</a>,
+<a href="#subject-identifier-mapping" class="auto internal xref">Section 12</a>, and <a href="#claim-mapping" class="auto internal xref">Section 13</a>, including subject
+resolution and claim release policy. They are not a literal mirror of
+the SAML assertion content; the protocol mirror is the <code>saml</code> object.<a href="#section-10.2.3-3" class="pilcrow">¶</a></p>
 <p id="section-10.2.3-4">The top-level identity claims:<a href="#section-10.2.3-4" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-10.2.3-5.1">
@@ -3345,217 +3343,207 @@ relying party under this profile.<a href="#section-10.2.3-5.3.1" class="pilcrow"
           </ul>
 <p id="section-10.2.3-6">The authorization server <span class="bcp14">SHOULD</span> return only the minimum normalized claims
 necessary for the authorized client and applicable relying-party policy.<a href="#section-10.2.3-6" class="pilcrow">¶</a></p>
-<p id="section-10.2.3-7">The authorization server <span class="bcp14">MUST</span> release <code>sub_id</code> in the introspection
-response only when authorized by the claim release policy for the
-relying-party relationship represented by the bound <code>saml_sp_entity_id</code>,
-under the same conditions defined in
-<a href="#saml-subject-identifier-claim" class="auto internal xref">Section 12.6</a>. The <code>saml_subject</code> scope value does
-not apply to introspection requests; introspection clients indicate
-their entitlement to <code>sub_id</code> through the authorization server's policy
-for the introspection endpoint.<a href="#section-10.2.3-7" class="pilcrow">¶</a></p>
-<p id="section-10.2.3-8">The <code>saml</code> object contains SAML protocol metadata, not end-user identity
+<p id="section-10.2.3-7">The <code>saml</code> object contains SAML protocol metadata, not end-user identity
 claims. The authorization server <span class="bcp14">MUST NOT</span> duplicate end-user identity
-claims inside the <code>saml</code> object.<a href="#section-10.2.3-8" class="pilcrow">¶</a></p>
-<p id="section-10.2.3-9">When the <code>saml</code> object is returned:<a href="#section-10.2.3-9" class="pilcrow">¶</a></p>
+claims inside the <code>saml</code> object.<a href="#section-10.2.3-7" class="pilcrow">¶</a></p>
+<p id="section-10.2.3-8">When the <code>saml</code> object is returned:<a href="#section-10.2.3-8" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-10.2.3-10.1">
-              <p id="section-10.2.3-10.1.1">every member value <span class="bcp14">MUST</span> be derived from SAML input that was successfully
-validated under <a href="#saml-input-validation-and-binding" class="auto internal xref">Section 8</a>;<a href="#section-10.2.3-10.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-10.2.3-9.1">
+              <p id="section-10.2.3-9.1.1">every member value <span class="bcp14">MUST</span> be derived from SAML input that was successfully
+validated under <a href="#saml-input-validation-and-binding" class="auto internal xref">Section 8</a>;<a href="#section-10.2.3-9.1.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-10.2.3-10.2">
-              <p id="section-10.2.3-10.2.1">values from a SAML <code>Response</code> wrapper <span class="bcp14">MUST</span> be included only when a signed
+            <li class="normal" id="section-10.2.3-9.2">
+              <p id="section-10.2.3-9.2.1">values from a SAML <code>Response</code> wrapper <span class="bcp14">MUST</span> be included only when a signed
 SAML <code>Response</code> wrapper was submitted and accepted under
-<a href="#response-wrapper-processing" class="auto internal xref">Section 8.2</a>;<a href="#section-10.2.3-10.2.1" class="pilcrow">¶</a></p>
+<a href="#response-wrapper-processing" class="auto internal xref">Section 8.2</a>;<a href="#section-10.2.3-9.2.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-10.2.3-10.3">
-              <p id="section-10.2.3-10.3.1">response-level values that this profile does not validate, such as
+            <li class="normal" id="section-10.2.3-9.3">
+              <p id="section-10.2.3-9.3.1">response-level values that this profile does not validate, such as
 <code>Destination</code> or <code>Response/@InResponseTo</code>, <span class="bcp14">MAY</span> be returned as extracted
 values, but their presence in the response <span class="bcp14">MUST NOT</span> be interpreted as a
 statement that the authorization server validated them unless a separate
-deployment agreement says so; and<a href="#section-10.2.3-10.3.1" class="pilcrow">¶</a></p>
+deployment agreement says so; and<a href="#section-10.2.3-9.3.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-10.2.3-10.4">
-              <p id="section-10.2.3-10.4.1">the authorization server <span class="bcp14">MUST</span> omit any member for which it has no validated or
-extracted value.<a href="#section-10.2.3-10.4.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="section-10.2.3-9.4">
+              <p id="section-10.2.3-9.4.1">the authorization server <span class="bcp14">MUST</span> omit any member for which it has no validated or
+extracted value.<a href="#section-10.2.3-9.4.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
-<p id="section-10.2.3-11">The <code>saml</code> object is intended for clients that need the authorization server to
+<p id="section-10.2.3-10">The <code>saml</code> object is intended for clients that need the authorization server to
 perform XML parsing and XML signature validation, but still need protocol values
-from the validated SAML input to complete local SAML SP processing.<a href="#section-10.2.3-11" class="pilcrow">¶</a></p>
-<p id="section-10.2.3-12">The <code>saml</code> object <span class="bcp14">MAY</span> contain these members:<a href="#section-10.2.3-12" class="pilcrow">¶</a></p>
-<span class="break"></span><dl class="dlParallel" id="section-10.2.3-13">
-            <dt id="section-10.2.3-13.1">
+from the validated SAML input to complete local SAML SP processing.<a href="#section-10.2.3-10" class="pilcrow">¶</a></p>
+<p id="section-10.2.3-11">The <code>saml</code> object <span class="bcp14">MAY</span> contain these members:<a href="#section-10.2.3-11" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-10.2.3-12">
+            <dt id="section-10.2.3-12.1">
 <code>response</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-13.2">
-              <p id="section-10.2.3-13.2.1">JSON object containing values extracted from the accepted SAML <code>Response</code>
+            <dd style="margin-left: 1.5em" id="section-10.2.3-12.2">
+              <p id="section-10.2.3-12.2.1">JSON object containing values extracted from the accepted SAML <code>Response</code>
 wrapper. The presence of this member signals that the submitted SAML
 input was a <code>Response</code> wrapper; the member is absent when the submitted
-SAML input was a bare <code>Assertion</code>.<a href="#section-10.2.3-13.2.1" class="pilcrow">¶</a></p>
+SAML input was a bare <code>Assertion</code>.<a href="#section-10.2.3-12.2.1" class="pilcrow">¶</a></p>
 </dd>
             <dd class="break"></dd>
-<dt id="section-10.2.3-13.3">
+<dt id="section-10.2.3-12.3">
 <code>assertion</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-13.4">
-              <p id="section-10.2.3-13.4.1">JSON object containing values from the effective SAML <code>Assertion</code>.<a href="#section-10.2.3-13.4.1" class="pilcrow">¶</a></p>
+            <dd style="margin-left: 1.5em" id="section-10.2.3-12.4">
+              <p id="section-10.2.3-12.4.1">JSON object containing values from the effective SAML <code>Assertion</code>.<a href="#section-10.2.3-12.4.1" class="pilcrow">¶</a></p>
 </dd>
             <dd class="break"></dd>
-<dt id="section-10.2.3-13.5">
+<dt id="section-10.2.3-12.5">
 <code>attributes</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-13.6">
-              <p id="section-10.2.3-13.6.1">Array of JSON objects mirroring SAML attributes from the assertion's
-<code>AttributeStatement</code> elements. Defined in detail below.<a href="#section-10.2.3-13.6.1" class="pilcrow">¶</a></p>
+            <dd style="margin-left: 1.5em" id="section-10.2.3-12.6">
+              <p id="section-10.2.3-12.6.1">Array of JSON objects, each mirroring one logical SAML attribute
+derived from the assertion's <code>AttributeStatement</code> elements after the
+combining rules in <a href="#attribute-claims" class="auto internal xref">Section 13.2</a>. Each object <span class="bcp14">MUST</span> include a
+<code>name</code> member (the SAML <code>Name</code> value) and a <code>values</code> member (a JSON
+array of the attribute's <code>AttributeValue</code> contents), and <span class="bcp14">MAY</span> include
+<code>name_format</code> (the <code>NameFormat</code> URI when present) and <code>friendly_name</code>
+(the <code>FriendlyName</code> when present). Values inside <code>values</code> <span class="bcp14">MUST</span> follow
+the typing rules defined in <a href="#attribute-claims" class="auto internal xref">Section 13.2</a>; in particular, XML
+schema booleans <span class="bcp14">MAY</span> be emitted as JSON booleans and numeric types as
+JSON numbers when the XML type is unambiguous, with all other values
+emitted as JSON strings. The <code>attributes</code> member is intended for
+clients that require the wire-form SAML attribute names (for example,
+<code>urn:oid:</code> identifiers) in addition to the normalized top-level
+identity claims.<a href="#section-10.2.3-12.6.1" class="pilcrow">¶</a></p>
 </dd>
           <dd class="break"></dd>
 </dl>
-<p id="section-10.2.3-14">When present, the <code>response</code> object <span class="bcp14">MAY</span> contain these members:<a href="#section-10.2.3-14" class="pilcrow">¶</a></p>
-<span class="break"></span><dl class="dlParallel" id="section-10.2.3-15">
-            <dt id="section-10.2.3-15.1">
+<p id="section-10.2.3-13">When present, the <code>response</code> object <span class="bcp14">MAY</span> contain these members:<a href="#section-10.2.3-13" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-10.2.3-14">
+            <dt id="section-10.2.3-14.1">
 <code>id</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-15.2">
-              <p id="section-10.2.3-15.2.1">String. The extracted value of <code>Response/@ID</code>.<a href="#section-10.2.3-15.2.1" class="pilcrow">¶</a></p>
+            <dd style="margin-left: 1.5em" id="section-10.2.3-14.2">
+              <p id="section-10.2.3-14.2.1">String. The extracted value of <code>Response/@ID</code>.<a href="#section-10.2.3-14.2.1" class="pilcrow">¶</a></p>
 </dd>
             <dd class="break"></dd>
-<dt id="section-10.2.3-15.3">
+<dt id="section-10.2.3-14.3">
 <code>issuer</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-15.4">
-              <p id="section-10.2.3-15.4.1">String. The extracted value of the <code>Response/Issuer</code> element.<a href="#section-10.2.3-15.4.1" class="pilcrow">¶</a></p>
+            <dd style="margin-left: 1.5em" id="section-10.2.3-14.4">
+              <p id="section-10.2.3-14.4.1">String. The extracted value of the <code>Response/Issuer</code> element.<a href="#section-10.2.3-14.4.1" class="pilcrow">¶</a></p>
 </dd>
             <dd class="break"></dd>
-<dt id="section-10.2.3-15.5">
+<dt id="section-10.2.3-14.5">
 <code>issue_instant</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-15.6">
-              <p id="section-10.2.3-15.6.1">String. The extracted value of <code>Response/@IssueInstant</code>.<a href="#section-10.2.3-15.6.1" class="pilcrow">¶</a></p>
+            <dd style="margin-left: 1.5em" id="section-10.2.3-14.6">
+              <p id="section-10.2.3-14.6.1">String. The extracted value of <code>Response/@IssueInstant</code>.<a href="#section-10.2.3-14.6.1" class="pilcrow">¶</a></p>
 </dd>
             <dd class="break"></dd>
-<dt id="section-10.2.3-15.7">
+<dt id="section-10.2.3-14.7">
 <code>destination</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-15.8">
-              <p id="section-10.2.3-15.8.1">String. The extracted value of <code>Response/@Destination</code>.<a href="#section-10.2.3-15.8.1" class="pilcrow">¶</a></p>
+            <dd style="margin-left: 1.5em" id="section-10.2.3-14.8">
+              <p id="section-10.2.3-14.8.1">String. The extracted value of <code>Response/@Destination</code>.<a href="#section-10.2.3-14.8.1" class="pilcrow">¶</a></p>
 </dd>
             <dd class="break"></dd>
-<dt id="section-10.2.3-15.9">
+<dt id="section-10.2.3-14.9">
 <code>in_response_to</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-15.10">
-              <p id="section-10.2.3-15.10.1">String. The extracted value of <code>Response/@InResponseTo</code>.<a href="#section-10.2.3-15.10.1" class="pilcrow">¶</a></p>
+            <dd style="margin-left: 1.5em" id="section-10.2.3-14.10">
+              <p id="section-10.2.3-14.10.1">String. The extracted value of <code>Response/@InResponseTo</code>.<a href="#section-10.2.3-14.10.1" class="pilcrow">¶</a></p>
 </dd>
             <dd class="break"></dd>
-<dt id="section-10.2.3-15.11">
+<dt id="section-10.2.3-14.11">
 <code>status_code</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-15.12">
-              <p id="section-10.2.3-15.12.1">String. The validated value of the top-level
-<code>Response/Status/StatusCode/@Value</code>.<a href="#section-10.2.3-15.12.1" class="pilcrow">¶</a></p>
+            <dd style="margin-left: 1.5em" id="section-10.2.3-14.12">
+              <p id="section-10.2.3-14.12.1">String. The validated value of the top-level
+<code>Response/Status/StatusCode/@Value</code>.<a href="#section-10.2.3-14.12.1" class="pilcrow">¶</a></p>
 </dd>
             <dd class="break"></dd>
-<dt id="section-10.2.3-15.13">
+<dt id="section-10.2.3-14.13">
 <code>has_nested_status_code</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-15.14">
-              <p id="section-10.2.3-15.14.1">Boolean. <code>true</code> if a nested <code>Response/Status/StatusCode/StatusCode</code> element
+            <dd style="margin-left: 1.5em" id="section-10.2.3-14.14">
+              <p id="section-10.2.3-14.14.1">Boolean. <code>true</code> if a nested <code>Response/Status/StatusCode/StatusCode</code> element
 was present in the submitted Response, and <code>false</code> otherwise. Under this
 profile, an active response that includes a <code>response</code> object will normally
 have this value set to <code>false</code> because <a href="#response-wrapper-processing" class="auto internal xref">Section 8.2</a>
 requires the authorization server to reject a Response wrapper that contains a
-nested status code.<a href="#section-10.2.3-15.14.1" class="pilcrow">¶</a></p>
+nested status code.<a href="#section-10.2.3-14.14.1" class="pilcrow">¶</a></p>
 </dd>
           <dd class="break"></dd>
 </dl>
-<p id="section-10.2.3-16">When present, the <code>assertion</code> object <span class="bcp14">MAY</span> contain these members:<a href="#section-10.2.3-16" class="pilcrow">¶</a></p>
-<span class="break"></span><dl class="dlParallel" id="section-10.2.3-17">
-            <dt id="section-10.2.3-17.1">
+<p id="section-10.2.3-15">When present, the <code>assertion</code> object <span class="bcp14">MAY</span> contain these members:<a href="#section-10.2.3-15" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-10.2.3-16">
+            <dt id="section-10.2.3-16.1">
 <code>id</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-17.2">
-              <p id="section-10.2.3-17.2.1">String. The value of <code>Assertion/@ID</code>.<a href="#section-10.2.3-17.2.1" class="pilcrow">¶</a></p>
+            <dd style="margin-left: 1.5em" id="section-10.2.3-16.2">
+              <p id="section-10.2.3-16.2.1">String. The value of <code>Assertion/@ID</code>.<a href="#section-10.2.3-16.2.1" class="pilcrow">¶</a></p>
 </dd>
             <dd class="break"></dd>
-<dt id="section-10.2.3-17.3">
+<dt id="section-10.2.3-16.3">
 <code>issuer</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-17.4">
-              <p id="section-10.2.3-17.4.1">String. The value of the <code>Assertion/Issuer</code> element.<a href="#section-10.2.3-17.4.1" class="pilcrow">¶</a></p>
+            <dd style="margin-left: 1.5em" id="section-10.2.3-16.4">
+              <p id="section-10.2.3-16.4.1">String. The value of the <code>Assertion/Issuer</code> element.<a href="#section-10.2.3-16.4.1" class="pilcrow">¶</a></p>
 </dd>
             <dd class="break"></dd>
-<dt id="section-10.2.3-17.5">
+<dt id="section-10.2.3-16.5">
 <code>issue_instant</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-17.6">
-              <p id="section-10.2.3-17.6.1">String. The value of <code>Assertion/@IssueInstant</code>.<a href="#section-10.2.3-17.6.1" class="pilcrow">¶</a></p>
+            <dd style="margin-left: 1.5em" id="section-10.2.3-16.6">
+              <p id="section-10.2.3-16.6.1">String. The value of <code>Assertion/@IssueInstant</code>.<a href="#section-10.2.3-16.6.1" class="pilcrow">¶</a></p>
 </dd>
             <dd class="break"></dd>
-<dt id="section-10.2.3-17.7">
+<dt id="section-10.2.3-16.7">
 <code>audiences</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-17.8">
-              <p id="section-10.2.3-17.8.1">Array of strings. The <code>Audience</code> values from all <code>AudienceRestriction</code>
-conditions in the effective assertion.<a href="#section-10.2.3-17.8.1" class="pilcrow">¶</a></p>
+            <dd style="margin-left: 1.5em" id="section-10.2.3-16.8">
+              <p id="section-10.2.3-16.8.1">Array of strings. The <code>Audience</code> values from all <code>AudienceRestriction</code>
+conditions in the effective assertion.<a href="#section-10.2.3-16.8.1" class="pilcrow">¶</a></p>
 </dd>
             <dd class="break"></dd>
-<dt id="section-10.2.3-17.9">
+<dt id="section-10.2.3-16.9">
 <code>not_before</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-17.10">
-              <p id="section-10.2.3-17.10.1">String. The value of <code>Assertion/Conditions/@NotBefore</code>.<a href="#section-10.2.3-17.10.1" class="pilcrow">¶</a></p>
+            <dd style="margin-left: 1.5em" id="section-10.2.3-16.10">
+              <p id="section-10.2.3-16.10.1">String. The value of <code>Assertion/Conditions/@NotBefore</code>.<a href="#section-10.2.3-16.10.1" class="pilcrow">¶</a></p>
 </dd>
             <dd class="break"></dd>
-<dt id="section-10.2.3-17.11">
+<dt id="section-10.2.3-16.11">
 <code>not_on_or_after</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-17.12">
-              <p id="section-10.2.3-17.12.1">String. The value of <code>Assertion/Conditions/@NotOnOrAfter</code>.<a href="#section-10.2.3-17.12.1" class="pilcrow">¶</a></p>
+            <dd style="margin-left: 1.5em" id="section-10.2.3-16.12">
+              <p id="section-10.2.3-16.12.1">String. The value of <code>Assertion/Conditions/@NotOnOrAfter</code>.<a href="#section-10.2.3-16.12.1" class="pilcrow">¶</a></p>
 </dd>
             <dd class="break"></dd>
-<dt id="section-10.2.3-17.13">
+<dt id="section-10.2.3-16.13">
 <code>subject_confirmation</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-17.14">
-              <p id="section-10.2.3-17.14.1">JSON object. The fields from the bearer <code>SubjectConfirmation</code> that the
+            <dd style="margin-left: 1.5em" id="section-10.2.3-16.14">
+              <p id="section-10.2.3-16.14.1">JSON object. The fields from the bearer <code>SubjectConfirmation</code> that the
 authorization server treated as usable under <a href="#bearer-subject-confirmation-data-validation" class="auto internal xref">Section 8.6</a>.
-The object <span class="bcp14">MAY</span> contain these members:<a href="#section-10.2.3-17.14.1" class="pilcrow">¶</a></p>
-<span class="break"></span><dl class="dlParallel" id="section-10.2.3-17.14.2">
-                <dt id="section-10.2.3-17.14.2.1">
+The object <span class="bcp14">MAY</span> contain these members:<a href="#section-10.2.3-16.14.1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-10.2.3-16.14.2">
+                <dt id="section-10.2.3-16.14.2.1">
 <code>method</code>:</dt>
-                <dd style="margin-left: 1.5em" id="section-10.2.3-17.14.2.2">
-                  <p id="section-10.2.3-17.14.2.2.1">String. The <code>Method</code> value of the usable bearer <code>SubjectConfirmation</code>.<a href="#section-10.2.3-17.14.2.2.1" class="pilcrow">¶</a></p>
+                <dd style="margin-left: 1.5em" id="section-10.2.3-16.14.2.2">
+                  <p id="section-10.2.3-16.14.2.2.1">String. The <code>Method</code> value of the usable bearer <code>SubjectConfirmation</code>.<a href="#section-10.2.3-16.14.2.2.1" class="pilcrow">¶</a></p>
 </dd>
                 <dd class="break"></dd>
-<dt id="section-10.2.3-17.14.2.3">
+<dt id="section-10.2.3-16.14.2.3">
 <code>recipient</code>:</dt>
-                <dd style="margin-left: 1.5em" id="section-10.2.3-17.14.2.4">
-                  <p id="section-10.2.3-17.14.2.4.1">String. The <code>Recipient</code> value from the <code>SubjectConfirmationData</code>.<a href="#section-10.2.3-17.14.2.4.1" class="pilcrow">¶</a></p>
+                <dd style="margin-left: 1.5em" id="section-10.2.3-16.14.2.4">
+                  <p id="section-10.2.3-16.14.2.4.1">String. The <code>Recipient</code> value from the <code>SubjectConfirmationData</code>.<a href="#section-10.2.3-16.14.2.4.1" class="pilcrow">¶</a></p>
 </dd>
                 <dd class="break"></dd>
-<dt id="section-10.2.3-17.14.2.5">
+<dt id="section-10.2.3-16.14.2.5">
 <code>in_response_to</code>:</dt>
-                <dd style="margin-left: 1.5em" id="section-10.2.3-17.14.2.6">
-                  <p id="section-10.2.3-17.14.2.6.1">String. The <code>InResponseTo</code> value from the <code>SubjectConfirmationData</code>.<a href="#section-10.2.3-17.14.2.6.1" class="pilcrow">¶</a></p>
+                <dd style="margin-left: 1.5em" id="section-10.2.3-16.14.2.6">
+                  <p id="section-10.2.3-16.14.2.6.1">String. The <code>InResponseTo</code> value from the <code>SubjectConfirmationData</code>.<a href="#section-10.2.3-16.14.2.6.1" class="pilcrow">¶</a></p>
 </dd>
                 <dd class="break"></dd>
-<dt id="section-10.2.3-17.14.2.7">
+<dt id="section-10.2.3-16.14.2.7">
 <code>not_on_or_after</code>:</dt>
-                <dd style="margin-left: 1.5em" id="section-10.2.3-17.14.2.8">
-                  <p id="section-10.2.3-17.14.2.8.1">String. The <code>NotOnOrAfter</code> value from the <code>SubjectConfirmationData</code>.<a href="#section-10.2.3-17.14.2.8.1" class="pilcrow">¶</a></p>
+                <dd style="margin-left: 1.5em" id="section-10.2.3-16.14.2.8">
+                  <p id="section-10.2.3-16.14.2.8.1">String. The <code>NotOnOrAfter</code> value from the <code>SubjectConfirmationData</code>.<a href="#section-10.2.3-16.14.2.8.1" class="pilcrow">¶</a></p>
 </dd>
               <dd class="break"></dd>
 </dl>
-<p id="section-10.2.3-17.14.3">The authorization server <span class="bcp14">MUST</span> omit any member for which it has no
-  extracted value.<a href="#section-10.2.3-17.14.3" class="pilcrow">¶</a></p>
+<p id="section-10.2.3-16.14.3">The authorization server <span class="bcp14">MUST</span> omit any member for which it has no
+  extracted value.<a href="#section-10.2.3-16.14.3" class="pilcrow">¶</a></p>
 </dd>
           <dd class="break"></dd>
 </dl>
-<p id="section-10.2.3-18">When present, the <code>attributes</code> member of the <code>saml</code> object is an array of
-JSON objects, each mirroring one logical SAML attribute derived from the
-assertion's <code>AttributeStatement</code> elements after the combining rules in
-<a href="#attribute-claims" class="auto internal xref">Section 13.2</a>. Each object <span class="bcp14">MUST</span> include a <code>name</code> member (the SAML
-<code>Name</code> value) and a <code>values</code> member (a JSON array of the attribute's
-<code>AttributeValue</code> contents), and <span class="bcp14">MAY</span> include <code>name_format</code> (the
-<code>NameFormat</code> URI when present) and <code>friendly_name</code> (the <code>FriendlyName</code>
-when present). Values inside <code>values</code> <span class="bcp14">MUST</span> follow the typing rules
-defined in <a href="#attribute-claims" class="auto internal xref">Section 13.2</a>; in particular, XML schema booleans <span class="bcp14">MAY</span>
-be emitted as JSON booleans and numeric types as JSON numbers when the
-XML type is unambiguous, with all other values emitted as JSON strings.
-The <code>attributes</code> member is intended for clients that require the
-wire-form SAML attribute names (for example, <code>urn:oid:</code> identifiers) in
-addition to the normalized top-level identity claims.<a href="#section-10.2.3-18" class="pilcrow">¶</a></p>
-<p id="section-10.2.3-19">Date and time values in the <code>saml</code> object <span class="bcp14">SHOULD</span> be represented as strings
+<p id="section-10.2.3-17">Date and time values in the <code>saml</code> object <span class="bcp14">SHOULD</span> be represented as strings
 preserving the SAML dateTime semantics. Implementations <span class="bcp14">MAY</span> normalize
 equivalent dateTime values to a consistent UTC representation. Clients <span class="bcp14">MUST</span>
 compare these values according to SAML dateTime semantics, not by lexical string
-comparison unless the representation has first been normalized.<a href="#section-10.2.3-19" class="pilcrow">¶</a></p>
-<p id="section-10.2.3-20">This profile does not require the introspection response to include OAuth token
+comparison unless the representation has first been normalized.<a href="#section-10.2.3-17" class="pilcrow">¶</a></p>
+<p id="section-10.2.3-18">This profile does not require the introspection response to include OAuth token
 metadata fields such as <code>scope</code>, <code>token_type</code>, <code>exp</code>, or <code>iss</code>, because no
-OAuth token is being issued by the introspection operation.<a href="#section-10.2.3-20" class="pilcrow">¶</a></p>
+OAuth token is being issued by the introspection operation.<a href="#section-10.2.3-18" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -3567,9 +3555,8 @@ OAuth token is being issued by the introspection operation.<a href="#section-10.
         </h3>
 <p id="section-10.3-1">If the introspection request is malformed, for example because the <code>token</code>
 parameter is absent or its value cannot be decoded as valid base64url, the
-authorization
-server <span class="bcp14">MUST</span> return an HTTP 400 (Bad Request) error response as defined by
-<span>[<a href="#RFC7662" class="cite xref">RFC7662</a>]</span>, not an introspection response.<a href="#section-10.3-1" class="pilcrow">¶</a></p>
+authorization server <span class="bcp14">MUST</span> return an HTTP 400 (Bad Request) error response
+as defined by <span>[<a href="#RFC7662" class="cite xref">RFC7662</a>]</span>, not an introspection response.<a href="#section-10.3-1" class="pilcrow">¶</a></p>
 <p id="section-10.3-2">If client authentication fails, or if the client is not authorized to use the
 introspection endpoint at all, the authorization server <span class="bcp14">MUST</span> return an HTTP 401
 (Unauthorized) or HTTP 403 (Forbidden) response, consistent with <span>[<a href="#RFC7662" class="cite xref">RFC7662</a>]</span>
@@ -3867,18 +3854,17 @@ as distinct unless local policy can prove them equivalent.<a href="#section-12.5
         <h3 id="name-saml-subject-identifier-cla">
 <a href="#section-12.6" class="section-number selfRef">12.6. </a><a href="#name-saml-subject-identifier-cla" class="section-name selfRef">SAML Subject Identifier Claim</a>
         </h3>
-<p id="section-12.6-1">For migrated clients that need access to the original SAML <code>NameID</code>
-context (for example, to correlate sessions against legacy SAML-keyed
-audit logs or account databases), this document defines the <code>sub_id</code>
-claim and a corresponding SAML NameID identifier format.<a href="#section-12.6-1" class="pilcrow">¶</a></p>
-<p id="section-12.6-2">The <code>sub_id</code> claim is a JSON object following the subject identifier
-pattern established by <span>[<a href="#RFC9493" class="cite xref">RFC9493</a>]</span>. The claim itself is generic: the
-<code>format</code> member discriminates among possible identifier shapes, and
-future profiles may register additional formats in the IANA "Security
-Event Identifier Formats" registry. This document defines a single
-format, <code>saml-nameid</code>, for use with SAML NameID values. When present in
-an ID Token or UserInfo response under this profile, the <code>sub_id</code> object
-<span class="bcp14">MUST</span> include a <code>format</code> member.<a href="#section-12.6-2" class="pilcrow">¶</a></p>
+<p id="section-12.6-1">This document defines the <code>sub_id</code> claim, which carries the original
+SAML <code>NameID</code> context alongside <code>sub</code>. It exists for migrated clients
+that need that context -- for example, to correlate sessions against
+legacy SAML-keyed audit logs or account databases.<a href="#section-12.6-1" class="pilcrow">¶</a></p>
+<p id="section-12.6-2"><code>sub_id</code> is a JSON object following the subject identifier pattern of
+<span>[<a href="#RFC9493" class="cite xref">RFC9493</a>]</span>. The <code>format</code> member discriminates among possible identifier
+shapes; future profiles may register additional formats in the IANA
+"Security Event Identifier Formats" registry. This document defines one
+format, <code>saml-nameid</code>, for SAML NameID values. When <code>sub_id</code> is present
+in an ID Token, UserInfo response, or introspection response under this
+profile, it <span class="bcp14">MUST</span> include a <code>format</code> member.<a href="#section-12.6-2" class="pilcrow">¶</a></p>
 <p id="section-12.6-3">When <code>format</code> is <code>saml-nameid</code>, the <code>sub_id</code> object <span class="bcp14">MAY</span> contain the
 following members:<a href="#section-12.6-3" class="pilcrow">¶</a></p>
 <span class="break"></span><dl class="dlParallel" id="section-12.6-4">
@@ -3931,25 +3917,25 @@ present.<a href="#section-12.6-4.14.1" class="pilcrow">¶</a></p>
         <dd class="break"></dd>
 </dl>
 <p id="section-12.6-5">The authorization server <span class="bcp14">MUST</span> omit any member for which it has no
-validated value. Encrypted SAML NameID forms (<code>EncryptedID</code>) are
-rejected by this profile under <a href="#encrypted-content" class="auto internal xref">Section 8.3</a> and <span class="bcp14">MUST NOT</span>
-appear in <code>sub_id</code>.<a href="#section-12.6-5" class="pilcrow">¶</a></p>
+validated value. Encrypted NameID forms (<code>EncryptedID</code>) are rejected
+under <a href="#encrypted-content" class="auto internal xref">Section 8.3</a> and <span class="bcp14">MUST NOT</span> appear in <code>sub_id</code>.<a href="#section-12.6-5" class="pilcrow">¶</a></p>
 <p id="section-12.6-6">The authorization server <span class="bcp14">MUST</span> release <code>sub_id</code> only when authorized by
 the claim release policy for the relying-party relationship represented
-by the bound <code>saml_sp_entity_id</code>, and <span class="bcp14">SHOULD</span> gate release on the
-<code>saml_subject</code> scope value defined by this document. The authorization
-server <span class="bcp14">MUST NOT</span> release <code>sub_id</code> solely because the underlying SAML
-assertion contains a <code>NameID</code>.<a href="#section-12.6-6" class="pilcrow">¶</a></p>
-<p id="section-12.6-7">The <code>sub_id</code> claim does not replace the <code>sub</code> claim. The <code>sub</code> claim
-remains the primary continuity point under
-<a href="#subject-identifier-mapping" class="auto internal xref">Section 12</a>; <code>sub_id</code> carries the original SAML
-identifier context as supplementary information for clients that need
-it.<a href="#section-12.6-7" class="pilcrow">¶</a></p>
-<p id="section-12.6-8">When the SAML <code>NameID/@Format</code> is
-<code>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</code>, the presence
-of that value in <code>sub_id</code> <span class="bcp14">MUST NOT</span> by itself cause the authorization
-server to emit <code>email_verified=true</code> for the corresponding <code>email</code>
-claim.<a href="#section-12.6-8" class="pilcrow">¶</a></p>
+by the bound <code>saml_sp_entity_id</code>, and <span class="bcp14">MUST NOT</span> release it solely because
+the SAML assertion contains a <code>NameID</code>.<a href="#section-12.6-6" class="pilcrow">¶</a></p>
+<p id="section-12.6-7">In contexts that carry an OAuth scope -- Token Exchange issuing an ID
+Token or refresh token, and UserInfo requests -- release <span class="bcp14">SHOULD</span> be gated
+on the <code>saml_subject</code> scope. In contexts without OAuth scope, such as
+introspection requests, scope gating does not apply; the authorization
+server's policy for that endpoint authorizes release in addition to the
+claim release policy above.<a href="#section-12.6-7" class="pilcrow">¶</a></p>
+<p id="section-12.6-8">The <code>sub_id</code> claim supplements <code>sub</code>; it does not replace it. The <code>sub</code>
+claim remains the primary continuity point under
+<a href="#subject-identifier-mapping" class="auto internal xref">Section 12</a>.<a href="#section-12.6-8" class="pilcrow">¶</a></p>
+<p id="section-12.6-9">A <code>sub_id</code> with <code>nameid_format</code> of
+<code>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</code> <span class="bcp14">MUST NOT</span> by
+itself cause the authorization server to emit <code>email_verified=true</code> for
+the corresponding <code>email</code> claim.<a href="#section-12.6-9" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -3959,9 +3945,10 @@ claim.<a href="#section-12.6-8" class="pilcrow">¶</a></p>
       <h2 id="name-claim-mapping">
 <a href="#section-13" class="section-number selfRef">13. </a><a href="#name-claim-mapping" class="section-name selfRef">Claim Mapping</a>
       </h2>
-<p id="section-13-1">The mappings in this section apply to ID Tokens and, when applicable, UserInfo
-responses. Values derived from SAML subject identifiers or authentication
-statements take precedence over generic attribute mapping.<a href="#section-13-1" class="pilcrow">¶</a></p>
+<p id="section-13-1">The mappings in this section apply to ID Tokens, UserInfo responses, and
+introspection responses under this profile. Values derived from SAML
+subject identifiers or authentication statements take precedence over
+generic attribute mapping.<a href="#section-13-1" class="pilcrow">¶</a></p>
 <div id="authentication-event-claims">
 <section id="section-13.1">
         <h3 id="name-authentication-event-claims">
@@ -4244,8 +4231,8 @@ accordance with <span>[<a href="#OIDC-CORE" class="cite xref">OIDC-CORE</a>]</sp
 </li>
           <li class="normal" id="section-13.3-3.4">
             <p id="section-13.3-3.4.1"><span class="bcp14">MAY</span> include the <code>sub_id</code> claim defined in <a href="#saml-subject-identifier-claim" class="auto internal xref">Section 12.6</a>
-when the granted scope includes <code>saml_subject</code> and the claim release
-policy permits its release; and<a href="#section-13.3-3.4.1" class="pilcrow">¶</a></p>
+when the granted scope includes <code>saml_subject</code> and policy permits
+release; and<a href="#section-13.3-3.4.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-13.3-3.5">
             <p id="section-13.3-3.5.1"><span class="bcp14">MUST NOT</span> include claims that would not be releasable to the same relying
