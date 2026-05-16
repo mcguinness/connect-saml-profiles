@@ -128,24 +128,32 @@ Table of Contents
      13.1.  Authentication Event Claims
      13.2.  Attribute Claims
      13.3.  UserInfo Responses
-   14. Security Considerations
-   15. Privacy Considerations
-   16. IANA Considerations
-     16.1.  OAuth Dynamic Client Registration Metadata
-     16.2.  OAuth Authorization Server Metadata
-     16.3.  OAuth Token Type Hints
-     16.4.  OAuth Token Introspection Response Registry
-     16.5.  JSON Web Token Claims
-     16.6.  OAuth Scope Values
-     16.7.  Security Event Identifier Formats
-   17. References
-     17.1.  Normative References
-     17.2.  Informative References
+   14. Session Termination and Revocation
+     14.1.  Session Termination
+     14.2.  Token Revocation
+   15. Security Considerations
+     15.1.  Threat Model
+   16. Privacy Considerations
+   17. IANA Considerations
+     17.1.  OAuth Dynamic Client Registration Metadata
+     17.2.  OAuth Authorization Server Metadata
+     17.3.  OAuth Token Type Hints
+     17.4.  OAuth Token Introspection Response Registry
+     17.5.  JSON Web Token Claims
+     17.6.  OAuth Scope Values
+     17.7.  Security Event Identifier Formats
+   18. References
+     18.1.  Normative References
+     18.2.  Informative References
    Appendix A.  Examples
      A.1.  Convert SAML to an ID Token
      A.2.  Delegate SAML Validation with Introspection
      A.3.  Convert SAML to an Access Token or Refresh Token
    Appendix B.  InCommon and eduPerson Deployment Guidance
+   Appendix C.  Authentication Context Mapping Examples
+     C.1.  Common SAML AuthnContextClassRef URIs
+     C.2.  Notes on these mappings
+     C.3.  Pass-through and absence
    Acknowledgments
    Author's Address
 
@@ -380,6 +388,19 @@ Table of Contents
    for validating SAML bearer confirmation fields such as Recipient and
    InResponseTo as part of its own front-channel SAML processing before
    submitting the assertion to the authorization server.
+
+   An authorization server MAY support both this profile and [RFC7522]
+   at the same token endpoint.  The grant_type parameter disambiguates
+   them without ambiguity: this profile uses
+   urn:ietf:params:oauth:grant-type:token-exchange with the SAML
+   assertion in subject_token, while RFC 7522 uses
+   urn:ietf:params:oauth:grant-type:saml2-bearer with the SAML assertion
+   in assertion.  The two grant types have incompatible audience
+   semantics (this profile binds the assertion audience to the
+   saml_sp_entity_id; RFC 7522 binds it to the authorization server), so
+   the routing decision is determined entirely by grant_type and not by
+   inspection of the assertion.  A single client registration MAY enable
+   both grant types.
 
 5.  Authorization and Consent Model
 
@@ -1528,19 +1549,8 @@ Table of Contents
    also use any other OAuth 2.0 or OpenID Connect flow that the
    authorization server supports.
 
-   If the authorization server learns that the resolved Local Account
-   has been disabled, that the authoritative SAML-authenticated session
-   has terminated, or that administrative policy has revoked the
-   migrated session, it MUST reject further use of any derived refresh
-   token for session-preserving operations.  It SHOULD also revoke or
-   expire related access tokens and other session-bound artifacts
-   according to local capabilities.
-
-   This document does not define a logout or revocation signaling
-   protocol between the SAML IdP and the authorization server.
-   Deployments that support back-channel session termination signaling
-   MAY use the mechanisms defined by [OIDC-BC-LOGOUT] to propagate SAML
-   session termination events to registered OpenID Connect clients.
+   Session termination and revocation for refresh tokens issued under
+   this profile are defined in Section 14.
 
 9.2.4.  ID Token
 
@@ -2433,10 +2443,8 @@ Table of Contents
       reject further session-preserving use of the assertion or derived
       refresh token.
 
-   If the authorization server receives an authoritative signal that the
-   underlying SAML-authenticated session ended earlier than
-   SessionNotOnOrAfter, it MUST treat that earlier event as the
-   operative end of the migrated session for purposes of this profile.
+   Earlier session-end signals and revocation cascade are defined in
+   Section 14.
 
    The following SAML data has no direct standard OpenID Connect claim
    mapping:
@@ -2640,7 +2648,131 @@ Table of Contents
    return claims disallowed by current policy or by the current Local
    Account or session state.
 
-14.  Security Considerations
+14.  Session Termination and Revocation
+
+   A token issued under this profile is anchored to a SAML-authenticated
+   session that may end before the token itself would otherwise expire.
+   This section defines how the authorization server connects session
+   termination signals to tokens it has issued, and how token revocation
+   under this profile cascades through derived artifacts.  It does not
+   define a protocol for signaling SAML SLO between the SAML IdP and the
+   authorization server; that is out of scope.
+
+14.1.  Session Termination
+
+   The authorization server MUST treat the earlier of the following as
+   the operative end of the migrated session for a given originating
+   SAML assertion:
+
+   *  the assertion's SessionNotOnOrAfter value, when present in the
+      authoritative AuthnStatement (Section 13.1);
+
+   *  any authoritative signal that the underlying SAML-authenticated
+      session ended earlier (for example, a SAML SLO event observed at
+      the IdP that the authorization server learns through deployment-
+      specific means);
+
+   *  an authorization server policy decision to terminate the migrated
+      session (administrative action, risk-based revocation, etc.).
+
+   When the migrated session has ended, the authorization server:
+
+   *  MUST reject further use of any refresh token derived from the
+      originating assertion for session-preserving operations;
+
+   *  SHOULD revoke or expire access tokens derived from those refresh
+      tokens according to local capabilities; and
+
+   *  MAY propagate the termination to OpenID Connect clients through
+      [OIDC-BC-LOGOUT] when the deployment supports back-channel logout
+      signaling, using the sid claim (Section 13.1) to identify the
+      affected session.
+
+   This document does not define how the authorization server discovers
+   SAML SLO events.  Deployments that require coordinated SAML and OIDC
+   logout MUST establish that discovery through deployment-specific
+   means outside this profile.
+
+14.2.  Token Revocation
+
+   OAuth 2.0 Token Revocation [RFC7009] applies to tokens issued under
+   this profile without modification.  Beyond the generic RFC 7009
+   rules, this profile imposes the following cascade semantics:
+
+   *  revocation of a refresh token issued under this profile MUST end
+      the migrated session bound to that refresh token.  The
+      authorization server SHOULD revoke or expire all access tokens
+      derived from the revoked refresh token according to local
+      capabilities;
+
+   *  revocation of an access token issued under this profile MUST end
+      that token's usability but does not by itself terminate the
+      migrated session or invalidate the underlying refresh token (if
+      any).
+
+   If the authorization server learns that the resolved Local Account
+   has been disabled, deprovisioned, or suspended, it MUST end the
+   migrated session as described in Section 14.1.
+
+   A subsequent submission of a new SAML assertion through this profile
+   (Section 9) establishes a new migrated session that is not affected
+   by the prior revocation.
+
+15.  Security Considerations
+
+15.1.  Threat Model
+
+   This profile assumes the following:
+
+   *  The SAML IdP and the authorization server are operated by, or
+      under the administrative control of, the same authority (see
+      Section 3).  They share a trust boundary, but are network-
+      separated components that communicate through their respective
+      protocols.
+
+   *  Migration Clients are confidential clients (public clients are
+      excluded; see Section 6.1).  Their client authentication
+      credentials are not directly disclosed to end-users.
+
+   *  The Migration Client's saml_sp_entity_id (and per-client
+      saml_idp_entity_id if used) binding is established under the
+      authorization rules in Section 6.1.1; self-asserted dynamic
+      registration of these values is disallowed.
+
+   The following attacker capabilities are in scope:
+
+   *  An attacker who obtains a SAML assertion in transit (through XSS
+      in the SP, intermediary compromise, log leakage, or similar).  The
+      three-way binding (Section 4) and replay detection (Section 8.7)
+      limit what such an assertion enables.
+
+   *  An attacker who attempts to dynamically register a client with a
+      saml_sp_entity_id or saml_idp_entity_id they are not authorized to
+      bind.  The registration authorization rules (Section 6.1.1)
+      require out-of-band authorization for these values.
+
+   *  An attacker who attempts XML Signature Wrapping, replay, or
+      algorithm-downgrade attacks against a submitted SAML assertion.
+      The signature, replay, and algorithm rules in Section 8 and the
+      considerations below address these.
+
+   *  An attacker who attempts to induce SSRF through a maliciously
+      registered saml_metadata_uri.  HTTPS-only fetches, redirect
+      restrictions, and host allowlisting limit this.
+
+   The following are out of scope for this profile and remain the
+   deployment's responsibility:
+
+   *  Compromise of the SAML IdP or the authorization server themselves
+      (including their signing keys).
+
+   *  Side channels, traffic analysis, and other infrastructure-level
+      threats not specific to this profile.
+
+   *  SAML SLO and OIDC logout signaling between the two protocols (see
+      Section 14 for what this profile does and does not address).
+
+   *  End-user account compromise upstream of the SAML IdP.
 
    When a SAML assertion is submitted without an InResponseTo element in
    its SubjectConfirmationData, the authorization server cannot confirm
@@ -2791,7 +2923,7 @@ Table of Contents
    Exchange response when its policy and the client's registration
    support that mechanism.
 
-15.  Privacy Considerations
+16.  Privacy Considerations
 
    This profile exists in part to preserve privacy properties during
    migration.  Deployments that previously relied on SAML pairwise
@@ -2844,9 +2976,9 @@ Table of Contents
    but deployments SHOULD ensure that this sharing is an intentional
    policy decision.
 
-16.  IANA Considerations
+17.  IANA Considerations
 
-16.1.  OAuth Dynamic Client Registration Metadata
+17.1.  OAuth Dynamic Client Registration Metadata
 
    This document requests registration of the following values in the
    OAuth Dynamic Client Registration Metadata registry established by
@@ -2883,7 +3015,7 @@ Table of Contents
 
    *  Specification Document(s): This document, Section 6.3
 
-16.2.  OAuth Authorization Server Metadata
+17.2.  OAuth Authorization Server Metadata
 
    This document requests registration of the following values in the
    OAuth Authorization Server Metadata registry established by
@@ -2930,7 +3062,7 @@ Table of Contents
 
    *  Specification Document(s): This document, Section 7.4
 
-16.3.  OAuth Token Type Hints
+17.3.  OAuth Token Type Hints
 
    This document requests registration of the following value in the
    OAuth Token Type Hints registry established by [RFC7009].  The token
@@ -2945,7 +3077,7 @@ Table of Contents
 
    *  Specification Document(s): This document, Section 10.1
 
-16.4.  OAuth Token Introspection Response Registry
+17.4.  OAuth Token Introspection Response Registry
 
    This document requests registration of the following values in the
    OAuth Token Introspection Response registry established by [RFC7662]:
@@ -2971,7 +3103,7 @@ Table of Contents
    *  Specification Document(s): This document, Section 10.2.3,
       Section 12.6
 
-16.5.  JSON Web Token Claims
+17.5.  JSON Web Token Claims
 
    This document requests registration of the following claim in the
    IANA "JSON Web Token Claims" registry established by RFC 7519:
@@ -2986,7 +3118,7 @@ Table of Contents
 
    *  Reference: This document, Section 12.6
 
-16.6.  OAuth Scope Values
+17.6.  OAuth Scope Values
 
    This document defines the following OAuth scope value:
 
@@ -2998,7 +3130,7 @@ Table of Contents
 
    *  Reference: This document, Section 12.6
 
-16.7.  Security Event Identifier Formats
+17.7.  Security Event Identifier Formats
 
    This document requests registration of the following value in the
    IANA "Security Event Identifier Formats" registry established by
@@ -3013,9 +3145,9 @@ Table of Contents
 
    *  Reference: This document, Section 12.6
 
-17.  References
+18.  References
 
-17.1.  Normative References
+18.1.  Normative References
 
    [OIDC-BC-LOGOUT]
               Jones, M. B. and J. Bradley, "OpenID Connect Back-Channel
@@ -3110,7 +3242,7 @@ Table of Contents
               Version 1.0", 2019, <https://docs.oasis-open.org/security/
               saml-subject-id-attr/v1.0/saml-subject-id-attr-v1.0.html>.
 
-17.2.  Informative References
+18.2.  Informative References
 
    [EDUPERSON]
               REFEDS, "eduPerson Object Class Specification",
@@ -3528,6 +3660,113 @@ Appendix B.  InCommon and eduPerson Deployment Guidance
    the original attribute semantics in private claims rather than
    mapping them to unrelated standard claims such as groups, roles, or
    scope.
+
+Appendix C.  Authentication Context Mapping Examples
+
+   This appendix is non-normative.
+
+   The acr and amr mapping rules in Section 13.1 defer to local policy
+   for the choice of registered Level-of-Assurance scheme.  This
+   appendix provides example mappings from common SAML
+   AuthnContextClassRef URIs to OpenID Connect acr values and to amr
+   values from the IANA "Authentication Method Reference Values"
+   registry [RFC8176].  Deployments MAY adopt these mappings, adjust
+   them, or define their own as local policy dictates.
+
+C.1.  Common SAML AuthnContextClassRef URIs
+
+   +==================================================================+===========+=========+=================================+
+   |SAML AuthnContextClassRef                                         |Suggested  |Suggested|Suggested acr (REFEDS)           |
+   |                                                                  |amr        |acr (NIST|                                 |
+   |                                                                  |           |800-63)  |                                 |
+   +==================================================================+===========+=========+=================================+
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:Password                   |["pwd"]    |aal1     |https://refeds.org/assurance/IAP/|
+   |                                                                  |           |         |low                              |
+   +------------------------------------------------------------------+-----------+---------+---------------------------------+
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport |["pwd"]    |aal1     |https://refeds.org/assurance/IAP/|
+   |                                                                  |           |         |low                              |
+   +------------------------------------------------------------------+-----------+---------+---------------------------------+
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:TLSClient                  |["mfa",    |aal2     |https://refeds.org/assurance/IAP/|
+   |                                                                  |"swk"]     |         |medium                           |
+   |                                                                  |(when      |         |                                 |
+   |                                                                  |client cert|         |                                 |
+   |                                                                  |+ password)|         |                                 |
+   +------------------------------------------------------------------+-----------+---------+---------------------------------+
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:X509                       |(single    |varies   |varies                           |
+   |                                                                  |factor)    |         |                                 |
+   |                                                                  |["swk"] or |         |                                 |
+   |                                                                  |["hwk"]    |         |                                 |
+   |                                                                  |depending  |         |                                 |
+   |                                                                  |on key     |         |                                 |
+   |                                                                  |storage    |         |                                 |
+   +------------------------------------------------------------------+-----------+---------+---------------------------------+
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:Smartcard                  |["sc"]     |varies   |varies                           |
+   +------------------------------------------------------------------+-----------+---------+---------------------------------+
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:SmartcardPKI               |["sc",     |aal2 or  |https://refeds.org/assurance/IAP/|
+   |                                                                  |"hwk"]     |aal3     |medium or higher                 |
+   +------------------------------------------------------------------+-----------+---------+---------------------------------+
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:Kerberos                   |["pwd"]    |aal1     |https://refeds.org/assurance/IAP/|
+   |                                                                  |(typically |         |low                              |
+   |                                                                  |Kerberos   |         |                                 |
+   |                                                                  |backed by  |         |                                 |
+   |                                                                  |password)  |         |                                 |
+   +------------------------------------------------------------------+-----------+---------+---------------------------------+
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:TimeSyncToken              |["otp"]    |aal2     |https://refeds.org/assurance/IAP/|
+   |                                                                  |           |         |medium                           |
+   +------------------------------------------------------------------+-----------+---------+---------------------------------+
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:MultiFactorContract        |["mfa"]    |aal2     |https://refeds.org/assurance/IAP/|
+   |                                                                  |           |         |medium                           |
+   +------------------------------------------------------------------+-----------+---------+---------------------------------+
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:MultiFactorPhysicalContract|["mfa",    |aal3     |https://refeds.org/assurance/IAP/|
+   |                                                                  |"hwk"]     |         |high                             |
+   +------------------------------------------------------------------+-----------+---------+---------------------------------+
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:PreviousSession            |(none; SAML|(none)   |(none)                           |
+   |                                                                  |deployment-|         |                                 |
+   |                                                                  |specific)  |         |                                 |
+   +------------------------------------------------------------------+-----------+---------+---------------------------------+
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified                |(none)     |(none)   |(none)                           |
+   +------------------------------------------------------------------+-----------+---------+---------------------------------+
+
+                                  Table 5
+
+C.2.  Notes on these mappings
+
+   *  amr is a JSON array; multi-factor SAML classes naturally produce
+      multiple values (typically including mfa).
+
+   *  acr values shown for NIST 800-63 are strings of the form "aal1",
+      "aal2", "aal3".  Deployments MAY use URI forms such as those
+      defined by REFEDS for federated higher-education contexts.
+
+   *  The Smartcard / SmartcardPKI / X509 rows depend heavily on key
+      storage (software vs. hardware-bound) and whether a second factor
+      (PIN, password) is also asserted.  Deployments SHOULD configure
+      the mapping based on the IdP's actual authentication setup, not
+      the SAML class URI alone.
+
+   *  The Kerberos row reflects that most enterprise Kerberos
+      deployments are password-derived; deployments using stronger
+      Kerberos factors (smart card initial credentials, etc.)  SHOULD
+      map accordingly.
+
+   *  PreviousSession and unspecified provide no derivable assurance
+      signal; acr SHOULD be omitted, and amr SHOULD NOT be populated
+      from them.
+
+   *  When the SAML deployment uses non-standard AuthnContextClassRef
+      URIs (vendor-specific, IdP-specific, or federation-defined), the
+      authorization server MAY pass the URI through to acr per
+      Section 13.1, with amr populated only when the local mapping
+      explicitly authorizes specific values.
+
+C.3.  Pass-through and absence
+
+   When local policy does not provide a mapping for an asserted
+   AuthnContextClassRef, the authorization server SHOULD copy the SAML
+   URI to acr without transformation per Section 13.1.  The
+   authorization server MUST NOT populate amr in this case, since
+   deriving amr from an unmapped class URI would overstate the
+   assurance.
 
 Acknowledgments
 
