@@ -28,6 +28,7 @@ normative:
   RFC8414:
   RFC8693:
   RFC8707:
+  RFC9493:
   OIDC-CORE:
     title: "OpenID Connect Core 1.0 incorporating errata set 2"
     target: "https://openid.net/specs/openid-connect-core-1_0-18.html"
@@ -1301,9 +1302,12 @@ When issuing an ID Token directly from Token Exchange, that ID Token:
   translation of the SAML assertion lifetime;
 * MUST NOT include `nonce`, `at_hash`, or `c_hash`, because no preceding
   OpenID Connect authentication request or authorization code exists from
-  which these values could be derived; and
+  which these values could be derived;
 * SHOULD NOT include `azp`. If `azp` is included, it MUST equal the
-  authenticated client identifier.
+  authenticated client identifier; and
+* MAY include the `sub_id` claim defined in {{saml-subject-identifier-claim}}
+  when the granted scope includes `saml_subject` and the claim release
+  policy permits its release.
 
 ### Access Token {#token-exchange-access-token}
 
@@ -1893,6 +1897,71 @@ context. In particular:
 * two `NameID` values that differ in value or qualifier context MUST be treated
   as distinct unless local policy can prove them equivalent.
 
+## SAML Subject Identifier Claim {#saml-subject-identifier-claim}
+
+For migrated clients that need access to the original SAML `NameID`
+context (for example, to correlate sessions against legacy SAML-keyed
+audit logs or account databases), this document defines the `sub_id`
+claim and a corresponding SAML NameID identifier format.
+
+The `sub_id` claim is a JSON object following the subject identifier
+pattern established by {{RFC9493}}. When present in an ID Token or
+UserInfo response, the object MUST include a `format` member identifying
+the identifier format. This document defines the `saml-nameid` format.
+
+When `format` is `saml-nameid`, the `sub_id` object MAY contain the
+following members:
+
+`format`:
+: String. REQUIRED. The value `saml-nameid`.
+
+`issuer`:
+: String. The SAML Assertion Issuer value from the assertion that
+  established this identifier. When present, this value MUST match the
+  effective `saml_idp_entity_id` for the authenticated client.
+
+`nameid`:
+: String. REQUIRED. The textual content of the SAML `NameID` element.
+
+`nameid_format`:
+: String. The SAML `NameID/@Format` attribute value when present.
+
+`name_qualifier`:
+: String. The SAML `NameID/@NameQualifier` attribute value when
+  present.
+
+`sp_name_qualifier`:
+: String. The SAML `NameID/@SPNameQualifier` attribute value when
+  present.
+
+`sp_provided_id`:
+: String. The SAML `NameID/@SPProvidedID` attribute value when
+  present.
+
+The authorization server MUST omit any member for which it has no
+validated value. Encrypted SAML NameID forms (`EncryptedID`) are
+rejected by this profile under {{encrypted-content}} and MUST NOT
+appear in `sub_id`.
+
+The authorization server MUST release `sub_id` only when authorized by
+the claim release policy for the relying-party relationship represented
+by the bound `saml_sp_entity_id`, and SHOULD gate release on the
+`saml_subject` scope value defined by this document. The authorization
+server MUST NOT release `sub_id` solely because the underlying SAML
+assertion contains a `NameID`.
+
+The `sub_id` claim does not replace the `sub` claim. The `sub` claim
+remains the primary continuity point under
+{{subject-identifier-mapping}}; `sub_id` carries the original SAML
+identifier context as supplementary information for clients that need
+it.
+
+When the SAML `NameID/@Format` is
+`urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress`, the presence
+of that value in `sub_id` MUST NOT by itself cause the authorization
+server to emit `email_verified=true` for the corresponding `email`
+claim.
+
 # Claim Mapping {#claim-mapping}
 
 The mappings in this section apply to ID Tokens and, when applicable, UserInfo
@@ -2106,7 +2175,10 @@ The UserInfo response:
 * MUST include the `sub` claim;
 * MUST use a `sub` value consistent with {{subject-identifier-mapping}};
 * MUST apply the claim mapping rules in {{authentication-event-claims}} and
-  {{attribute-claims}} to any returned claims; and
+  {{attribute-claims}} to any returned claims;
+* MAY include the `sub_id` claim defined in {{saml-subject-identifier-claim}}
+  when the granted scope includes `saml_subject` and the claim release
+  policy permits its release; and
 * MUST NOT include claims that would not be releasable to the same relying
   party under this profile.
 
@@ -2320,6 +2392,16 @@ server SHOULD return only the minimum claims necessary for the authorized
 client, because introspection can reveal identity data without the normal
 indirection of token issuance.
 
+Releasing the `sub_id` claim ({{saml-subject-identifier-claim}}) exposes
+the original SAML subject identifier context, including the SAML IdP
+entityID and any `NameID` qualifiers. This information is not normally
+exposed through the `sub` claim, which carries the authorization
+server's mapped value and may differ from the original SAML identifier.
+Deployments SHOULD release `sub_id` only when the migrated client
+genuinely needs the original SAML context (for example, for legacy
+account linkage). A SAML `NameID` in `emailAddress` format carries
+email-equivalent sensitivity and MUST be handled accordingly.
+
 # IANA Considerations {#iana-considerations}
 
 ## OAuth Dynamic Client Registration Metadata {#iana-client-registration-metadata}
@@ -2407,6 +2489,39 @@ Introspection Response registry established by {{RFC7662}}:
   extracted from the validated SAML input
 * Change Controller: IESG
 * Specification Document(s): This document, {{introspection-successful-response}}
+
+## JSON Web Token Claims {#iana-jwt-claims}
+
+This document requests registration of the following claim in the IANA
+"JSON Web Token Claims" registry established by RFC 7519:
+
+* Claim Name: `sub_id`
+* Claim Description: Structured subject identifier carrying provenance
+  about the identifier (such as the original SAML NameID context)
+  alongside the primary `sub` claim
+* Change Controller: IESG
+* Reference: This document, {{saml-subject-identifier-claim}}
+
+## OAuth Scope Values {#iana-oauth-scope-values}
+
+This document defines the following OAuth scope value:
+
+* Scope Value: `saml_subject`
+* Description: Requests release of the `sub_id` claim defined in
+  {{saml-subject-identifier-claim}}, carrying the original SAML
+  `NameID` context for the migrated relying-party relationship
+* Reference: This document, {{saml-subject-identifier-claim}}
+
+## Security Event Identifier Formats {#iana-security-event-identifier-formats}
+
+This document requests registration of the following value in the IANA
+"Security Event Identifier Formats" registry established by {{RFC9493}}:
+
+* Format Name: `saml-nameid`
+* Description: Subject identifier format representing a SAML 2.0 `NameID`
+  with its qualifiers and SAML Issuer
+* Change Controller: IESG
+* Reference: This document, {{saml-subject-identifier-claim}}
 
 --- back
 
@@ -2504,7 +2619,7 @@ Content-Type: application/x-www-form-urlencoded
 
 grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 &requested_token_type=urn:ietf:params:oauth:token-type:id_token
-&scope=openid+profile+email
+&scope=openid+profile+email+saml_subject
 &subject_token=PHNhbWwyOkFzc2VydGlvbiB4bWxuczpzYW1sMj0iLi4uIj4uLi48L3NhbWwyOkFzc2VydGlvbj4
 &subject_token_type=urn:ietf:params:oauth:token-type:saml2
 &client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer
@@ -2516,7 +2631,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
   "issued_token_type": "urn:ietf:params:oauth:token-type:id_token",
   "access_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjIyIn0...",
   "token_type": "N_A",
-  "scope": "openid profile email",
+  "scope": "openid profile email saml_subject",
   "expires_in": 3600
 }
 ~~~
@@ -2528,6 +2643,14 @@ like:
 {
   "iss": "https://login.example.com",
   "sub": "p7b4cf5d-9c2f-4f22-a6b9-6e3d8df5a1b0",
+  "sub_id": {
+    "format": "saml-nameid",
+    "issuer": "https://login.example.com/idp",
+    "nameid": "alice-pairwise-7c3f",
+    "nameid_format": "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent",
+    "name_qualifier": "https://login.example.com/idp",
+    "sp_name_qualifier": "https://calendar.example.com/saml/sp"
+  },
   "aud": "s6BhdRkqt3",
   "exp": 1776805200,
   "iat": 1776804900,
