@@ -1215,14 +1215,23 @@ and authentication claims in a signed, verifiable format. Any returned ID Token:
 
 * MUST use the `iss` value of the authorization server;
 * MUST use the `sub` value defined by {{subject-identifier-mapping}};
-* MUST apply the claim mapping rules in {{claim-mapping}}; and
+* MUST apply the claim mapping rules in {{claim-mapping}};
 * MUST preserve the original authentication time from the SAML
-  `AuthnStatement`, if known, in the `auth_time` claim.
+  `AuthnStatement`, if known, in the `auth_time` claim; and
+* MAY include the `sub_id` claim defined in
+  {{saml-subject-identifier-claim}} when the granted scope includes
+  `saml_subject` and the claim release policy permits its release. When
+  `sub_id` is included, the authorization server MUST derive its members
+  from the originally validated SAML NameID context that established
+  this refresh token; this requires the authorization server to persist
+  that context alongside the refresh token state.
 
 Subsequent refresh token responses are governed by {{OIDC-CORE}}. If an
 ID Token is returned in a later refresh response, it MUST continue to preserve
 the same `sub` and authentication continuity unless a later authentication
-event changes those values under {{OIDC-CORE}}.
+event changes those values under {{OIDC-CORE}}. The same continuity rule
+applies to `sub_id` when it was included in earlier ID Tokens for the
+same migrated authorization context.
 
 The refresh token issued under this profile MAY also be used as an input to
 other specifications that accept
@@ -1496,37 +1505,44 @@ For an active SAML assertion, the authorization server MUST return an
 introspection response as defined by {{RFC7662}} with:
 
 * `active` set to `true`;
-* `identity_claims` set to a JSON object containing the normalized
-  identity claims derived from the SAML assertion for this client; and
+* the normalized identity claims derived from the SAML assertion for this
+  client (`sub` and any of `sub_id`, `auth_time`, `acr`, `amr`, `sid`, and
+  attribute-derived claims defined by {{claim-mapping}}) returned as
+  top-level members of the response, in parallel with how those claims
+  appear in ID Tokens and UserInfo responses; and
 * `saml`, when returned, set to a JSON object containing normalized SAML
   protocol metadata as defined below.
 
-The `identity_claims` member is intentionally nested rather than returned at
-the top level of the introspection response. This separates the token-validity
-metadata (`active`) from end-user identity claims derived from the SAML
-assertion, and avoids ambiguity with existing or future top-level {{RFC7662}}
-response members.
+The identity claims returned at the top level of the introspection response
+contain values that have been processed by the authorization server under
+{{local-subject-resolution}}, {{subject-identifier-mapping}}, and
+{{claim-mapping}}, including subject resolution and claim release policy.
+These values are not a literal mirror of SAML assertion content; the
+protocol mirror of the assertion is the `saml` object.
 
-The `identity_claims` object contains values that have been processed by the
-authorization server under {{local-subject-resolution}}, {{subject-identifier-mapping}},
-and {{claim-mapping}}, including subject resolution and claim release policy.
-These values are not a literal mirror of SAML assertion content; the protocol
-mirror of the assertion is the `saml` object.
-
-The `identity_claims` object:
+The top-level identity claims:
 
 * MUST include the mapped `sub` value defined by {{subject-identifier-mapping}};
-* MAY include `auth_time`, `acr`, `amr`, `sid`, and attribute-derived claims
-  defined by {{claim-mapping}}; and
-* MUST NOT include claims that would not be releasable to the same relying
-  party under this profile.
+* MAY include `auth_time`, `acr`, `amr`, `sid`, `sub_id`, and
+  attribute-derived claims defined by {{claim-mapping}}; and
+* MUST NOT include claims that would not be releasable to the same
+  relying party under this profile.
 
 The authorization server SHOULD return only the minimum normalized claims
 necessary for the authorized client and applicable relying-party policy.
 
-The `saml` object contains protocol metadata, not end-user identity claims. The
-authorization server MUST NOT return those values inside the `identity_claims`
-object.
+The authorization server MUST release `sub_id` in the introspection
+response only when authorized by the claim release policy for the
+relying-party relationship represented by the bound `saml_sp_entity_id`,
+under the same conditions defined in
+{{saml-subject-identifier-claim}}. The `saml_subject` scope value does
+not apply to introspection requests; introspection clients indicate
+their entitlement to `sub_id` through the authorization server's policy
+for the introspection endpoint.
+
+The `saml` object contains SAML protocol metadata, not end-user identity
+claims. The authorization server MUST NOT duplicate end-user identity
+claims inside the `saml` object.
 
 When the `saml` object is returned:
 
@@ -1549,17 +1565,18 @@ from the validated SAML input to complete local SAML SP processing.
 
 The `saml` object MAY contain these members:
 
-`input_type`:
-: String. Either `assertion` or `response`, indicating whether the submitted
-  SAML input was a bare Assertion or a Response wrapper.
-
 `response`:
 : JSON object containing values extracted from the accepted SAML `Response`
-  wrapper. This member is omitted when the submitted SAML input was a bare
-  Assertion.
+  wrapper. The presence of this member signals that the submitted SAML
+  input was a `Response` wrapper; the member is absent when the submitted
+  SAML input was a bare `Assertion`.
 
 `assertion`:
 : JSON object containing values from the effective SAML `Assertion`.
+
+`attributes`:
+: Array of JSON objects mirroring SAML attributes from the assertion's
+  `AttributeStatement` elements. Defined in detail below.
 
 When present, the `response` object MAY contain these members:
 
@@ -1631,30 +1648,20 @@ When present, the `assertion` object MAY contain these members:
     The authorization server MUST omit any member for which it has no
     extracted value.
 
-`name_id`:
-: JSON object. The `NameID` element from the assertion's `Subject`, when
-  present. The object MUST include a `value` member containing the textual
-  NameID value, and MAY include `format`, `name_qualifier`,
-  `sp_name_qualifier`, and `sp_provided_id` members carrying the
-  corresponding XML attributes when present. The authorization server MUST
-  omit the `name_id` member if the `Subject` does not contain a usable
-  `NameID`. Encrypted NameID forms are rejected under {{encrypted-content}}
-  and MUST NOT appear in this member.
-
-`attributes`:
-: Array of JSON objects. Each object mirrors one logical SAML attribute
-  derived from the assertion's `AttributeStatement` elements after the
-  combining rules in {{attribute-claims}}. Each object MUST include a `name`
-  member (the SAML `Name` value) and a `values` member (a JSON array of the
-  attribute's `AttributeValue` contents), and MAY include `name_format`
-  (the `NameFormat` URI when present) and `friendly_name` (the
-  `FriendlyName` when present). Values inside `values` MUST follow the
-  typing rules defined in {{attribute-claims}}; in particular, XML schema
-  booleans MAY be emitted as JSON booleans and numeric types as JSON
-  numbers when the XML type is unambiguous, with all other values emitted
-  as JSON strings. The `attributes` member is intended for clients that
-  require the wire-form SAML attribute names (for example, `urn:oid:`
-  identifiers) in addition to the normalized claims in `identity_claims`.
+When present, the `attributes` member of the `saml` object is an array of
+JSON objects, each mirroring one logical SAML attribute derived from the
+assertion's `AttributeStatement` elements after the combining rules in
+{{attribute-claims}}. Each object MUST include a `name` member (the SAML
+`Name` value) and a `values` member (a JSON array of the attribute's
+`AttributeValue` contents), and MAY include `name_format` (the
+`NameFormat` URI when present) and `friendly_name` (the `FriendlyName`
+when present). Values inside `values` MUST follow the typing rules
+defined in {{attribute-claims}}; in particular, XML schema booleans MAY
+be emitted as JSON booleans and numeric types as JSON numbers when the
+XML type is unambiguous, with all other values emitted as JSON strings.
+The `attributes` member is intended for clients that require the
+wire-form SAML attribute names (for example, `urn:oid:` identifiers) in
+addition to the normalized top-level identity claims.
 
 Date and time values in the `saml` object SHOULD be represented as strings
 preserving the SAML dateTime semantics. Implementations MAY normalize
@@ -1734,6 +1741,11 @@ The OpenID Connect `sub` claim is the primary continuity point for migrated
 relying parties. The authorization server MUST issue a `sub` value that is
 stable for the client and that preserves the semantics of the corresponding
 SAML deployment.
+
+Most of this section concerns the rules for deriving `sub`. The final
+subsection ({{saml-subject-identifier-claim}}) defines an OPTIONAL
+supplementary claim, `sub_id`, that carries the original SAML NameID
+context for clients that need it in addition to `sub`.
 
 ## NameID Format Recognition {#nameid-format-recognition}
 
@@ -1905,9 +1917,13 @@ audit logs or account databases), this document defines the `sub_id`
 claim and a corresponding SAML NameID identifier format.
 
 The `sub_id` claim is a JSON object following the subject identifier
-pattern established by {{RFC9493}}. When present in an ID Token or
-UserInfo response, the object MUST include a `format` member identifying
-the identifier format. This document defines the `saml-nameid` format.
+pattern established by {{RFC9493}}. The claim itself is generic: the
+`format` member discriminates among possible identifier shapes, and
+future profiles may register additional formats in the IANA "Security
+Event Identifier Formats" registry. This document defines a single
+format, `saml-nameid`, for use with SAML NameID values. When present in
+an ID Token or UserInfo response under this profile, the `sub_id` object
+MUST include a `format` member.
 
 When `format` is `saml-nameid`, the `sub_id` object MAY contain the
 following members:
@@ -2192,12 +2208,14 @@ migrated authorization context, the `sub` value in the UserInfo response MUST
 exactly match the `sub` value in the corresponding ID Token.
 
 If the UserInfo response includes `auth_time`, `acr`, `amr`, or `sid`, those
-values MUST be derived according to {{authentication-event-claims}}. When an
-ID Token has been issued for the same migrated authorization context, the
+values MUST be derived according to {{authentication-event-claims}}. The
+same consistency rule applies to `sub_id` when it was emitted in the
+corresponding ID Token under {{saml-subject-identifier-claim}}. When an ID
+Token has been issued for the same migrated authorization context, the
 authorization server MUST:
 
-* cache the values of `auth_time`, `acr`, `amr`, and `sid` at the time of ID
-  Token issuance;
+* cache the values of `auth_time`, `acr`, `amr`, `sid`, and `sub_id` at the
+  time of ID Token issuance;
 * return those cached values in any UserInfo response for the duration of the
   access token's validity, even if the originating SAML assertion has since
   expired; and
@@ -2402,6 +2420,13 @@ genuinely needs the original SAML context (for example, for legacy
 account linkage). A SAML `NameID` in `emailAddress` format carries
 email-equivalent sensitivity and MUST be handled accordingly.
 
+When multiple OAuth clients share the same `saml_sp_entity_id`, they
+will observe the same `sub_id` value for the same Local Account, in
+parallel with their already-shared `sub` continuity. This is consistent
+with the relying-party context they share and does not introduce a new
+correlation vector beyond what `sub` already exposes, but deployments
+SHOULD ensure that this sharing is an intentional policy decision.
+
 # IANA Considerations {#iana-considerations}
 
 ## OAuth Dynamic Client Registration Metadata {#iana-client-registration-metadata}
@@ -2478,17 +2503,19 @@ endpoints, which use a separate registry.
 This document requests registration of the following values in the OAuth Token
 Introspection Response registry established by {{RFC7662}}:
 
-* Response Name: `identity_claims`
-* Response Description: JSON object containing normalized identity claims
-  derived from the introspected SAML assertion for the authorized client
-* Change Controller: IESG
-* Specification Document(s): This document, {{introspection-successful-response}}
-
 * Response Name: `saml`
 * Response Description: JSON object containing normalized SAML protocol metadata
   extracted from the validated SAML input
 * Change Controller: IESG
 * Specification Document(s): This document, {{introspection-successful-response}}
+
+* Response Name: `sub_id`
+* Response Description: Structured subject identifier carrying provenance
+  about the identifier, returned at the top level of the introspection
+  response in parallel with its placement in ID Tokens and UserInfo
+  responses
+* Change Controller: IESG
+* Specification Document(s): This document, {{introspection-successful-response}}, {{saml-subject-identifier-claim}}
 
 ## JSON Web Token Claims {#iana-jwt-claims}
 
@@ -2607,10 +2634,11 @@ the authorization server. The application wants a signed OpenID Connect ID
 Token it can verify locally and use to establish Alice's session, without
 implementing a separate OIDC authorization code flow. It presents the SAML
 assertion to the token endpoint via Token Exchange, requesting an ID Token
-with `scope=openid profile email`. The authorization server validates the
-assertion, resolves Alice's Local Account, derives her pairwise `sub`, maps
-her authentication claims, and returns an ID Token directly in the Token
-Exchange response.
+with `scope=openid profile email saml_subject` so that the ID Token also
+carries the original SAML NameID context in `sub_id`. The authorization
+server validates the assertion, resolves Alice's Local Account, derives
+her pairwise `sub`, maps her authentication claims, and returns an ID
+Token directly in the Token Exchange response.
 
 ~~~ http
 POST /token HTTP/1.1
@@ -2672,10 +2700,11 @@ local state including the request ID and ACS URL. When the IdP returns a signed
 SAML Response to the ACS, the application submits it directly to the AS's
 introspection endpoint rather than parsing it. The AS validates the XML
 signatures, checks the assertion against all profile rules, and returns
-normalized identity claims alongside SAML protocol metadata as JSON. The
-application then correlates the returned `saml` values against its stored
-request state to confirm the response was intended for this flow, and uses
-the `identity_claims` object to establish Alice's session.
+normalized identity claims at the top level of the response alongside SAML
+protocol metadata in a `saml` object. The application then correlates the
+returned `saml` values against its stored request state to confirm the
+response was intended for this flow, and uses the top-level identity claims
+(`sub`, `email`, etc.) to establish Alice's session.
 
 Before redirecting Alice to the IdP, the SP stores local request state such as:
 
@@ -2705,8 +2734,22 @@ token=PHNhbWwycDpSZXNwb25zZSB4bWxuczpzYW1sMj0iLi4uIiB4bWxuczpzYW1sMnA9Ii4uLiI-Li
 ~~~ json
 {
   "active": true,
+  "sub": "p7b4cf5d-9c2f-4f22-a6b9-6e3d8df5a1b0",
+  "sub_id": {
+    "format": "saml-nameid",
+    "issuer": "https://login.example.com/idp",
+    "nameid": "alice-pairwise-7c3f",
+    "nameid_format": "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent",
+    "name_qualifier": "https://login.example.com/idp",
+    "sp_name_qualifier": "https://calendar.example.com/saml/sp"
+  },
+  "auth_time": 1776794400,
+  "acr": "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport",
+  "sid": "op-sid-61b7d66f-4a6f-4f04-b0e5-9b8176d92ad0",
+  "email": "alice@example.com",
+  "given_name": "Alice",
+  "family_name": "Ng",
   "saml": {
-    "input_type": "response",
     "response": {
       "id": "_d71b9f4f8b5b4a4b8f2f",
       "issuer": "https://login.example.com/idp",
@@ -2730,43 +2773,28 @@ token=PHNhbWwycDpSZXNwb25zZSB4bWxuczpzYW1sMj0iLi4uIiB4bWxuczpzYW1sMnA9Ii4uLiI-Li
         "recipient": "https://calendar.example.com/saml/acs",
         "in_response_to": "_sp-authnrequest-8f3a",
         "not_on_or_after": "2026-04-21T18:05:00Z"
+      }
+    },
+    "attributes": [
+      {
+        "name": "urn:oid:0.9.2342.19200300.100.1.3",
+        "name_format": "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
+        "friendly_name": "mail",
+        "values": ["alice@example.com"]
       },
-      "name_id": {
-        "value": "alice-pairwise-7c3f",
-        "format": "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent",
-        "name_qualifier": "https://login.example.com/idp",
-        "sp_name_qualifier": "https://calendar.example.com/saml/sp"
+      {
+        "name": "urn:oid:2.5.4.42",
+        "name_format": "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
+        "friendly_name": "givenName",
+        "values": ["Alice"]
       },
-      "attributes": [
-        {
-          "name": "urn:oid:0.9.2342.19200300.100.1.3",
-          "name_format": "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
-          "friendly_name": "mail",
-          "values": ["alice@example.com"]
-        },
-        {
-          "name": "urn:oid:2.5.4.42",
-          "name_format": "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
-          "friendly_name": "givenName",
-          "values": ["Alice"]
-        },
-        {
-          "name": "urn:oid:2.5.4.4",
-          "name_format": "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
-          "friendly_name": "sn",
-          "values": ["Ng"]
-        }
-      ]
-    }
-  },
-  "identity_claims": {
-    "sub": "p7b4cf5d-9c2f-4f22-a6b9-6e3d8df5a1b0",
-    "auth_time": 1776794400,
-    "acr": "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport",
-    "sid": "op-sid-61b7d66f-4a6f-4f04-b0e5-9b8176d92ad0",
-    "email": "alice@example.com",
-    "given_name": "Alice",
-    "family_name": "Ng"
+      {
+        "name": "urn:oid:2.5.4.4",
+        "name_format": "urn:oasis:names:tc:SAML:2.0:attrname-format:uri",
+        "friendly_name": "sn",
+        "values": ["Ng"]
+      }
+    ]
   }
 }
 ~~~
@@ -2776,7 +2804,7 @@ processing rules and returns the active response, the SP performs local
 correlation and location checks over the returned JSON values, for example:
 
 ~~~ text
-saml.input_type == "response"
+saml.response is present
 saml.response.issuer == stored.idp_entity_id
 saml.assertion.issuer == stored.idp_entity_id
 saml.response.destination == stored.acs_url
