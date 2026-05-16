@@ -1958,6 +1958,21 @@ client may rely on for assertion validation. The authorization rules in
 to the per-client <code>saml_idp_entity_id</code> parameter. Anonymous or open
 dynamic client registration <span class="bcp14">MUST NOT</span> be permitted to set or change this
 value.<a href="#section-6.2-4" class="pilcrow">¶</a></p>
+<p id="section-6.2-5">Migration Clients learn their effective <code>saml_idp_entity_id</code> through the
+registration mechanism by which they were established: statically
+registered clients receive the value through administrative
+configuration; dynamically registered clients receive it in the
+registration response defined by <span>[<a href="#RFC7591" class="cite xref">RFC7591</a>]</span>; and clients with access
+to a Dynamic Client Registration Management endpoint can refresh their
+view through RFC 7592. At runtime, a Migration Client also observes the
+SAML IdP's effective entityID directly from the <code>Issuer</code> element of
+the SAML Response or Assertion it receives, which the authorization
+server then validates against the registered value. A mismatch produces
+an <code>invalid_request</code> rejection (see <a href="#token-exchange-error-response" class="auto internal xref">Section 9.3</a>),
+which clients can use to detect drift between their registration and
+the IdP's current configuration. This profile does not define any other
+discovery mechanism, and in particular does not expose per-client
+<code>saml_idp_entity_id</code> values through authorization server metadata.<a href="#section-6.2-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="client-registration-saml-metadata-uri">
@@ -2547,19 +2562,29 @@ submission of the same assertion, even within its validity window.<a href="#sect
 <p id="section-8.7-5">An active introspection response or successful Token Exchange response does
 not, by itself, require the assertion to be treated as exhausted unless local
 replay policy or SAML <code>OneTimeUse</code> semantics require that result.<a href="#section-8.7-5" class="pilcrow">¶</a></p>
-<p id="section-8.7-6">Authorization servers <span class="bcp14">SHOULD</span> permit a limited clock skew tolerance when
+<p id="section-8.7-6">A client retry of a transient-failure response (network error, timeout,
+authorization server overload) using the same SAML assertion is not a
+replay attack. Authorization servers <span class="bcp14">SHOULD</span> distinguish idempotent
+retries from replay attempts -- for example, by recognizing that the
+same authenticated client is submitting the same <code>Assertion/@ID</code>
+within a short window after a non-success response, and returning the
+same outcome rather than rejecting as replay. Deployments enforcing
+SAML <code>OneTimeUse</code> cannot offer this accommodation, since <code>OneTimeUse</code>
+consumes the assertion on first successful use regardless of client
+intent.<a href="#section-8.7-6" class="pilcrow">¶</a></p>
+<p id="section-8.7-7">Authorization servers <span class="bcp14">SHOULD</span> permit a limited clock skew tolerance when
 evaluating time-based conditions such as <code>Conditions/@NotBefore</code>,
 <code>Conditions/@NotOnOrAfter</code>, and <code>SubjectConfirmationData/@NotOnOrAfter</code>. Any
-clock skew allowance <span class="bcp14">MUST</span> be consistent with local security policy and <span class="bcp14">SHOULD NOT</span> exceed five minutes, in accordance with <span>[<a href="#SAML2-CORE" class="cite xref">SAML2-CORE</a>]</span> Section 2.5.1.2.<a href="#section-8.7-6" class="pilcrow">¶</a></p>
-<p id="section-8.7-7">When an <code>AuthnStatement</code> is present, the authorization server <span class="bcp14">SHOULD</span> verify
+clock skew allowance <span class="bcp14">MUST</span> be consistent with local security policy and <span class="bcp14">SHOULD NOT</span> exceed five minutes, in accordance with <span>[<a href="#SAML2-CORE" class="cite xref">SAML2-CORE</a>]</span> Section 2.5.1.2.<a href="#section-8.7-7" class="pilcrow">¶</a></p>
+<p id="section-8.7-8">When an <code>AuthnStatement</code> is present, the authorization server <span class="bcp14">SHOULD</span> verify
 that the time elapsed since <code>AuthnStatement/@AuthnInstant</code> does not exceed a
 deployment-configured freshness window. In the absence of a stricter local
 policy, a maximum freshness window of 8 hours is <span class="bcp14">RECOMMENDED</span>, consistent with
 typical enterprise SSO session durations. This assertion-age check is
-independent of <code>Conditions/@NotOnOrAfter</code> and <code>SessionNotOnOrAfter</code>.<a href="#section-8.7-7" class="pilcrow">¶</a></p>
-<p id="section-8.7-8">Client authentication does not replace SAML assertion validation. A valid
+independent of <code>Conditions/@NotOnOrAfter</code> and <code>SessionNotOnOrAfter</code>.<a href="#section-8.7-8" class="pilcrow">¶</a></p>
+<p id="section-8.7-9">Client authentication does not replace SAML assertion validation. A valid
 client cannot cause an invalid or misbound SAML assertion to become
-acceptable.<a href="#section-8.7-8" class="pilcrow">¶</a></p>
+acceptable.<a href="#section-8.7-9" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -3090,6 +3115,11 @@ when the granted scope includes <code>saml_subject</code> and policy permits
 release.<a href="#section-9.2.4-2.10.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
+<p id="section-9.2.4-3">An ID Token issued under this profile <span class="bcp14">MAY</span> be encrypted as a Nested JWT
+per <span>[<a href="#OIDC-CORE" class="cite xref">OIDC-CORE</a>]</span> when the client has registered an
+<code>id_token_encrypted_response_alg</code> and the authorization server supports
+that encryption. Encryption is independent of the rules above and does
+not change which claims the ID Token carries.<a href="#section-9.2.4-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="token-exchange-access-token">
@@ -4456,12 +4486,20 @@ that token's usability but does not by itself terminate the migrated
 session or invalidate the underlying refresh token (if any).<a href="#section-14.2-2.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-14.2-3">If the authorization server learns that the resolved Local Account has
+<p id="section-14.2-3">The "migrated session bound to that refresh token" refers to the session
+represented by the specific refresh token being revoked, not all sessions
+for the same Local Account. Revoking one refresh token does not affect
+other refresh tokens issued for the same Local Account (for example,
+tokens issued for other devices) unless deployment policy explicitly
+cascades. To end all sessions for a Local Account, the authorization
+server <span class="bcp14">MUST</span> take the account-level action described in
+<a href="#session-termination" class="auto internal xref">Section 14.1</a>.<a href="#section-14.2-3" class="pilcrow">¶</a></p>
+<p id="section-14.2-4">If the authorization server learns that the resolved Local Account has
 been disabled, deprovisioned, or suspended, it <span class="bcp14">MUST</span> end the migrated
-session as described in <a href="#session-termination" class="auto internal xref">Section 14.1</a>.<a href="#section-14.2-3" class="pilcrow">¶</a></p>
-<p id="section-14.2-4">A subsequent submission of a new SAML assertion through this profile
+session as described in <a href="#session-termination" class="auto internal xref">Section 14.1</a>.<a href="#section-14.2-4" class="pilcrow">¶</a></p>
+<p id="section-14.2-5">A subsequent submission of a new SAML assertion through this profile
 (<a href="#token-exchange-using-a-saml-assertion" class="auto internal xref">Section 9</a>) establishes a new migrated
-session that is not affected by the prior revocation.<a href="#section-14.2-4" class="pilcrow">¶</a></p>
+session that is not affected by the prior revocation.<a href="#section-14.2-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -4539,9 +4577,10 @@ deployment's responsibility:<a href="#section-15.1-5" class="pilcrow">¶</a></p>
 threats not specific to this profile.<a href="#section-15.1-6.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-15.1-6.3">
-            <p id="section-15.1-6.3.1">SAML SLO and OIDC logout signaling between the two protocols
-(see <a href="#session-termination-and-revocation" class="auto internal xref">Section 14</a> for what this profile
-does and does not address).<a href="#section-15.1-6.3.1" class="pilcrow">¶</a></p>
+            <p id="section-15.1-6.3.1">SAML SLO discovery: the mechanism by which the authorization server
+learns of a SAML session ending. Propagation from the authorization
+server to OpenID Connect clients via <span>[<a href="#OIDC-BC-LOGOUT" class="cite xref">OIDC-BC-LOGOUT</a>]</span> is <span class="bcp14">OPTIONAL</span>
+and addressed in <a href="#session-termination-and-revocation" class="auto internal xref">Section 14</a>.<a href="#section-15.1-6.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-15.1-6.4">
             <p id="section-15.1-6.4.1">End-user account compromise upstream of the SAML IdP.<a href="#section-15.1-6.4.1" class="pilcrow">¶</a></p>
@@ -4586,7 +4625,16 @@ digest <span class="bcp14">MUST</span> be rejected, including RSA with SHA-1
 (<code>http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha1</code>). Authorization
 servers <span class="bcp14">SHOULD</span> require RSA with SHA-256 or stronger and <span class="bcp14">SHOULD</span> document their
 minimum acceptable algorithm requirements.<a href="#section-15.1-11" class="pilcrow">¶</a></p>
-<p id="section-15.1-12">When an authorization server or migration tooling fetches the
+<p id="section-15.1-12">Beyond SHA-1, deployments <span class="bcp14">SHOULD</span> reject other algorithms whose security
+margins are no longer adequate by current cryptographic guidance --
+including MD5-based digests, RSA signatures with key sizes below 2048
+bits, and elliptic curves with effective security below 128 bits.
+Authorization servers <span class="bcp14">SHOULD</span> track current guidance from bodies such as
+NIST and ENISA and adjust their minimum-algorithm policy accordingly.
+SHA-1 is named explicitly above because of its prevalence in legacy SAML
+deployments; other deprecated algorithms are subject to the same
+prohibition by this rule.<a href="#section-15.1-12" class="pilcrow">¶</a></p>
+<p id="section-15.1-13">When an authorization server or migration tooling fetches the
 <code>saml_metadata_uri</code> at either the authorization server metadata level or
 the client registration level, the fetch target is derived from a
 configuration value that may be attacker-influenced in some deployment
@@ -4600,26 +4648,26 @@ Forgery (SSRF) attacks that could expose internal services. The
 registration authorization rules in
 <a href="#client-registration-saml-sp-entity-id-authorization" class="auto internal xref">Section 6.1.1</a> apply to
 per-client <code>saml_metadata_uri</code> values, so an attacker registering through
-dynamic client registration cannot freely set this value.<a href="#section-15.1-12" class="pilcrow">¶</a></p>
-<p id="section-15.1-13">Mixing SAML trust inputs and OAuth trust inputs creates a risk of protocol
+dynamic client registration cannot freely set this value.<a href="#section-15.1-13" class="pilcrow">¶</a></p>
+<p id="section-15.1-14">Mixing SAML trust inputs and OAuth trust inputs creates a risk of protocol
 confusion. Implementations <span class="bcp14">MUST</span> validate SAML assertions using SAML metadata and
 <span class="bcp14">MUST</span> validate ID Tokens and other JOSE objects using OAuth or OpenID Connect key
 discovery. Implementations <span class="bcp14">MUST NOT</span> assume that a key published in one metadata
-format is automatically valid in the other.<a href="#section-15.1-13" class="pilcrow">¶</a></p>
-<p id="section-15.1-14">Authorization servers <span class="bcp14">MUST</span> apply transport security to the token endpoint,
+format is automatically valid in the other.<a href="#section-15.1-14" class="pilcrow">¶</a></p>
+<p id="section-15.1-15">Authorization servers <span class="bcp14">MUST</span> apply transport security to the token endpoint,
 introspection endpoint, metadata retrieval, and any other endpoint used by this
 profile in the same manner as the underlying OAuth, OpenID Connect, and SAML
-specifications that they extend.<a href="#section-15.1-14" class="pilcrow">¶</a></p>
-<p id="section-15.1-15">SAML assertions used with Token Exchange or introspection are bearer
+specifications that they extend.<a href="#section-15.1-15" class="pilcrow">¶</a></p>
+<p id="section-15.1-16">SAML assertions used with Token Exchange or introspection are bearer
 artifacts. Authorization servers <span class="bcp14">MUST</span> detect and prevent replay of the same
 assertion according to the security properties of the underlying SAML
 deployment, any SAML <code>OneTimeUse</code> condition, and the replay rules in
 <a href="#saml-input-validation-and-binding" class="auto internal xref">Section 8</a>. Client authentication alone is not sufficient
-protection against replay of a stolen assertion.<a href="#section-15.1-15" class="pilcrow">¶</a></p>
-<p id="section-15.1-16">Authorization servers deployed across multiple nodes <span class="bcp14">MUST</span> share assertion
+protection against replay of a stolen assertion.<a href="#section-15.1-16" class="pilcrow">¶</a></p>
+<p id="section-15.1-17">Authorization servers deployed across multiple nodes <span class="bcp14">MUST</span> share assertion
 identifier state used for replay detection across all nodes, or use
-equivalent distributed coordination. Per-node replay stores are insufficient.<a href="#section-15.1-16" class="pilcrow">¶</a></p>
-<p id="section-15.1-17">When this profile accepts a signed SAML <code>Response</code> as a wrapper for the
+equivalent distributed coordination. Per-node replay stores are insufficient.<a href="#section-15.1-17" class="pilcrow">¶</a></p>
+<p id="section-15.1-18">When this profile accepts a signed SAML <code>Response</code> as a wrapper for the
 effective assertion, response-level signature validation does not by itself
 validate response-level protocol fields such as <code>Destination</code> or
 <code>Response/@InResponseTo</code>. This profile does require the wrapped <code>Response</code> to
@@ -4627,8 +4675,8 @@ carry a top-level SAML <code>StatusCode</code> of <code>Success</code> with no s
 code, but other response-level protocol checks remain outside this profile.
 Deployments that depend on those additional checks <span class="bcp14">MUST</span> ensure they are
 performed outside this profile before the enclosed assertion is used to issue
-tokens or return claims.<a href="#section-15.1-17" class="pilcrow">¶</a></p>
-<p id="section-15.1-18">The bindings defined by <code>saml_sp_entity_id</code> and <code>saml_idp_entity_id</code> are
+tokens or return claims.<a href="#section-15.1-18" class="pilcrow">¶</a></p>
+<p id="section-15.1-19">The bindings defined by <code>saml_sp_entity_id</code> and <code>saml_idp_entity_id</code> are
 security-critical, both at the authorization server metadata level and at
 the per-client registration level. If a client can register an arbitrary
 <code>saml_sp_entity_id</code> or <code>saml_idp_entity_id</code>, it may be able to exchange
@@ -4639,41 +4687,41 @@ servers <span class="bcp14">MUST</span> therefore protect registration and admin
 both values according to the rules in
 <a href="#client-registration-saml-sp-entity-id-authorization" class="auto internal xref">Section 6.1.1</a>. In particular,
 anonymous or open dynamic client registration <span class="bcp14">MUST NOT</span> be permitted to
-set either <code>saml_sp_entity_id</code> or <code>saml_idp_entity_id</code>.<a href="#section-15.1-18" class="pilcrow">¶</a></p>
-<p id="section-15.1-19">When multiple OAuth clients share the same <code>saml_sp_entity_id</code>, the
+set either <code>saml_sp_entity_id</code> or <code>saml_idp_entity_id</code>.<a href="#section-15.1-19" class="pilcrow">¶</a></p>
+<p id="section-15.1-20">When multiple OAuth clients share the same <code>saml_sp_entity_id</code>, the
 authorization server is intentionally treating them as the same relying-party
 context. Such sharing <span class="bcp14">MUST</span> therefore be an explicit IdP or authorization server
 policy decision. Accidental sharing can expose the same pairwise <code>sub</code> values
-and claims to clients that should have been isolated from one another.<a href="#section-15.1-19" class="pilcrow">¶</a></p>
-<p id="section-15.1-20">Incorrect <code>amr</code> translation can overstate the assurance of an authentication.
+and claims to clients that should have been isolated from one another.<a href="#section-15.1-20" class="pilcrow">¶</a></p>
+<p id="section-15.1-21">Incorrect <code>amr</code> translation can overstate the assurance of an authentication.
 Implementations <span class="bcp14">SHOULD</span> pass through the SAML <code>AuthnContextClassRef</code> as the
 <code>acr</code> value rather than attempting to derive <code>amr</code> from it, and <span class="bcp14">SHOULD</span> emit
-<code>amr</code> values only when the actual authentication methods are known.<a href="#section-15.1-20" class="pilcrow">¶</a></p>
-<p id="section-15.1-21">Implementations <span class="bcp14">MUST NOT</span> use mutable identifiers, transient identifiers, or
+<code>amr</code> values only when the actual authentication methods are known.<a href="#section-15.1-21" class="pilcrow">¶</a></p>
+<p id="section-15.1-22">Implementations <span class="bcp14">MUST NOT</span> use mutable identifiers, transient identifiers, or
 reassignable <code>NameID</code> formats as OpenID Connect <code>sub</code> values. Doing so would
 break the <code>sub</code> stability requirements and can cause account takeover or
-misbinding after identifier reuse.<a href="#section-15.1-21" class="pilcrow">¶</a></p>
-<p id="section-15.1-22">The introspection alternative can expose normalized claims without minting OAuth
+misbinding after identifier reuse.<a href="#section-15.1-22" class="pilcrow">¶</a></p>
+<p id="section-15.1-23">The introspection alternative can expose normalized claims without minting OAuth
 tokens. Authorization servers therefore <span class="bcp14">MUST</span> strongly authenticate clients to
 the introspection endpoint and <span class="bcp14">MUST</span> return
 <code>"active": false</code> when the client is not entitled to introspect the presented
-SAML assertion.<a href="#section-15.1-22" class="pilcrow">¶</a></p>
-<p id="section-15.1-23">When issuing an ID Token directly from Token Exchange, the authorization server
+SAML assertion.<a href="#section-15.1-23" class="pilcrow">¶</a></p>
+<p id="section-15.1-24">When issuing an ID Token directly from Token Exchange, the authorization server
 <span class="bcp14">MUST</span> ensure that the resulting token meets the same signing, audience, issuer,
 and claim integrity requirements that would apply if the token had been issued
-through an ordinary OpenID Connect flow.<a href="#section-15.1-23" class="pilcrow">¶</a></p>
-<p id="section-15.1-24">Access tokens issued under this profile are bearer tokens by default. They
+through an ordinary OpenID Connect flow.<a href="#section-15.1-24" class="pilcrow">¶</a></p>
+<p id="section-15.1-25">Access tokens issued under this profile are bearer tokens by default. They
 are therefore subject to the usual risks associated with bearer credentials,
 including replay by any party that obtains the token value through
-interception, log leakage, or compromise of an intermediary.<a href="#section-15.1-24" class="pilcrow">¶</a></p>
-<p id="section-15.1-25">Deployments protecting sensitive resources <span class="bcp14">SHOULD</span> consider sender-constrained
+interception, log leakage, or compromise of an intermediary.<a href="#section-15.1-25" class="pilcrow">¶</a></p>
+<p id="section-15.1-26">Deployments protecting sensitive resources <span class="bcp14">SHOULD</span> consider sender-constrained
 access tokens, such as DPoP-bound tokens or mTLS
 client-certificate-bound tokens, in accordance with the underlying OAuth
 sender-constraint specifications. This profile does not preclude their use: a
 Migration Client <span class="bcp14">MAY</span> present a DPoP proof or use mTLS client authentication
 at the token endpoint, and the authorization server <span class="bcp14">MAY</span> issue
 sender-constrained access tokens in the Token Exchange response when its
-policy and the client's registration support that mechanism.<a href="#section-15.1-25" class="pilcrow">¶</a></p>
+policy and the client's registration support that mechanism.<a href="#section-15.1-26" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>

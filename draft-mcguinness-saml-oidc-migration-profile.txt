@@ -613,6 +613,23 @@ Table of Contents
    saml_idp_entity_id parameter.  Anonymous or open dynamic client
    registration MUST NOT be permitted to set or change this value.
 
+   Migration Clients learn their effective saml_idp_entity_id through
+   the registration mechanism by which they were established: statically
+   registered clients receive the value through administrative
+   configuration; dynamically registered clients receive it in the
+   registration response defined by [RFC7591]; and clients with access
+   to a Dynamic Client Registration Management endpoint can refresh
+   their view through RFC 7592.  At runtime, a Migration Client also
+   observes the SAML IdP's effective entityID directly from the Issuer
+   element of the SAML Response or Assertion it receives, which the
+   authorization server then validates against the registered value.  A
+   mismatch produces an invalid_request rejection (see Section 9.3),
+   which clients can use to detect drift between their registration and
+   the IdP's current configuration.  This profile does not define any
+   other discovery mechanism, and in particular does not expose per-
+   client saml_idp_entity_id values through authorization server
+   metadata.
+
 6.3.  saml_metadata_uri
 
    This document also defines saml_metadata_uri as an OPTIONAL client
@@ -1087,6 +1104,17 @@ Table of Contents
    response does not, by itself, require the assertion to be treated as
    exhausted unless local replay policy or SAML OneTimeUse semantics
    require that result.
+
+   A client retry of a transient-failure response (network error,
+   timeout, authorization server overload) using the same SAML assertion
+   is not a replay attack.  Authorization servers SHOULD distinguish
+   idempotent retries from replay attempts -- for example, by
+   recognizing that the same authenticated client is submitting the same
+   Assertion/@ID within a short window after a non-success response, and
+   returning the same outcome rather than rejecting as replay.
+   Deployments enforcing SAML OneTimeUse cannot offer this
+   accommodation, since OneTimeUse consumes the assertion on first
+   successful use regardless of client intent.
 
    Authorization servers SHOULD permit a limited clock skew tolerance
    when evaluating time-based conditions such as Conditions/@NotBefore,
@@ -1591,6 +1619,12 @@ Table of Contents
 
    *  MAY include the sub_id claim defined in Section 12.6 when the
       granted scope includes saml_subject and policy permits release.
+
+   An ID Token issued under this profile MAY be encrypted as a Nested
+   JWT per [OIDC-CORE] when the client has registered an
+   id_token_encrypted_response_alg and the authorization server supports
+   that encryption.  Encryption is independent of the rules above and
+   does not change which claims the ID Token carries.
 
 9.2.5.  Access Token
 
@@ -2710,6 +2744,15 @@ Table of Contents
       migrated session or invalidate the underlying refresh token (if
       any).
 
+   The "migrated session bound to that refresh token" refers to the
+   session represented by the specific refresh token being revoked, not
+   all sessions for the same Local Account.  Revoking one refresh token
+   does not affect other refresh tokens issued for the same Local
+   Account (for example, tokens issued for other devices) unless
+   deployment policy explicitly cascades.  To end all sessions for a
+   Local Account, the authorization server MUST take the account-level
+   action described in Section 14.1.
+
    If the authorization server learns that the resolved Local Account
    has been disabled, deprovisioned, or suspended, it MUST end the
    migrated session as described in Section 14.1.
@@ -2769,8 +2812,10 @@ Table of Contents
    *  Side channels, traffic analysis, and other infrastructure-level
       threats not specific to this profile.
 
-   *  SAML SLO and OIDC logout signaling between the two protocols (see
-      Section 14 for what this profile does and does not address).
+   *  SAML SLO discovery: the mechanism by which the authorization
+      server learns of a SAML session ending.  Propagation from the
+      authorization server to OpenID Connect clients via
+      [OIDC-BC-LOGOUT] is OPTIONAL and addressed in Section 14.
 
    *  End-user account compromise upstream of the SAML IdP.
 
@@ -2813,6 +2858,16 @@ Table of Contents
    (http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha1).  Authorization
    servers SHOULD require RSA with SHA-256 or stronger and SHOULD
    document their minimum acceptable algorithm requirements.
+
+   Beyond SHA-1, deployments SHOULD reject other algorithms whose
+   security margins are no longer adequate by current cryptographic
+   guidance -- including MD5-based digests, RSA signatures with key
+   sizes below 2048 bits, and elliptic curves with effective security
+   below 128 bits.  Authorization servers SHOULD track current guidance
+   from bodies such as NIST and ENISA and adjust their minimum-algorithm
+   policy accordingly.  SHA-1 is named explicitly above because of its
+   prevalence in legacy SAML deployments; other deprecated algorithms
+   are subject to the same prohibition by this rule.
 
    When an authorization server or migration tooling fetches the
    saml_metadata_uri at either the authorization server metadata level
