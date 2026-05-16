@@ -122,6 +122,8 @@ Table of Contents
      12.4.  Public Subject Identifier Mapping
      12.5.  Common Rules
      12.6.  SAML Subject Identifier Claim
+       12.6.1.  Eligible NameID Formats
+       12.6.2.  Release Rules
    13. Claim Mapping
      13.1.  Authentication Event Claims
      13.2.  Attribute Claims
@@ -964,8 +966,9 @@ Table of Contents
        *  no nested Response/Status/StatusCode/StatusCode element is
           present;
 
-   4.  validate the effective Assertion according to SAML 2.0 processing
-       rules, including Assertion/Issuer, time validity (enforcing both
+   4.  validate the effective Assertion according to the assertion
+       processing rules in [SAML2-CORE] Section 3.5, including
+       Assertion/Issuer, time validity (enforcing both
        Conditions/@NotBefore and Conditions/@NotOnOrAfter), conditions,
        and subject confirmation;
 
@@ -976,9 +979,12 @@ Table of Contents
        AudienceRestriction element;
 
    7.  verify that the bound saml_sp_entity_id appears as an Audience
-       value in at least one AudienceRestriction element; additional
-       Audience values are permitted and MUST NOT by themselves
-       invalidate the assertion; and
+       value in every AudienceRestriction element in the effective
+       assertion, since multiple AudienceRestriction elements are
+       conjunctive under [SAML2-CORE] Section 2.5.1.4 (each restriction
+       must be satisfied independently).  Additional Audience values
+       within each AudienceRestriction are permitted and MUST NOT by
+       themselves invalidate the assertion; and
 
    8.  reject the SAML input if the authenticated client, the
        saml_sp_entity_id registered to that client, and the validated
@@ -1814,8 +1820,11 @@ Table of Contents
 
    *  MUST include the mapped sub value defined by Section 12;
 
-   *  MAY include auth_time, acr, amr, sid, sub_id, and attribute-
-      derived claims defined by Section 13; and
+   *  MAY include auth_time, acr, amr, sid, and attribute-derived claims
+      defined by Section 13;
+
+   *  MAY include the sub_id claim defined in Section 12.6 when the
+      introspection-endpoint policy permits release; and
 
    *  MUST NOT include claims that would not be releasable to the same
       relying party under this profile.
@@ -2269,6 +2278,44 @@ Table of Contents
    validated value.  Encrypted NameID forms (EncryptedID) are rejected
    under Section 8.3 and MUST NOT appear in sub_id.
 
+12.6.1.  Eligible NameID Formats
+
+   A sub_id with saml-nameid format is a stable subject identifier
+   reference; consumers persist its members and use them for legacy
+   correlation.  The authorization server MUST therefore restrict the
+   NameID formats it exposes:
+
+   *  urn:oasis:names:tc:SAML:2.0:nameid-format:persistent -- MAY appear
+      in sub_id.
+
+   *  urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified -- MAY
+      appear in sub_id only when local policy has established the NameID
+      as stable and non-reassignable for the trusted SAML issuer (the
+      same condition imposed in Section 12.1).
+
+   *  urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress -- SHOULD
+      NOT appear in sub_id.  Email-format NameIDs are mutable account
+      attributes, not stable identifiers; exposing them through sub_id
+      misleads consumers that treat sub_id as a durable reference.  If
+      an emailAddress NameID is nonetheless included, its presence MUST
+      NOT by itself cause the authorization server to emit
+      email_verified=true for the corresponding email claim.
+
+   *  urn:oasis:names:tc:SAML:2.0:nameid-format:transient -- MUST NOT
+      appear in sub_id.  Transient NameIDs are session-scoped and lose
+      meaning across sessions.
+
+   *  urn:oasis:names:tc:SAML:2.0:nameid-format:entity -- MUST NOT
+      appear in sub_id.  Entity NameIDs identify systems rather than
+      end-users.
+
+   If the effective SAML assertion contains no usable NameID element
+   (for example, when the assertion conveys subject information solely
+   through subject-id or pairwise-id attributes), the authorization
+   server MUST NOT emit sub_id with the saml-nameid format.
+
+12.6.2.  Release Rules
+
    The authorization server MUST release sub_id only when authorized by
    the claim release policy for the relying-party relationship
    represented by the bound saml_sp_entity_id, and MUST NOT release it
@@ -2283,10 +2330,6 @@ Table of Contents
 
    The sub_id claim supplements sub; it does not replace it.  The sub
    claim remains the primary continuity point under Section 12.
-
-   A sub_id with nameid_format of urn:oasis:names:tc:SAML:1.1:nameid-
-   format:emailAddress MUST NOT by itself cause the authorization server
-   to emit email_verified=true for the corresponding email claim.
 
 13.  Claim Mapping
 
