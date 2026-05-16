@@ -841,18 +841,22 @@ The authorization server MUST:
    * the top-level `Response/Status/StatusCode/@Value` is
      `urn:oasis:names:tc:SAML:2.0:status:Success`; and
    * no nested `Response/Status/StatusCode/StatusCode` element is present;
-4. validate the effective `Assertion` according to SAML 2.0 processing rules,
-   including `Assertion/Issuer`, time validity (enforcing both
-   `Conditions/@NotBefore` and `Conditions/@NotOnOrAfter`), conditions, and
-   subject confirmation;
+4. validate the effective `Assertion` according to the assertion
+   processing rules in {{SAML2-CORE}} Section 3.5, including
+   `Assertion/Issuer`, time validity (enforcing both
+   `Conditions/@NotBefore` and `Conditions/@NotOnOrAfter`), conditions,
+   and subject confirmation;
 5. verify that the effective SAML `Assertion/Issuer` value matches the Trusted
    SAML IdP Entity ID defined in {{saml-and-oauth-issuer-boundary}};
 6. verify that the effective `Assertion` contains at least one
    `AudienceRestriction` element;
-7. verify that the bound `saml_sp_entity_id` appears as an `Audience` value
-   in at least one `AudienceRestriction` element; additional `Audience`
-   values are permitted and MUST NOT by themselves invalidate the assertion;
-   and
+7. verify that the bound `saml_sp_entity_id` appears as an `Audience`
+   value in every `AudienceRestriction` element in the effective
+   assertion, since multiple `AudienceRestriction` elements are
+   conjunctive under {{SAML2-CORE}} Section 2.5.1.4 (each restriction
+   must be satisfied independently). Additional `Audience` values within
+   each `AudienceRestriction` are permitted and MUST NOT by themselves
+   invalidate the assertion; and
 8. reject the SAML input if the authenticated client, the
    `saml_sp_entity_id` registered to that client, and the validated
    `Audience` matching that `saml_sp_entity_id` do not all align, as
@@ -1521,8 +1525,10 @@ the SAML assertion content; the protocol mirror is the `saml` object.
 The top-level identity claims:
 
 * MUST include the mapped `sub` value defined by {{subject-identifier-mapping}};
-* MAY include `auth_time`, `acr`, `amr`, `sid`, `sub_id`, and
-  attribute-derived claims defined by {{claim-mapping}}; and
+* MAY include `auth_time`, `acr`, `amr`, `sid`, and attribute-derived
+  claims defined by {{claim-mapping}};
+* MAY include the `sub_id` claim defined in {{saml-subject-identifier-claim}}
+  when the introspection-endpoint policy permits release; and
 * MUST NOT include claims that would not be releasable to the same
   relying party under this profile.
 
@@ -1942,6 +1948,39 @@ The authorization server MUST omit any member for which it has no
 validated value. Encrypted NameID forms (`EncryptedID`) are rejected
 under {{encrypted-content}} and MUST NOT appear in `sub_id`.
 
+### Eligible NameID Formats {#sub-id-eligible-nameid-formats}
+
+A `sub_id` with `saml-nameid` format is a stable subject identifier
+reference; consumers persist its members and use them for legacy
+correlation. The authorization server MUST therefore restrict the
+NameID formats it exposes:
+
+* `urn:oasis:names:tc:SAML:2.0:nameid-format:persistent` -- MAY appear
+  in `sub_id`.
+* `urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified` -- MAY appear
+  in `sub_id` only when local policy has established the NameID as
+  stable and non-reassignable for the trusted SAML issuer (the same
+  condition imposed in {{nameid-format-recognition}}).
+* `urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress` -- SHOULD
+  NOT appear in `sub_id`. Email-format NameIDs are mutable account
+  attributes, not stable identifiers; exposing them through `sub_id`
+  misleads consumers that treat `sub_id` as a durable reference. If an
+  emailAddress NameID is nonetheless included, its presence MUST NOT by
+  itself cause the authorization server to emit `email_verified=true`
+  for the corresponding `email` claim.
+* `urn:oasis:names:tc:SAML:2.0:nameid-format:transient` -- MUST NOT
+  appear in `sub_id`. Transient NameIDs are session-scoped and lose
+  meaning across sessions.
+* `urn:oasis:names:tc:SAML:2.0:nameid-format:entity` -- MUST NOT appear
+  in `sub_id`. Entity NameIDs identify systems rather than end-users.
+
+If the effective SAML assertion contains no usable `NameID` element
+(for example, when the assertion conveys subject information solely
+through `subject-id` or `pairwise-id` attributes), the authorization
+server MUST NOT emit `sub_id` with the `saml-nameid` format.
+
+### Release Rules {#sub-id-release-rules}
+
 The authorization server MUST release `sub_id` only when authorized by
 the claim release policy for the relying-party relationship represented
 by the bound `saml_sp_entity_id`, and MUST NOT release it solely because
@@ -1957,11 +1996,6 @@ claim release policy above.
 The `sub_id` claim supplements `sub`; it does not replace it. The `sub`
 claim remains the primary continuity point under
 {{subject-identifier-mapping}}.
-
-A `sub_id` with `nameid_format` of
-`urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress` MUST NOT by
-itself cause the authorization server to emit `email_verified=true` for
-the corresponding `email` claim.
 
 # Claim Mapping {#claim-mapping}
 
