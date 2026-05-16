@@ -1220,11 +1220,10 @@ and authentication claims in a signed, verifiable format. Any returned ID Token:
   `AuthnStatement`, if known, in the `auth_time` claim; and
 * MAY include the `sub_id` claim defined in
   {{saml-subject-identifier-claim}} when the granted scope includes
-  `saml_subject` and the claim release policy permits its release. When
-  `sub_id` is included, the authorization server MUST derive its members
-  from the originally validated SAML NameID context that established
-  this refresh token; this requires the authorization server to persist
-  that context alongside the refresh token state.
+  `saml_subject` and policy permits release; if included, its members
+  MUST be derived from the SAML NameID context that established the
+  refresh token, which the authorization server therefore persists
+  alongside the refresh token state.
 
 Subsequent refresh token responses are governed by {{OIDC-CORE}}. If an
 ID Token is returned in a later refresh response, it MUST continue to preserve
@@ -1315,8 +1314,8 @@ When issuing an ID Token directly from Token Exchange, that ID Token:
 * SHOULD NOT include `azp`. If `azp` is included, it MUST equal the
   authenticated client identifier; and
 * MAY include the `sub_id` claim defined in {{saml-subject-identifier-claim}}
-  when the granted scope includes `saml_subject` and the claim release
-  policy permits its release.
+  when the granted scope includes `saml_subject` and policy permits
+  release.
 
 ### Access Token {#token-exchange-access-token}
 
@@ -1505,20 +1504,19 @@ For an active SAML assertion, the authorization server MUST return an
 introspection response as defined by {{RFC7662}} with:
 
 * `active` set to `true`;
-* the normalized identity claims derived from the SAML assertion for this
-  client (`sub` and any of `sub_id`, `auth_time`, `acr`, `amr`, `sid`, and
+* the normalized identity claims for this client (`sub` and, where
+  applicable, `sub_id`, `auth_time`, `acr`, `amr`, `sid`, and
   attribute-derived claims defined by {{claim-mapping}}) returned as
-  top-level members of the response, in parallel with how those claims
-  appear in ID Tokens and UserInfo responses; and
+  top-level members, in parallel with how those claims appear in ID
+  Tokens and UserInfo responses; and
 * `saml`, when returned, set to a JSON object containing normalized SAML
   protocol metadata as defined below.
 
-The identity claims returned at the top level of the introspection response
-contain values that have been processed by the authorization server under
-{{local-subject-resolution}}, {{subject-identifier-mapping}}, and
-{{claim-mapping}}, including subject resolution and claim release policy.
-These values are not a literal mirror of SAML assertion content; the
-protocol mirror of the assertion is the `saml` object.
+The top-level identity claims are values that the authorization server
+has already processed under {{local-subject-resolution}},
+{{subject-identifier-mapping}}, and {{claim-mapping}}, including subject
+resolution and claim release policy. They are not a literal mirror of
+the SAML assertion content; the protocol mirror is the `saml` object.
 
 The top-level identity claims:
 
@@ -1530,15 +1528,6 @@ The top-level identity claims:
 
 The authorization server SHOULD return only the minimum normalized claims
 necessary for the authorized client and applicable relying-party policy.
-
-The authorization server MUST release `sub_id` in the introspection
-response only when authorized by the claim release policy for the
-relying-party relationship represented by the bound `saml_sp_entity_id`,
-under the same conditions defined in
-{{saml-subject-identifier-claim}}. The `saml_subject` scope value does
-not apply to introspection requests; introspection clients indicate
-their entitlement to `sub_id` through the authorization server's policy
-for the introspection endpoint.
 
 The `saml` object contains SAML protocol metadata, not end-user identity
 claims. The authorization server MUST NOT duplicate end-user identity
@@ -1575,8 +1564,20 @@ The `saml` object MAY contain these members:
 : JSON object containing values from the effective SAML `Assertion`.
 
 `attributes`:
-: Array of JSON objects mirroring SAML attributes from the assertion's
-  `AttributeStatement` elements. Defined in detail below.
+: Array of JSON objects, each mirroring one logical SAML attribute
+  derived from the assertion's `AttributeStatement` elements after the
+  combining rules in {{attribute-claims}}. Each object MUST include a
+  `name` member (the SAML `Name` value) and a `values` member (a JSON
+  array of the attribute's `AttributeValue` contents), and MAY include
+  `name_format` (the `NameFormat` URI when present) and `friendly_name`
+  (the `FriendlyName` when present). Values inside `values` MUST follow
+  the typing rules defined in {{attribute-claims}}; in particular, XML
+  schema booleans MAY be emitted as JSON booleans and numeric types as
+  JSON numbers when the XML type is unambiguous, with all other values
+  emitted as JSON strings. The `attributes` member is intended for
+  clients that require the wire-form SAML attribute names (for example,
+  `urn:oid:` identifiers) in addition to the normalized top-level
+  identity claims.
 
 When present, the `response` object MAY contain these members:
 
@@ -1648,21 +1649,6 @@ When present, the `assertion` object MAY contain these members:
     The authorization server MUST omit any member for which it has no
     extracted value.
 
-When present, the `attributes` member of the `saml` object is an array of
-JSON objects, each mirroring one logical SAML attribute derived from the
-assertion's `AttributeStatement` elements after the combining rules in
-{{attribute-claims}}. Each object MUST include a `name` member (the SAML
-`Name` value) and a `values` member (a JSON array of the attribute's
-`AttributeValue` contents), and MAY include `name_format` (the
-`NameFormat` URI when present) and `friendly_name` (the `FriendlyName`
-when present). Values inside `values` MUST follow the typing rules
-defined in {{attribute-claims}}; in particular, XML schema booleans MAY
-be emitted as JSON booleans and numeric types as JSON numbers when the
-XML type is unambiguous, with all other values emitted as JSON strings.
-The `attributes` member is intended for clients that require the
-wire-form SAML attribute names (for example, `urn:oid:` identifiers) in
-addition to the normalized top-level identity claims.
-
 Date and time values in the `saml` object SHOULD be represented as strings
 preserving the SAML dateTime semantics. Implementations MAY normalize
 equivalent dateTime values to a consistent UTC representation. Clients MUST
@@ -1677,9 +1663,8 @@ OAuth token is being issued by the introspection operation.
 
 If the introspection request is malformed, for example because the `token`
 parameter is absent or its value cannot be decoded as valid base64url, the
-authorization
-server MUST return an HTTP 400 (Bad Request) error response as defined by
-{{RFC7662}}, not an introspection response.
+authorization server MUST return an HTTP 400 (Bad Request) error response
+as defined by {{RFC7662}}, not an introspection response.
 
 If client authentication fails, or if the client is not authorized to use the
 introspection endpoint at all, the authorization server MUST return an HTTP 401
@@ -1911,19 +1896,18 @@ context. In particular:
 
 ## SAML Subject Identifier Claim {#saml-subject-identifier-claim}
 
-For migrated clients that need access to the original SAML `NameID`
-context (for example, to correlate sessions against legacy SAML-keyed
-audit logs or account databases), this document defines the `sub_id`
-claim and a corresponding SAML NameID identifier format.
+This document defines the `sub_id` claim, which carries the original
+SAML `NameID` context alongside `sub`. It exists for migrated clients
+that need that context -- for example, to correlate sessions against
+legacy SAML-keyed audit logs or account databases.
 
-The `sub_id` claim is a JSON object following the subject identifier
-pattern established by {{RFC9493}}. The claim itself is generic: the
-`format` member discriminates among possible identifier shapes, and
-future profiles may register additional formats in the IANA "Security
-Event Identifier Formats" registry. This document defines a single
-format, `saml-nameid`, for use with SAML NameID values. When present in
-an ID Token or UserInfo response under this profile, the `sub_id` object
-MUST include a `format` member.
+`sub_id` is a JSON object following the subject identifier pattern of
+{{RFC9493}}. The `format` member discriminates among possible identifier
+shapes; future profiles may register additional formats in the IANA
+"Security Event Identifier Formats" registry. This document defines one
+format, `saml-nameid`, for SAML NameID values. When `sub_id` is present
+in an ID Token, UserInfo response, or introspection response under this
+profile, it MUST include a `format` member.
 
 When `format` is `saml-nameid`, the `sub_id` object MAY contain the
 following members:
@@ -1955,34 +1939,36 @@ following members:
   present.
 
 The authorization server MUST omit any member for which it has no
-validated value. Encrypted SAML NameID forms (`EncryptedID`) are
-rejected by this profile under {{encrypted-content}} and MUST NOT
-appear in `sub_id`.
+validated value. Encrypted NameID forms (`EncryptedID`) are rejected
+under {{encrypted-content}} and MUST NOT appear in `sub_id`.
 
 The authorization server MUST release `sub_id` only when authorized by
 the claim release policy for the relying-party relationship represented
-by the bound `saml_sp_entity_id`, and SHOULD gate release on the
-`saml_subject` scope value defined by this document. The authorization
-server MUST NOT release `sub_id` solely because the underlying SAML
-assertion contains a `NameID`.
+by the bound `saml_sp_entity_id`, and MUST NOT release it solely because
+the SAML assertion contains a `NameID`.
 
-The `sub_id` claim does not replace the `sub` claim. The `sub` claim
-remains the primary continuity point under
-{{subject-identifier-mapping}}; `sub_id` carries the original SAML
-identifier context as supplementary information for clients that need
-it.
+In contexts that carry an OAuth scope -- Token Exchange issuing an ID
+Token or refresh token, and UserInfo requests -- release SHOULD be gated
+on the `saml_subject` scope. In contexts without OAuth scope, such as
+introspection requests, scope gating does not apply; the authorization
+server's policy for that endpoint authorizes release in addition to the
+claim release policy above.
 
-When the SAML `NameID/@Format` is
-`urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress`, the presence
-of that value in `sub_id` MUST NOT by itself cause the authorization
-server to emit `email_verified=true` for the corresponding `email`
-claim.
+The `sub_id` claim supplements `sub`; it does not replace it. The `sub`
+claim remains the primary continuity point under
+{{subject-identifier-mapping}}.
+
+A `sub_id` with `nameid_format` of
+`urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress` MUST NOT by
+itself cause the authorization server to emit `email_verified=true` for
+the corresponding `email` claim.
 
 # Claim Mapping {#claim-mapping}
 
-The mappings in this section apply to ID Tokens and, when applicable, UserInfo
-responses. Values derived from SAML subject identifiers or authentication
-statements take precedence over generic attribute mapping.
+The mappings in this section apply to ID Tokens, UserInfo responses, and
+introspection responses under this profile. Values derived from SAML
+subject identifiers or authentication statements take precedence over
+generic attribute mapping.
 
 ## Authentication Event Claims {#authentication-event-claims}
 
@@ -2193,8 +2179,8 @@ The UserInfo response:
 * MUST apply the claim mapping rules in {{authentication-event-claims}} and
   {{attribute-claims}} to any returned claims;
 * MAY include the `sub_id` claim defined in {{saml-subject-identifier-claim}}
-  when the granted scope includes `saml_subject` and the claim release
-  policy permits its release; and
+  when the granted scope includes `saml_subject` and policy permits
+  release; and
 * MUST NOT include claims that would not be releasable to the same relying
   party under this profile.
 
