@@ -351,6 +351,18 @@ confirmation fields such as `Recipient` and `InResponseTo` as part of its own
 front-channel SAML processing before submitting the assertion to the
 authorization server.
 
+An authorization server MAY support both this profile and {{RFC7522}} at
+the same token endpoint. The `grant_type` parameter disambiguates them
+without ambiguity: this profile uses
+`urn:ietf:params:oauth:grant-type:token-exchange` with the SAML assertion
+in `subject_token`, while RFC 7522 uses
+`urn:ietf:params:oauth:grant-type:saml2-bearer` with the SAML assertion
+in `assertion`. The two grant types have incompatible audience semantics
+(this profile binds the assertion audience to the `saml_sp_entity_id`;
+RFC 7522 binds it to the authorization server), so the routing decision
+is determined entirely by `grant_type` and not by inspection of the
+assertion. A single client registration MAY enable both grant types.
+
 # Authorization and Consent Model {#authorization-and-consent-model}
 
 The authorization server MUST NOT treat a valid SAML assertion as end-user
@@ -1278,18 +1290,8 @@ MAY obtain a new SAML assertion through the SAML 2.0 deployment and perform a
 new Token Exchange request. The client MAY also use any other OAuth 2.0 or
 OpenID Connect flow that the authorization server supports.
 
-If the authorization server learns that the resolved Local Account has been
-disabled, that the authoritative SAML-authenticated session has terminated,
-or that administrative policy has revoked the migrated session, it MUST
-reject further use of any derived refresh token for session-preserving
-operations. It SHOULD also revoke or expire related access tokens and other
-session-bound artifacts according to local capabilities.
-
-This document does not define a logout or revocation signaling protocol
-between the SAML IdP and the authorization server. Deployments that support
-back-channel session termination signaling MAY use the mechanisms defined by
-{{OIDC-BC-LOGOUT}} to propagate SAML session termination events to registered
-OpenID Connect clients.
+Session termination and revocation for refresh tokens issued under this
+profile are defined in {{session-termination-and-revocation}}.
 
 ### ID Token {#token-exchange-id-token}
 
@@ -2084,10 +2086,8 @@ particular:
 * once `SessionNotOnOrAfter` has passed, the authorization server MUST reject
   further session-preserving use of the assertion or derived refresh token.
 
-If the authorization server receives an authoritative signal that the
-underlying SAML-authenticated session ended earlier than
-`SessionNotOnOrAfter`, it MUST treat that earlier event as the operative end of
-the migrated session for purposes of this profile.
+Earlier session-end signals and revocation cascade are defined in
+{{session-termination-and-revocation}}.
 
 The following SAML data has no direct standard OpenID Connect claim mapping:
 
@@ -2256,7 +2256,121 @@ authorization server MAY retain the issuance-time policy snapshot for
 continuity, but MUST NOT use that snapshot to return claims disallowed by
 current policy or by the current Local Account or session state.
 
+# Session Termination and Revocation {#session-termination-and-revocation}
+
+A token issued under this profile is anchored to a SAML-authenticated
+session that may end before the token itself would otherwise expire.
+This section defines how the authorization server connects session
+termination signals to tokens it has issued, and how token revocation
+under this profile cascades through derived artifacts. It does not
+define a protocol for signaling SAML SLO between the SAML IdP and the
+authorization server; that is out of scope.
+
+## Session Termination {#session-termination}
+
+The authorization server MUST treat the earlier of the following as the
+operative end of the migrated session for a given originating SAML
+assertion:
+
+* the assertion's `SessionNotOnOrAfter` value, when present in the
+  authoritative `AuthnStatement` ({{authentication-event-claims}});
+* any authoritative signal that the underlying SAML-authenticated
+  session ended earlier (for example, a SAML SLO event observed at the
+  IdP that the authorization server learns through deployment-specific
+  means);
+* an authorization server policy decision to terminate the migrated
+  session (administrative action, risk-based revocation, etc.).
+
+When the migrated session has ended, the authorization server:
+
+* MUST reject further use of any refresh token derived from the
+  originating assertion for session-preserving operations;
+* SHOULD revoke or expire access tokens derived from those refresh
+  tokens according to local capabilities; and
+* MAY propagate the termination to OpenID Connect clients through
+  {{OIDC-BC-LOGOUT}} when the deployment supports back-channel logout
+  signaling, using the `sid` claim
+  ({{authentication-event-claims}}) to identify the affected session.
+
+This document does not define how the authorization server discovers
+SAML SLO events. Deployments that require coordinated SAML and OIDC
+logout MUST establish that discovery through deployment-specific means
+outside this profile.
+
+## Token Revocation {#token-revocation}
+
+OAuth 2.0 Token Revocation {{RFC7009}} applies to tokens issued under
+this profile without modification. Beyond the generic RFC 7009 rules,
+this profile imposes the following cascade semantics:
+
+* revocation of a refresh token issued under this profile MUST end the
+  migrated session bound to that refresh token. The authorization
+  server SHOULD revoke or expire all access tokens derived from the
+  revoked refresh token according to local capabilities;
+* revocation of an access token issued under this profile MUST end
+  that token's usability but does not by itself terminate the migrated
+  session or invalidate the underlying refresh token (if any).
+
+If the authorization server learns that the resolved Local Account has
+been disabled, deprovisioned, or suspended, it MUST end the migrated
+session as described in {{session-termination}}.
+
+A subsequent submission of a new SAML assertion through this profile
+({{token-exchange-using-a-saml-assertion}}) establishes a new migrated
+session that is not affected by the prior revocation.
+
 # Security Considerations {#security-considerations}
+
+## Threat Model {#threat-model}
+
+This profile assumes the following:
+
+* The SAML IdP and the authorization server are operated by, or under the
+  administrative control of, the same authority (see
+  {{applicability-and-deployment-model}}). They share a trust boundary,
+  but are network-separated components that communicate through their
+  respective protocols.
+* Migration Clients are confidential clients (public clients are
+  excluded; see {{client-registration-saml-sp-entity-id}}). Their client
+  authentication credentials are not directly disclosed to end-users.
+* The Migration Client's `saml_sp_entity_id` (and per-client
+  `saml_idp_entity_id` if used) binding is established under the
+  authorization rules in
+  {{client-registration-saml-sp-entity-id-authorization}}; self-asserted
+  dynamic registration of these values is disallowed.
+
+The following attacker capabilities are in scope:
+
+* An attacker who obtains a SAML assertion in transit (through XSS in
+  the SP, intermediary compromise, log leakage, or similar). The
+  three-way binding ({{migration-binding-rationale}}) and replay
+  detection ({{replay-and-freshness}}) limit what such an assertion
+  enables.
+* An attacker who attempts to dynamically register a client with a
+  `saml_sp_entity_id` or `saml_idp_entity_id` they are not authorized
+  to bind. The registration authorization rules
+  ({{client-registration-saml-sp-entity-id-authorization}}) require
+  out-of-band authorization for these values.
+* An attacker who attempts XML Signature Wrapping, replay, or
+  algorithm-downgrade attacks against a submitted SAML assertion. The
+  signature, replay, and algorithm rules in
+  {{saml-input-validation-and-binding}} and the considerations below
+  address these.
+* An attacker who attempts to induce SSRF through a maliciously
+  registered `saml_metadata_uri`. HTTPS-only fetches, redirect
+  restrictions, and host allowlisting limit this.
+
+The following are out of scope for this profile and remain the
+deployment's responsibility:
+
+* Compromise of the SAML IdP or the authorization server themselves
+  (including their signing keys).
+* Side channels, traffic analysis, and other infrastructure-level
+  threats not specific to this profile.
+* SAML SLO and OIDC logout signaling between the two protocols
+  (see {{session-termination-and-revocation}} for what this profile
+  does and does not address).
+* End-user account compromise upstream of the SAML IdP.
 
 When a SAML assertion is submitted without an `InResponseTo` element in its
 `SubjectConfirmationData`, the authorization server cannot confirm that the
@@ -2949,6 +3063,68 @@ the authorization server SHOULD prefer standard OpenID Connect claims when
 there is a good semantic match and SHOULD retain the original attribute
 semantics in private claims rather than mapping them to unrelated standard
 claims such as `groups`, `roles`, or `scope`.
+
+# Authentication Context Mapping Examples
+
+This appendix is non-normative.
+
+The `acr` and `amr` mapping rules in {{authentication-event-claims}}
+defer to local policy for the choice of registered Level-of-Assurance
+scheme. This appendix provides example mappings from common SAML
+`AuthnContextClassRef` URIs to OpenID Connect `acr` values and to `amr`
+values from the IANA "Authentication Method Reference Values" registry
+{{RFC8176}}. Deployments MAY adopt these mappings, adjust them, or
+define their own as local policy dictates.
+
+## Common SAML AuthnContextClassRef URIs
+
+| SAML AuthnContextClassRef | Suggested `amr` | Suggested `acr` (NIST 800-63) | Suggested `acr` (REFEDS) |
+| --- | --- | --- | --- |
+| `urn:oasis:names:tc:SAML:2.0:ac:classes:Password` | `["pwd"]` | aal1 | `https://refeds.org/assurance/IAP/low` |
+| `urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport` | `["pwd"]` | aal1 | `https://refeds.org/assurance/IAP/low` |
+| `urn:oasis:names:tc:SAML:2.0:ac:classes:TLSClient` | `["mfa", "swk"]` (when client cert + password) | aal2 | `https://refeds.org/assurance/IAP/medium` |
+| `urn:oasis:names:tc:SAML:2.0:ac:classes:X509` | (single factor) `["swk"]` or `["hwk"]` depending on key storage | varies | varies |
+| `urn:oasis:names:tc:SAML:2.0:ac:classes:Smartcard` | `["sc"]` | varies | varies |
+| `urn:oasis:names:tc:SAML:2.0:ac:classes:SmartcardPKI` | `["sc", "hwk"]` | aal2 or aal3 | `https://refeds.org/assurance/IAP/medium` or higher |
+| `urn:oasis:names:tc:SAML:2.0:ac:classes:Kerberos` | `["pwd"]` (typically Kerberos backed by password) | aal1 | `https://refeds.org/assurance/IAP/low` |
+| `urn:oasis:names:tc:SAML:2.0:ac:classes:TimeSyncToken` | `["otp"]` | aal2 | `https://refeds.org/assurance/IAP/medium` |
+| `urn:oasis:names:tc:SAML:2.0:ac:classes:MultiFactorContract` | `["mfa"]` | aal2 | `https://refeds.org/assurance/IAP/medium` |
+| `urn:oasis:names:tc:SAML:2.0:ac:classes:MultiFactorPhysicalContract` | `["mfa", "hwk"]` | aal3 | `https://refeds.org/assurance/IAP/high` |
+| `urn:oasis:names:tc:SAML:2.0:ac:classes:PreviousSession` | (none; SAML deployment-specific) | (none) | (none) |
+| `urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified` | (none) | (none) | (none) |
+
+## Notes on these mappings
+
+* `amr` is a JSON array; multi-factor SAML classes naturally produce
+  multiple values (typically including `mfa`).
+* `acr` values shown for NIST 800-63 are strings of the form `"aal1"`,
+  `"aal2"`, `"aal3"`. Deployments MAY use URI forms such as those
+  defined by REFEDS for federated higher-education contexts.
+* The Smartcard / SmartcardPKI / X509 rows depend heavily on key
+  storage (software vs. hardware-bound) and whether a second factor
+  (PIN, password) is also asserted. Deployments SHOULD configure the
+  mapping based on the IdP's actual authentication setup, not the
+  SAML class URI alone.
+* The Kerberos row reflects that most enterprise Kerberos deployments
+  are password-derived; deployments using stronger Kerberos factors
+  (smart card initial credentials, etc.) SHOULD map accordingly.
+* `PreviousSession` and `unspecified` provide no derivable assurance
+  signal; `acr` SHOULD be omitted, and `amr` SHOULD NOT be populated
+  from them.
+* When the SAML deployment uses non-standard `AuthnContextClassRef`
+  URIs (vendor-specific, IdP-specific, or federation-defined), the
+  authorization server MAY pass the URI through to `acr` per
+  {{authentication-event-claims}}, with `amr` populated only when the
+  local mapping explicitly authorizes specific values.
+
+## Pass-through and absence
+
+When local policy does not provide a mapping for an asserted
+`AuthnContextClassRef`, the authorization server SHOULD copy the SAML
+URI to `acr` without transformation per
+{{authentication-event-claims}}. The authorization server MUST NOT
+populate `amr` in this case, since deriving `amr` from an unmapped
+class URI would overstate the assurance.
 
 # Acknowledgments
 {:numbered="false"}
