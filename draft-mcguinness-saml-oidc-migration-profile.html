@@ -1062,7 +1062,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </tr></thead>
 <tfoot><tr>
 <td class="left">McGuinness</td>
-<td class="center">Expires 16 November 2026</td>
+<td class="center">Expires 17 November 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1075,12 +1075,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-mcguinness-saml-oidc-migration-profile-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-05-15" class="published">15 May 2026</time>
+<time datetime="2026-05-16" class="published">16 May 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-11-16">16 November 2026</time></dd>
+<dd class="expires"><time datetime="2026-11-17">17 November 2026</time></dd>
 <dt class="label-authors">Author:</dt>
 <dd class="authors">
 <div class="author">
@@ -1136,7 +1136,7 @@ changing the underlying SSO trust model or relinking existing user accounts.<a h
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 16 November 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 17 November 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1330,6 +1330,9 @@ changing the underlying SSO trust model or relinking existing user accounts.<a h
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.5">
                 <p id="section-toc.1-1.12.2.5.1"><a href="#section-12.5" class="auto internal xref">12.5</a>.  <a href="#name-common-rules" class="internal xref">Common Rules</a></p>
 </li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.6">
+                <p id="section-toc.1-1.12.2.6.1"><a href="#section-12.6" class="auto internal xref">12.6</a>.  <a href="#name-saml-subject-identifier-cla" class="internal xref">SAML Subject Identifier Claim</a></p>
+</li>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13">
@@ -1366,6 +1369,15 @@ changing the underlying SSO trust model or relinking existing user accounts.<a h
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.4">
                 <p id="section-toc.1-1.16.2.4.1"><a href="#section-16.4" class="auto internal xref">16.4</a>.  <a href="#name-oauth-token-introspection-r" class="internal xref">OAuth Token Introspection Response Registry</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.5">
+                <p id="section-toc.1-1.16.2.5.1"><a href="#section-16.5" class="auto internal xref">16.5</a>.  <a href="#name-json-web-token-claims" class="internal xref">JSON Web Token Claims</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.6">
+                <p id="section-toc.1-1.16.2.6.1"><a href="#section-16.6" class="auto internal xref">16.6</a>.  <a href="#name-oauth-scope-values" class="internal xref">OAuth Scope Values</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.7">
+                <p id="section-toc.1-1.16.2.7.1"><a href="#section-16.7" class="auto internal xref">16.7</a>.  <a href="#name-security-event-identifier-f" class="internal xref">Security Event Identifier Formats</a></p>
 </li>
             </ul>
 </li>
@@ -3012,11 +3024,16 @@ translation of the SAML assertion lifetime;<a href="#section-9.2.4-2.7.1" class=
             <li class="normal" id="section-9.2.4-2.8">
               <p id="section-9.2.4-2.8.1"><span class="bcp14">MUST NOT</span> include <code>nonce</code>, <code>at_hash</code>, or <code>c_hash</code>, because no preceding
 OpenID Connect authentication request or authorization code exists from
-which these values could be derived; and<a href="#section-9.2.4-2.8.1" class="pilcrow">¶</a></p>
+which these values could be derived;<a href="#section-9.2.4-2.8.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-9.2.4-2.9">
               <p id="section-9.2.4-2.9.1"><span class="bcp14">SHOULD NOT</span> include <code>azp</code>. If <code>azp</code> is included, it <span class="bcp14">MUST</span> equal the
-authenticated client identifier.<a href="#section-9.2.4-2.9.1" class="pilcrow">¶</a></p>
+authenticated client identifier; and<a href="#section-9.2.4-2.9.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-9.2.4-2.10">
+              <p id="section-9.2.4-2.10.1"><span class="bcp14">MAY</span> include the <code>sub_id</code> claim defined in <a href="#saml-subject-identifier-claim" class="auto internal xref">Section 12.6</a>
+when the granted scope includes <code>saml_subject</code> and the claim release
+policy permits its release.<a href="#section-9.2.4-2.10.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
 </section>
@@ -3839,6 +3856,92 @@ as distinct unless local policy can prove them equivalent.<a href="#section-12.5
         </ul>
 </section>
 </div>
+<div id="saml-subject-identifier-claim">
+<section id="section-12.6">
+        <h3 id="name-saml-subject-identifier-cla">
+<a href="#section-12.6" class="section-number selfRef">12.6. </a><a href="#name-saml-subject-identifier-cla" class="section-name selfRef">SAML Subject Identifier Claim</a>
+        </h3>
+<p id="section-12.6-1">For migrated clients that need access to the original SAML <code>NameID</code>
+context (for example, to correlate sessions against legacy SAML-keyed
+audit logs or account databases), this document defines the <code>sub_id</code>
+claim and a corresponding SAML NameID identifier format.<a href="#section-12.6-1" class="pilcrow">¶</a></p>
+<p id="section-12.6-2">The <code>sub_id</code> claim is a JSON object following the subject identifier
+pattern established by <span>[<a href="#RFC9493" class="cite xref">RFC9493</a>]</span>. When present in an ID Token or
+UserInfo response, the object <span class="bcp14">MUST</span> include a <code>format</code> member identifying
+the identifier format. This document defines the <code>saml-nameid</code> format.<a href="#section-12.6-2" class="pilcrow">¶</a></p>
+<p id="section-12.6-3">When <code>format</code> is <code>saml-nameid</code>, the <code>sub_id</code> object <span class="bcp14">MAY</span> contain the
+following members:<a href="#section-12.6-3" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-12.6-4">
+          <dt id="section-12.6-4.1">
+<code>format</code>:</dt>
+          <dd style="margin-left: 1.5em" id="section-12.6-4.2">
+            <p id="section-12.6-4.2.1">String. <span class="bcp14">REQUIRED</span>. The value <code>saml-nameid</code>.<a href="#section-12.6-4.2.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-12.6-4.3">
+<code>issuer</code>:</dt>
+          <dd style="margin-left: 1.5em" id="section-12.6-4.4">
+            <p id="section-12.6-4.4.1">String. The SAML Assertion Issuer value from the assertion that
+established this identifier. When present, this value <span class="bcp14">MUST</span> match the
+effective <code>saml_idp_entity_id</code> for the authenticated client.<a href="#section-12.6-4.4.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-12.6-4.5">
+<code>nameid</code>:</dt>
+          <dd style="margin-left: 1.5em" id="section-12.6-4.6">
+            <p id="section-12.6-4.6.1">String. <span class="bcp14">REQUIRED</span>. The textual content of the SAML <code>NameID</code> element.<a href="#section-12.6-4.6.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-12.6-4.7">
+<code>nameid_format</code>:</dt>
+          <dd style="margin-left: 1.5em" id="section-12.6-4.8">
+            <p id="section-12.6-4.8.1">String. The SAML <code>NameID/@Format</code> attribute value when present.<a href="#section-12.6-4.8.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-12.6-4.9">
+<code>name_qualifier</code>:</dt>
+          <dd style="margin-left: 1.5em" id="section-12.6-4.10">
+            <p id="section-12.6-4.10.1">String. The SAML <code>NameID/@NameQualifier</code> attribute value when
+present.<a href="#section-12.6-4.10.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-12.6-4.11">
+<code>sp_name_qualifier</code>:</dt>
+          <dd style="margin-left: 1.5em" id="section-12.6-4.12">
+            <p id="section-12.6-4.12.1">String. The SAML <code>NameID/@SPNameQualifier</code> attribute value when
+present.<a href="#section-12.6-4.12.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-12.6-4.13">
+<code>sp_provided_id</code>:</dt>
+          <dd style="margin-left: 1.5em" id="section-12.6-4.14">
+            <p id="section-12.6-4.14.1">String. The SAML <code>NameID/@SPProvidedID</code> attribute value when
+present.<a href="#section-12.6-4.14.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+<p id="section-12.6-5">The authorization server <span class="bcp14">MUST</span> omit any member for which it has no
+validated value. Encrypted SAML NameID forms (<code>EncryptedID</code>) are
+rejected by this profile under <a href="#encrypted-content" class="auto internal xref">Section 8.3</a> and <span class="bcp14">MUST NOT</span>
+appear in <code>sub_id</code>.<a href="#section-12.6-5" class="pilcrow">¶</a></p>
+<p id="section-12.6-6">The authorization server <span class="bcp14">MUST</span> release <code>sub_id</code> only when authorized by
+the claim release policy for the relying-party relationship represented
+by the bound <code>saml_sp_entity_id</code>, and <span class="bcp14">SHOULD</span> gate release on the
+<code>saml_subject</code> scope value defined by this document. The authorization
+server <span class="bcp14">MUST NOT</span> release <code>sub_id</code> solely because the underlying SAML
+assertion contains a <code>NameID</code>.<a href="#section-12.6-6" class="pilcrow">¶</a></p>
+<p id="section-12.6-7">The <code>sub_id</code> claim does not replace the <code>sub</code> claim. The <code>sub</code> claim
+remains the primary continuity point under
+<a href="#subject-identifier-mapping" class="auto internal xref">Section 12</a>; <code>sub_id</code> carries the original SAML
+identifier context as supplementary information for clients that need
+it.<a href="#section-12.6-7" class="pilcrow">¶</a></p>
+<p id="section-12.6-8">When the SAML <code>NameID/@Format</code> is
+<code>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</code>, the presence
+of that value in <code>sub_id</code> <span class="bcp14">MUST NOT</span> by itself cause the authorization
+server to emit <code>email_verified=true</code> for the corresponding <code>email</code>
+claim.<a href="#section-12.6-8" class="pilcrow">¶</a></p>
+</section>
+</div>
 </section>
 </div>
 <div id="claim-mapping">
@@ -4127,11 +4230,16 @@ accordance with <span>[<a href="#OIDC-CORE" class="cite xref">OIDC-CORE</a>]</sp
 </li>
           <li class="normal" id="section-13.3-3.3">
             <p id="section-13.3-3.3.1"><span class="bcp14">MUST</span> apply the claim mapping rules in <a href="#authentication-event-claims" class="auto internal xref">Section 13.1</a> and
-<a href="#attribute-claims" class="auto internal xref">Section 13.2</a> to any returned claims; and<a href="#section-13.3-3.3.1" class="pilcrow">¶</a></p>
+<a href="#attribute-claims" class="auto internal xref">Section 13.2</a> to any returned claims;<a href="#section-13.3-3.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-13.3-3.4">
-            <p id="section-13.3-3.4.1"><span class="bcp14">MUST NOT</span> include claims that would not be releasable to the same relying
-party under this profile.<a href="#section-13.3-3.4.1" class="pilcrow">¶</a></p>
+            <p id="section-13.3-3.4.1"><span class="bcp14">MAY</span> include the <code>sub_id</code> claim defined in <a href="#saml-subject-identifier-claim" class="auto internal xref">Section 12.6</a>
+when the granted scope includes <code>saml_subject</code> and the claim release
+policy permits its release; and<a href="#section-13.3-3.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-13.3-3.5">
+            <p id="section-13.3-3.5.1"><span class="bcp14">MUST NOT</span> include claims that would not be releasable to the same relying
+party under this profile.<a href="#section-13.3-3.5.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 <p id="section-13.3-4">The OpenID Provider <span class="bcp14">MUST</span> determine which claims to return based on the granted
@@ -4339,6 +4447,15 @@ relying-party relationship.<a href="#section-15-5" class="pilcrow">¶</a></p>
 server <span class="bcp14">SHOULD</span> return only the minimum claims necessary for the authorized
 client, because introspection can reveal identity data without the normal
 indirection of token issuance.<a href="#section-15-6" class="pilcrow">¶</a></p>
+<p id="section-15-7">Releasing the <code>sub_id</code> claim (<a href="#saml-subject-identifier-claim" class="auto internal xref">Section 12.6</a>) exposes
+the original SAML subject identifier context, including the SAML IdP
+entityID and any <code>NameID</code> qualifiers. This information is not normally
+exposed through the <code>sub</code> claim, which carries the authorization
+server's mapped value and may differ from the original SAML identifier.
+Deployments <span class="bcp14">SHOULD</span> release <code>sub_id</code> only when the migrated client
+genuinely needs the original SAML context (for example, for legacy
+account linkage). A SAML <code>NameID</code> in <code>emailAddress</code> format carries
+email-equivalent sensitivity and <span class="bcp14">MUST</span> be handled accordingly.<a href="#section-15-7" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="iana-considerations">
@@ -4524,6 +4641,76 @@ extracted from the validated SAML input<a href="#section-16.4-2.6.1" class="pilc
         </ul>
 </section>
 </div>
+<div id="iana-jwt-claims">
+<section id="section-16.5">
+        <h3 id="name-json-web-token-claims">
+<a href="#section-16.5" class="section-number selfRef">16.5. </a><a href="#name-json-web-token-claims" class="section-name selfRef">JSON Web Token Claims</a>
+        </h3>
+<p id="section-16.5-1">This document requests registration of the following claim in the IANA
+"JSON Web Token Claims" registry established by RFC 7519:<a href="#section-16.5-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-16.5-2.1">
+            <p id="section-16.5-2.1.1">Claim Name: <code>sub_id</code><a href="#section-16.5-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-16.5-2.2">
+            <p id="section-16.5-2.2.1">Claim Description: Structured subject identifier carrying provenance
+about the identifier (such as the original SAML NameID context)
+alongside the primary <code>sub</code> claim<a href="#section-16.5-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-16.5-2.3">
+            <p id="section-16.5-2.3.1">Change Controller: IESG<a href="#section-16.5-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-16.5-2.4">
+            <p id="section-16.5-2.4.1">Reference: This document, <a href="#saml-subject-identifier-claim" class="auto internal xref">Section 12.6</a><a href="#section-16.5-2.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+<div id="iana-oauth-scope-values">
+<section id="section-16.6">
+        <h3 id="name-oauth-scope-values">
+<a href="#section-16.6" class="section-number selfRef">16.6. </a><a href="#name-oauth-scope-values" class="section-name selfRef">OAuth Scope Values</a>
+        </h3>
+<p id="section-16.6-1">This document defines the following OAuth scope value:<a href="#section-16.6-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-16.6-2.1">
+            <p id="section-16.6-2.1.1">Scope Value: <code>saml_subject</code><a href="#section-16.6-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-16.6-2.2">
+            <p id="section-16.6-2.2.1">Description: Requests release of the <code>sub_id</code> claim defined in
+<a href="#saml-subject-identifier-claim" class="auto internal xref">Section 12.6</a>, carrying the original SAML
+<code>NameID</code> context for the migrated relying-party relationship<a href="#section-16.6-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-16.6-2.3">
+            <p id="section-16.6-2.3.1">Reference: This document, <a href="#saml-subject-identifier-claim" class="auto internal xref">Section 12.6</a><a href="#section-16.6-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+<div id="iana-security-event-identifier-formats">
+<section id="section-16.7">
+        <h3 id="name-security-event-identifier-f">
+<a href="#section-16.7" class="section-number selfRef">16.7. </a><a href="#name-security-event-identifier-f" class="section-name selfRef">Security Event Identifier Formats</a>
+        </h3>
+<p id="section-16.7-1">This document requests registration of the following value in the IANA
+"Security Event Identifier Formats" registry established by <span>[<a href="#RFC9493" class="cite xref">RFC9493</a>]</span>:<a href="#section-16.7-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-16.7-2.1">
+            <p id="section-16.7-2.1.1">Format Name: <code>saml-nameid</code><a href="#section-16.7-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-16.7-2.2">
+            <p id="section-16.7-2.2.1">Description: Subject identifier format representing a SAML 2.0 <code>NameID</code>
+with its qualifiers and SAML Issuer<a href="#section-16.7-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-16.7-2.3">
+            <p id="section-16.7-2.3.1">Change Controller: IESG<a href="#section-16.7-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-16.7-2.4">
+            <p id="section-16.7-2.4.1">Reference: This document, <a href="#saml-subject-identifier-claim" class="auto internal xref">Section 12.6</a><a href="#section-16.7-2.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
 </section>
 </div>
 <div id="sec-combined-references">
@@ -4596,6 +4783,10 @@ extracted from the validated SAML input<a href="#section-16.4-2.6.1" class="pilc
 <dt id="RFC8707">[RFC8707]</dt>
         <dd>
 <span class="refAuthor">Campbell, B.</span>, <span class="refAuthor">Bradley, J.</span>, and <span class="refAuthor">H. Tschofenig</span>, <span class="refTitle">"Resource Indicators for OAuth 2.0"</span>, <span class="seriesInfo">RFC 8707</span>, <span class="seriesInfo">DOI 10.17487/RFC8707</span>, <time datetime="2020-02" class="refDate">February 2020</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8707">https://www.rfc-editor.org/rfc/rfc8707</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9493">[RFC9493]</dt>
+        <dd>
+<span class="refAuthor">Backman, A., Ed.</span>, <span class="refAuthor">Scurtescu, M.</span>, and <span class="refAuthor">P. Jain</span>, <span class="refTitle">"Subject Identifiers for Security Event Tokens"</span>, <span class="seriesInfo">RFC 9493</span>, <span class="seriesInfo">DOI 10.17487/RFC9493</span>, <time datetime="2023-12" class="refDate">December 2023</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9493">https://www.rfc-editor.org/rfc/rfc9493</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="SAML2-CORE">[SAML2-CORE]</dt>
         <dd>
@@ -4752,7 +4943,7 @@ Content-Type: application/x-www-form-urlencoded
 
 grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 &amp;requested_token_type=urn:ietf:params:oauth:token-type:id_token
-&amp;scope=openid+profile+email
+&amp;scope=openid+profile+email+saml_subject
 &amp;subject_token=PHNhbWwyOkFzc2VydGlvbiB4bWxuczpzYW1sMj0iLi4uIj4uLi48L3NhbWwyOkFzc2VydGlvbj4
 &amp;subject_token_type=urn:ietf:params:oauth:token-type:saml2
 &amp;client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer
@@ -4765,7 +4956,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
   "issued_token_type": "urn:ietf:params:oauth:token-type:id_token",
   "access_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjIyIn0...",
   "token_type": "N_A",
-  "scope": "openid profile email",
+  "scope": "openid profile email saml_subject",
   "expires_in": 3600
 }
 </pre><a href="#appendix-A.1-3" class="pilcrow">¶</a>
@@ -4777,6 +4968,14 @@ like:<a href="#appendix-A.1-4" class="pilcrow">¶</a></p>
 {
   "iss": "https://login.example.com",
   "sub": "p7b4cf5d-9c2f-4f22-a6b9-6e3d8df5a1b0",
+  "sub_id": {
+    "format": "saml-nameid",
+    "issuer": "https://login.example.com/idp",
+    "nameid": "alice-pairwise-7c3f",
+    "nameid_format": "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent",
+    "name_qualifier": "https://login.example.com/idp",
+    "sp_name_qualifier": "https://calendar.example.com/saml/sp"
+  },
   "aud": "s6BhdRkqt3",
   "exp": 1776805200,
   "iat": 1776804900,
