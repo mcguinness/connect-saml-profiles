@@ -1,5 +1,5 @@
 ---
-title: "SAML 2.0 to OpenID Connect and OAuth 2.0 Migration Profile"
+title: "SAML 2.0 to OpenID Connect and OAuth 2.0 Migration Profile 1.0"
 abbrev: "SAML-OIDC Migration"
 category: info
 
@@ -9,7 +9,7 @@ number:
 date:
 v: 3
 # area: Security
-# workgroup: Individual Submission
+workgroup: OpenID Connect Working Group
 
 author:
  -
