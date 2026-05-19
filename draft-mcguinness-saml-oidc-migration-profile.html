@@ -3616,14 +3616,6 @@ identity claims.<a href="#section-10.2.3-10.6.1" class="pilcrow">¶</a></p>
               </tr>
               <tr>
                 <td class="text-left" rowspan="1" colspan="1">
-                  <code>issuer</code>
-</td>
-                <td class="text-left" rowspan="1" colspan="1">String</td>
-                <td class="text-left" rowspan="1" colspan="1">
-                  <code>Response/Issuer</code> element</td>
-              </tr>
-              <tr>
-                <td class="text-left" rowspan="1" colspan="1">
                   <code>issue_instant</code>
 </td>
                 <td class="text-left" rowspan="1" colspan="1">String</td>
@@ -3649,28 +3641,15 @@ identity claims.<a href="#section-10.2.3-10.6.1" class="pilcrow">¶</a></p>
                   <code>Response/@InResponseTo</code>
 </td>
               </tr>
-              <tr>
-                <td class="text-left" rowspan="1" colspan="1">
-                  <code>status_code</code>
-</td>
-                <td class="text-left" rowspan="1" colspan="1">String</td>
-                <td class="text-left" rowspan="1" colspan="1">validated value of <code>Response/Status/StatusCode/@Value</code>
-</td>
-              </tr>
-              <tr>
-                <td class="text-left" rowspan="1" colspan="1">
-                  <code>has_nested_status_code</code>
-</td>
-                <td class="text-left" rowspan="1" colspan="1">Boolean</td>
-                <td class="text-left" rowspan="1" colspan="1">
-                  <code>true</code> iff a nested <code>Response/Status/StatusCode/StatusCode</code> element was present</td>
-              </tr>
             </tbody>
           </table>
-<p id="section-10.2.3-13">Under this profile, an active response that includes a <code>response</code> object
-will normally have <code>has_nested_status_code</code> set to <code>false</code> because
-<a href="#response-wrapper-processing" class="auto internal xref">Section 8.2</a> requires the authorization server to
-reject a Response wrapper that contains a nested status code.<a href="#section-10.2.3-13" class="pilcrow">¶</a></p>
+<p id="section-10.2.3-13">The Response Issuer and status-code values are not exposed in the
+<code>response</code> object: an active introspection response implies the
+authorization server has already verified the Response Issuer against
+the effective <code>saml_idp_entity_id</code> (per <a href="#saml-and-oauth-issuer-boundary" class="auto internal xref">Section 8.4</a>)
+and <code>Response/Status/StatusCode/@Value</code> is
+<code>urn:oasis:names:tc:SAML:2.0:status:Success</code> with no nested status code
+per <a href="#response-wrapper-processing" class="auto internal xref">Section 8.2</a>.<a href="#section-10.2.3-13" class="pilcrow">¶</a></p>
 <p id="section-10.2.3-14">When present, the <code>assertion</code> object <span class="bcp14">MAY</span> contain these members:<a href="#section-10.2.3-14" class="pilcrow">¶</a></p>
 <table class="center" id="table-6">
             <caption><a href="#table-6" class="selfRef">Table 6</a></caption>
@@ -3690,14 +3669,6 @@ reject a Response wrapper that contains a nested status code.<a href="#section-1
                 <td class="text-left" rowspan="1" colspan="1">
                   <code>Assertion/@ID</code>
 </td>
-              </tr>
-              <tr>
-                <td class="text-left" rowspan="1" colspan="1">
-                  <code>issuer</code>
-</td>
-                <td class="text-left" rowspan="1" colspan="1">String</td>
-                <td class="text-left" rowspan="1" colspan="1">
-                  <code>Assertion/Issuer</code> element</td>
               </tr>
               <tr>
                 <td class="text-left" rowspan="1" colspan="1">
@@ -3743,7 +3714,13 @@ reject a Response wrapper that contains a nested status code.<a href="#section-1
               </tr>
             </tbody>
           </table>
-<p id="section-10.2.3-16">The <code>subject_confirmation</code> object <span class="bcp14">MAY</span> contain these members:<a href="#section-10.2.3-16" class="pilcrow">¶</a></p>
+<p id="section-10.2.3-16">The Assertion Issuer is not exposed in the <code>assertion</code> object for the
+same reason as in <code>response</code>: validation under
+<a href="#signature-saml-issuer-and-audience-binding" class="auto internal xref">Section 8.5</a> guarantees it equals the
+effective <code>saml_idp_entity_id</code>. Clients that need the issuer value as a
+durable reference can use the <code>sub_id.issuer</code> member defined in
+<a href="#saml-subject-identifier-claim" class="auto internal xref">Section 12.6</a>.<a href="#section-10.2.3-16" class="pilcrow">¶</a></p>
+<p id="section-10.2.3-17">The <code>subject_confirmation</code> object <span class="bcp14">MAY</span> contain these members:<a href="#section-10.2.3-17" class="pilcrow">¶</a></p>
 <table class="center" id="table-7">
             <caption><a href="#table-7" class="selfRef">Table 7</a></caption>
 <thead>
@@ -3754,15 +3731,6 @@ reject a Response wrapper that contains a nested status code.<a href="#section-1
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td class="text-left" rowspan="1" colspan="1">
-                  <code>method</code>
-</td>
-                <td class="text-left" rowspan="1" colspan="1">String</td>
-                <td class="text-left" rowspan="1" colspan="1">
-                  <code>Method</code> value of the usable bearer <code>SubjectConfirmation</code>
-</td>
-              </tr>
               <tr>
                 <td class="text-left" rowspan="1" colspan="1">
                   <code>recipient</code>
@@ -3792,16 +3760,19 @@ reject a Response wrapper that contains a nested status code.<a href="#section-1
               </tr>
             </tbody>
           </table>
-<p id="section-10.2.3-18">The authorization server <span class="bcp14">MUST</span> omit any member for which it has no
-extracted value.<a href="#section-10.2.3-18" class="pilcrow">¶</a></p>
-<p id="section-10.2.3-19">Date and time values in the <code>saml</code> object <span class="bcp14">SHOULD</span> be represented as strings
+<p id="section-10.2.3-19">The confirmation method is not exposed: an active introspection response
+implies the authorization server has identified a usable bearer
+<code>SubjectConfirmation</code> per <a href="#bearer-subject-confirmation-data-validation" class="auto internal xref">Section 8.6</a>.
+The authorization server <span class="bcp14">MUST</span> omit any member for which it has no
+extracted value.<a href="#section-10.2.3-19" class="pilcrow">¶</a></p>
+<p id="section-10.2.3-20">Date and time values in the <code>saml</code> object <span class="bcp14">SHOULD</span> be represented as strings
 preserving the SAML dateTime semantics. Implementations <span class="bcp14">MAY</span> normalize
 equivalent dateTime values to a consistent UTC representation. Clients <span class="bcp14">MUST</span>
 compare these values according to SAML dateTime semantics, not by lexical string
-comparison unless the representation has first been normalized.<a href="#section-10.2.3-19" class="pilcrow">¶</a></p>
-<p id="section-10.2.3-20">This profile does not require the introspection response to include OAuth token
+comparison unless the representation has first been normalized.<a href="#section-10.2.3-20" class="pilcrow">¶</a></p>
+<p id="section-10.2.3-21">This profile does not require the introspection response to include OAuth token
 metadata fields such as <code>scope</code>, <code>token_type</code>, <code>exp</code>, or <code>iss</code>, because no
-OAuth token is being issued by the introspection operation.<a href="#section-10.2.3-20" class="pilcrow">¶</a></p>
+OAuth token is being issued by the introspection operation.<a href="#section-10.2.3-21" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -5810,16 +5781,12 @@ token=PHNhbWwycDpSZXNwb25zZSB4bWxuczpzYW1sMj0iLi4uIiB4bWxuczpzYW1sMnA9Ii4uLiI-Li
   "saml": {
     "response": {
       "id": "_d71b9f4f8b5b4a4b8f2f",
-      "issuer": "https://login.example.com/idp",
       "issue_instant": "2026-04-21T18:00:00Z",
       "destination": "https://calendar.example.com/saml/acs",
-      "in_response_to": "_sp-authnrequest-8f3a",
-      "status_code": "urn:oasis:names:tc:SAML:2.0:status:Success",
-      "has_nested_status_code": false
+      "in_response_to": "_sp-authnrequest-8f3a"
     },
     "assertion": {
       "id": "_a75adf55d9a24d6f8c2b",
-      "issuer": "https://login.example.com/idp",
       "issue_instant": "2026-04-21T18:00:00Z",
       "audiences": [
         "https://calendar.example.com/saml/sp"
@@ -5827,7 +5794,6 @@ token=PHNhbWwycDpSZXNwb25zZSB4bWxuczpzYW1sMj0iLi4uIiB4bWxuczpzYW1sMnA9Ii4uLiI-Li
       "not_before": "2026-04-21T17:55:00Z",
       "not_on_or_after": "2026-04-21T18:05:00Z",
       "subject_confirmation": {
-        "method": "urn:oasis:names:tc:SAML:2.0:cm:bearer",
         "recipient": "https://calendar.example.com/saml/acs",
         "in_response_to": "_sp-authnrequest-8f3a",
         "not_on_or_after": "2026-04-21T18:05:00Z"
@@ -5863,15 +5829,11 @@ correlation and location checks over the returned JSON values, for example:<a hr
 <div class="lang-text sourcecode" id="appendix-A.2-8">
 <pre>
 saml.response is present
-saml.response.issuer == stored.idp_entity_id
-saml.assertion.issuer == stored.idp_entity_id
 saml.response.destination == stored.acs_url
 saml.response.in_response_to == stored.request_id
 saml.assertion.subject_confirmation.recipient == stored.acs_url
 saml.assertion.subject_confirmation.in_response_to == stored.request_id
 stored.sp_entity_id is in saml.assertion.audiences
-saml.response.status_code == "urn:oasis:names:tc:SAML:2.0:status:Success"
-saml.response.has_nested_status_code == false
 current_time &lt; saml.assertion.subject_confirmation.not_on_or_after
 current_time &lt; saml.assertion.not_on_or_after
 </pre><a href="#appendix-A.2-8" class="pilcrow">¶</a>
