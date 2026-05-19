@@ -40,7 +40,7 @@ non-disruptive migration of an SP onto OpenID Connect without forcing
 end users to reauthenticate or administrators to relink existing
 accounts.
 
-* [Editor's Copy](https://mcguinness.github.io/draft-connect-saml-migration/#go.openid-connect-saml-sp-migration-profile.html)
+* [Editor's Copy](https://mcguinness.github.io/draft-connect-saml-migration/#go.draft-connect-saml-migration-profile.html)
 
 ## OpenID Connect Bridge Profile for SAML 2.0 Service Providers
 
@@ -67,7 +67,7 @@ SP-initiated SAML Web SSO where the Bridge serves as the SAML IdP
 endpoint; and a Token Exchange variant in which an OIDC ID Token is
 exchanged for a SAML assertion without a browser-based flow.
 
-* [Editor's Copy](https://mcguinness.github.io/draft-connect-saml-migration/#go.draft-connect-saml-bridge-profile-latest.html)
+* [Editor's Copy](https://mcguinness.github.io/draft-connect-saml-migration/#go.draft-connect-saml-bridge-profile.html)
 
 ## How the two profiles fit together
 
