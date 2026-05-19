@@ -1876,8 +1876,8 @@ Table of Contents
 
    *  sub set to the mapped value defined by Section 12;
 
-   *  optionally, auth_time, acr, amr, sid, and attribute-derived claims
-      defined by Section 13;
+   *  optionally, auth_time, acr, amr, sid, session_expiry, and
+      attribute-derived claims defined by Section 13;
 
    *  optionally, sub_id defined in Section 12.6 when the introspection-
       endpoint policy permits release; and
@@ -1885,13 +1885,13 @@ Table of Contents
    *  optionally, saml, a JSON object containing normalized SAML
       protocol metadata as defined below.
 
-   The identity claims (sub, sub_id, auth_time, acr, amr, sid, and
-   attribute-derived claims) appear at the top level of the response, in
-   parallel with their placement in ID Tokens and UserInfo.  Their
-   values are processed under Section 11, Section 12, and Section 13
-   (including subject resolution and claim release policy); they are not
-   a literal mirror of assertion content.  The protocol mirror is the
-   saml object.
+   The identity claims (sub, sub_id, auth_time, acr, amr, sid,
+   session_expiry, and attribute-derived claims) appear at the top level
+   of the response, in parallel with their placement in ID Tokens and
+   UserInfo.  Their values are processed under Section 11, Section 12,
+   and Section 13 (including subject resolution and claim release
+   policy); they are not a literal mirror of assertion content.  The
+   protocol mirror is the saml object.
 
    The authorization server MUST NOT include claims that would not be
    releasable to the same relying party under this profile, and SHOULD
@@ -2014,6 +2014,9 @@ Table of Contents
         |                 |        | SubjectConfirmationData     |
         +-----------------+--------+-----------------------------+
         | not_on_or_after | String | NotOnOrAfter value from the |
+        |                 |        | SubjectConfirmationData     |
+        +-----------------+--------+-----------------------------+
+        | address         | String | Address value from the      |
         |                 |        | SubjectConfirmationData     |
         +-----------------+--------+-----------------------------+
 
@@ -3335,6 +3338,18 @@ Table of Contents
    *  Specification Document(s): This document, Section 10.2.3,
       Section 13.1
 
+   *  Response Name: session_expiry
+
+   *  Response Description: Session expiration time, expressed as a JSON
+      integer Unix timestamp, with the same semantics as the OpenID
+      Connect Enterprise Extensions session_expiry claim; returned at
+      the top level of the introspection response under this profile
+
+   *  Change Controller: IETF
+
+   *  Specification Document(s): This document, Section 10.2.3,
+      Section 13.1
+
    Other OpenID Connect standard claims listed in the IANA "JSON Web
    Token Claims" registry (such as email, email_verified, given_name,
    family_name, name, preferred_username, phone_number, and
@@ -3659,6 +3674,7 @@ A.1.  Convert SAML to an ID Token
      "auth_time": 1776794400,
      "acr": "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport",
      "sid": "op-sid-61b7d66f-4a6f-4f04-b0e5-9b8176d92ad0",
+     "session_expiry": 1776805200,
      "email": "alice@example.com",
      "given_name": "Alice",
      "family_name": "Ng"
@@ -3737,7 +3753,8 @@ A.2.  Delegate SAML Validation with Introspection
          "subject_confirmation": {
            "recipient": "https://calendar.example.com/saml/acs",
            "in_response_to": "_sp-authnrequest-8f3a",
-           "not_on_or_after": "2026-04-21T18:05:00Z"
+           "not_on_or_after": "2026-04-21T18:05:00Z",
+           "address": "192.0.2.44"
          }
        },
        "attributes": [

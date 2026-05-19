@@ -3510,8 +3510,8 @@ introspection response as defined by <span>[<a href="#RFC7662" class="cite xref"
               <p id="section-10.2.3-2.2.1"><code>sub</code> set to the mapped value defined by <a href="#subject-identifier-mapping" class="auto internal xref">Section 12</a>;<a href="#section-10.2.3-2.2.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-10.2.3-2.3">
-              <p id="section-10.2.3-2.3.1">optionally, <code>auth_time</code>, <code>acr</code>, <code>amr</code>, <code>sid</code>, and attribute-derived
-claims defined by <a href="#claim-mapping" class="auto internal xref">Section 13</a>;<a href="#section-10.2.3-2.3.1" class="pilcrow">¶</a></p>
+              <p id="section-10.2.3-2.3.1">optionally, <code>auth_time</code>, <code>acr</code>, <code>amr</code>, <code>sid</code>, <code>session_expiry</code>, and
+attribute-derived claims defined by <a href="#claim-mapping" class="auto internal xref">Section 13</a>;<a href="#section-10.2.3-2.3.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-10.2.3-2.4">
               <p id="section-10.2.3-2.4.1">optionally, <code>sub_id</code> defined in <a href="#saml-subject-identifier-claim" class="auto internal xref">Section 12.6</a>
@@ -3523,9 +3523,9 @@ metadata as defined below.<a href="#section-10.2.3-2.5.1" class="pilcrow">¶</a>
 </li>
           </ul>
 <p id="section-10.2.3-3">The identity claims (<code>sub</code>, <code>sub_id</code>, <code>auth_time</code>, <code>acr</code>, <code>amr</code>, <code>sid</code>,
-and attribute-derived claims) appear at the top level of the response,
-in parallel with their placement in ID Tokens and UserInfo. Their
-values are processed under <a href="#local-subject-resolution" class="auto internal xref">Section 11</a>,
+<code>session_expiry</code>, and attribute-derived claims) appear at the top level of
+the response, in parallel with their placement in ID Tokens and UserInfo.
+Their values are processed under <a href="#local-subject-resolution" class="auto internal xref">Section 11</a>,
 <a href="#subject-identifier-mapping" class="auto internal xref">Section 12</a>, and <a href="#claim-mapping" class="auto internal xref">Section 13</a> (including
 subject resolution and claim release policy); they are not a literal
 mirror of assertion content. The protocol mirror is the <code>saml</code> object.<a href="#section-10.2.3-3" class="pilcrow">¶</a></p>
@@ -3756,6 +3756,15 @@ durable reference can use the <code>sub_id.issuer</code> member defined in
                 <td class="text-left" rowspan="1" colspan="1">String</td>
                 <td class="text-left" rowspan="1" colspan="1">
                   <code>NotOnOrAfter</code> value from the <code>SubjectConfirmationData</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>address</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">String</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>Address</code> value from the <code>SubjectConfirmationData</code>
 </td>
               </tr>
             </tbody>
@@ -5376,6 +5385,21 @@ profile<a href="#section-17.4-2.22.1" class="pilcrow">¶</a></p>
           <li class="normal" id="section-17.4-2.24">
             <p id="section-17.4-2.24.1">Specification Document(s): This document, <a href="#introspection-successful-response" class="auto internal xref">Section 10.2.3</a>, <a href="#authentication-event-claims" class="auto internal xref">Section 13.1</a><a href="#section-17.4-2.24.1" class="pilcrow">¶</a></p>
 </li>
+          <li class="normal" id="section-17.4-2.25">
+            <p id="section-17.4-2.25.1">Response Name: <code>session_expiry</code><a href="#section-17.4-2.25.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-17.4-2.26">
+            <p id="section-17.4-2.26.1">Response Description: Session expiration time, expressed as a JSON
+integer Unix timestamp, with the same semantics as the OpenID Connect
+Enterprise Extensions <code>session_expiry</code> claim; returned at the top
+level of the introspection response under this profile<a href="#section-17.4-2.26.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-17.4-2.27">
+            <p id="section-17.4-2.27.1">Change Controller: IETF<a href="#section-17.4-2.27.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-17.4-2.28">
+            <p id="section-17.4-2.28.1">Specification Document(s): This document, <a href="#introspection-successful-response" class="auto internal xref">Section 10.2.3</a>, <a href="#authentication-event-claims" class="auto internal xref">Section 13.1</a><a href="#section-17.4-2.28.1" class="pilcrow">¶</a></p>
+</li>
         </ul>
 <p id="section-17.4-3">Other OpenID Connect standard claims listed in the IANA "JSON Web Token
 Claims" registry (such as <code>email</code>, <code>email_verified</code>, <code>given_name</code>,
@@ -5736,6 +5760,7 @@ like:<a href="#appendix-A.1-4" class="pilcrow">¶</a></p>
   "auth_time": 1776794400,
   "acr": "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport",
   "sid": "op-sid-61b7d66f-4a6f-4f04-b0e5-9b8176d92ad0",
+  "session_expiry": 1776805200,
   "email": "alice@example.com",
   "given_name": "Alice",
   "family_name": "Ng"
@@ -5823,7 +5848,8 @@ token=PHNhbWwycDpSZXNwb25zZSB4bWxuczpzYW1sMj0iLi4uIiB4bWxuczpzYW1sMnA9Ii4uLiI-Li
       "subject_confirmation": {
         "recipient": "https://calendar.example.com/saml/acs",
         "in_response_to": "_sp-authnrequest-8f3a",
-        "not_on_or_after": "2026-04-21T18:05:00Z"
+        "not_on_or_after": "2026-04-21T18:05:00Z",
+        "address": "192.0.2.44"
       }
     },
     "attributes": [
