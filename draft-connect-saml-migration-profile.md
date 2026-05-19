@@ -1581,17 +1581,17 @@ introspection response as defined by {{RFC7662}} with:
 
 * `active` set to `true`;
 * `sub` set to the mapped value defined by {{subject-identifier-mapping}};
-* optionally, `auth_time`, `acr`, `amr`, `sid`, and attribute-derived
-  claims defined by {{claim-mapping}};
+* optionally, `auth_time`, `acr`, `amr`, `sid`, `session_expiry`, and
+  attribute-derived claims defined by {{claim-mapping}};
 * optionally, `sub_id` defined in {{saml-subject-identifier-claim}}
   when the introspection-endpoint policy permits release; and
 * optionally, `saml`, a JSON object containing normalized SAML protocol
   metadata as defined below.
 
 The identity claims (`sub`, `sub_id`, `auth_time`, `acr`, `amr`, `sid`,
-and attribute-derived claims) appear at the top level of the response,
-in parallel with their placement in ID Tokens and UserInfo. Their
-values are processed under {{local-subject-resolution}},
+`session_expiry`, and attribute-derived claims) appear at the top level of
+the response, in parallel with their placement in ID Tokens and UserInfo.
+Their values are processed under {{local-subject-resolution}},
 {{subject-identifier-mapping}}, and {{claim-mapping}} (including
 subject resolution and claim release policy); they are not a literal
 mirror of assertion content. The protocol mirror is the `saml` object.
@@ -1688,6 +1688,7 @@ The `subject_confirmation` object MAY contain these members:
 | `recipient` | String | `Recipient` value from the `SubjectConfirmationData` |
 | `in_response_to` | String | `InResponseTo` value from the `SubjectConfirmationData` |
 | `not_on_or_after` | String | `NotOnOrAfter` value from the `SubjectConfirmationData` |
+| `address` | String | `Address` value from the `SubjectConfirmationData` |
 
 The confirmation method is not exposed: an active introspection response
 implies the authorization server has identified a usable bearer
@@ -2821,6 +2822,14 @@ Introspection Response registry established by {{RFC7662}}:
 * Change Controller: IETF
 * Specification Document(s): This document, {{introspection-successful-response}}, {{authentication-event-claims}}
 
+* Response Name: `session_expiry`
+* Response Description: Session expiration time, expressed as a JSON
+  integer Unix timestamp, with the same semantics as the OpenID Connect
+  Enterprise Extensions `session_expiry` claim; returned at the top
+  level of the introspection response under this profile
+* Change Controller: IETF
+* Specification Document(s): This document, {{introspection-successful-response}}, {{authentication-event-claims}}
+
 Other OpenID Connect standard claims listed in the IANA "JSON Web Token
 Claims" registry (such as `email`, `email_verified`, `given_name`,
 `family_name`, `name`, `preferred_username`, `phone_number`, and
@@ -3001,6 +3010,7 @@ like:
   "auth_time": 1776794400,
   "acr": "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport",
   "sid": "op-sid-61b7d66f-4a6f-4f04-b0e5-9b8176d92ad0",
+  "session_expiry": 1776805200,
   "email": "alice@example.com",
   "given_name": "Alice",
   "family_name": "Ng"
@@ -3083,7 +3093,8 @@ token=PHNhbWwycDpSZXNwb25zZSB4bWxuczpzYW1sMj0iLi4uIiB4bWxuczpzYW1sMnA9Ii4uLiI-Li
       "subject_confirmation": {
         "recipient": "https://calendar.example.com/saml/acs",
         "in_response_to": "_sp-authnrequest-8f3a",
-        "not_on_or_after": "2026-04-21T18:05:00Z"
+        "not_on_or_after": "2026-04-21T18:05:00Z",
+        "address": "192.0.2.44"
       }
     },
     "attributes": [
