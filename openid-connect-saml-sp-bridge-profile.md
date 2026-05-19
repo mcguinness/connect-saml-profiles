@@ -1,9 +1,8 @@
 ---
-title: "OpenID Connect to SAML 2.0 Migration Profile 1.0"
-abbrev: "OIDC-SAML Migration"
+title: OpenID Connect Bridge Profile for SAML 2.0 Service Providers"
+abbrev: "OIDC-SAML SP Bridge"
 category: info
-
-docname: draft-mcguinness-oidc-saml-migration-profile-latest
+docname: openid-connect-saml-sp-bridge-profile-latest
 submissiontype: independent
 number:
 date:
