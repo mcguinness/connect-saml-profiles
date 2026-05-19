@@ -127,23 +127,31 @@ informative:
 
 --- abstract
 
-This document defines a migration profile for SAML 2.0 Service Provider
-deployments transitioning to OpenID Connect and OAuth 2.0. The profile extends
-the existing SAML trust relationship rather than replacing it: client metadata
-binds an OAuth client to an existing SAML SP entity identifier, authorization
+This document defines an interoperability profile for SAML 2.0 Service
+Provider deployments that adopt OpenID Connect and OAuth 2.0 while
+preserving the existing SAML federation trust relationship. The profile
+extends that relationship rather than replacing it: client metadata binds
+an OAuth client to an existing SAML SP entity identifier, authorization
 server metadata binds an OAuth issuer to an existing SAML IdP entity
 identifier, and mapping rules translate SAML subject identifiers,
-authentication context, and attributes into OpenID Connect claims.
+authentication context, and attributes into OpenID Connect claims so
+that the same end-user is represented by the same subject after the
+transition.
 
-Two operational patterns are defined. Token Exchange allows a client to present
-a SAML assertion and receive an access token, refresh token, or ID Token. A
-SAML assertion introspection extension allows a client to validate a SAML
-assertion and receive normalized JSON claims without issuing any OAuth token.
-Both patterns accept either a signed SAML assertion or a signed SAML `Response`
-wrapper conveying exactly one bearer assertion.
+Two operational patterns are defined. Token Exchange allows a client to
+present a SAML assertion and receive an access token, refresh token, or
+ID Token. A SAML assertion introspection extension allows a client to
+validate a SAML assertion and receive normalized JSON claims without
+issuing any OAuth token. Both patterns accept either a signed SAML
+assertion or a signed SAML `Response` wrapper conveying exactly one
+bearer assertion.
 
-The intent is to let relying parties adopt OAuth 2.0 and OpenID Connect without
-changing the underlying SSO trust model or relinking existing user accounts.
+The intent is to let relying parties adopt OAuth 2.0 and OpenID Connect
+without changing the underlying SSO trust model, without breaking
+subject continuity, and without relinking existing user accounts. The
+profile is scoped to federation interoperability and identity
+continuity; it does not define authorization architectures,
+provisioning, governance models, or generalized SAML feature parity.
 
 --- middle
 
@@ -203,6 +211,24 @@ This profile extracts the migration-specific aspects of the approach defined in
 the Identity Assertion JWT Authorization Grant
 {{I-D.ietf-oauth-identity-assertion-authz-grant}} and defines them as a
 standalone, reusable OAuth and OpenID Connect profile.
+
+## Non-Goals {#non-goals}
+
+The profile is scoped to federation interoperability and identity
+continuity. It does NOT define:
+
+* API authorization architectures, scope design, or resource-server
+  authorization policy;
+* entitlement systems or portable role/group authorization;
+* provisioning, SCIM integration, or account-lifecycle workflows;
+* runtime authorization policy expression or evaluation;
+* governance models (approval, attestation, audit, segregation of
+  duties);
+* continuous access evaluation protocols (CAEP and similar);
+* migration methodology (rollout patterns, cutover sequencing); or
+* generalized SAML feature parity: SAML SLO, AuthzDecisionStatement,
+  AttributeQuery, SP-specific extensions, and Holder-of-Key
+  SubjectConfirmation are out of scope.
 
 # Conventions and Terminology
 
@@ -588,6 +614,25 @@ submitted by this client.
 
 # Authorization Server Metadata {#authorization-server-metadata}
 
+The metadata parameters defined in this section are registered in the
+IANA "OAuth Authorization Server Metadata" registry established by
+{{RFC8414}}. Per {{OIDC-DISCOVERY}} Section 3, where OAuth 2.0
+Authorization Server Metadata and OpenID Provider configuration
+overlap, that same IANA registry is authoritative for both. The
+metadata parameters defined here are therefore equally valid in:
+
+* OAuth 2.0 Authorization Server Metadata documents published at the
+  `.well-known/oauth-authorization-server` endpoint defined by
+  {{RFC8414}}; and
+* OpenID Provider configuration documents published at the
+  `.well-known/openid-configuration` endpoint defined by
+  {{OIDC-DISCOVERY}}.
+
+An authorization server that is also an OpenID Provider SHOULD publish
+the applicable parameters in whichever discovery document(s) its
+clients consume. Their semantics and processing are identical in
+either context.
+
 ## `saml_idp_entity_id` {#metadata-saml-idp-entity-id}
 
 This document defines the `saml_idp_entity_id` authorization server metadata
@@ -743,6 +788,47 @@ processed through `jwks_uri` or `jwks`. Even when the same underlying key
 material is reused, it MUST be published and validated using the metadata and
 encoding rules of each protocol separately.
 
+## Federation Metadata Coexistence {#federation-metadata-coexistence}
+
+A deployment migrating from SAML 2.0 to this profile typically operates
+both protocols in parallel for some period. The two protocols publish
+metadata through independent mechanisms that this profile does not
+unify: SAML 2.0 metadata as `EntityDescriptor` documents
+({{SAML2-METADATA}}), OAuth/OIDC metadata at the
+`.well-known/oauth-authorization-server` and
+`.well-known/openid-configuration` endpoints ({{RFC8414}},
+{{OIDC-DISCOVERY}}). Both can be published from the same authority
+simultaneously.
+
+Deployments SHOULD observe the following during parallel operation:
+
+* The SAML IdP `entityID` and the OAuth `issuer` identify the same
+  administrative authority but remain distinct values used in their
+  own protocol contexts; see {{saml-and-oauth-issuer-boundary}} for
+  the validation rule, including incidental string equality.
+* SAML signing keys (published via `KeyDescriptor`) and OAuth/OIDC
+  signing keys (published via `jwks_uri`) rotate on independent
+  schedules. A SAML-side key rollover does not affect ID Token
+  signature validation, and a JWS-side rollover does not affect SAML
+  assertion signature validation. Deployments SHOULD coordinate
+  rollover windows to avoid cross-protocol confusion in operational
+  tooling.
+* The bidirectional metadata pointer described in
+  {{metadata-saml-metadata-uri}} (SAML metadata
+  `AdditionalMetadataLocation` referencing the OAuth/OIDC metadata
+  document, and AS metadata `saml_metadata_uri` referencing the SAML
+  metadata document) is OPTIONAL but RECOMMENDED for discovery tooling
+  during the migration period. It allows administrators and federation
+  registries to traverse from either side to the other.
+* Discovery clients that consume SAML metadata to locate the IdP, and
+  separately consume OAuth/OIDC metadata to locate the authorization
+  server, are unchanged. This profile does not alter the discovery
+  flow for either protocol.
+
+This profile does not define a mechanism for retiring the SAML side of
+a deployment, nor for archiving SAML metadata after a migration
+completes. Those operational decisions are outside the profile.
+
 # SAML Input Validation and Binding {#saml-input-validation-and-binding}
 
 This section applies whenever the authorization server directly consumes SAML
@@ -870,10 +956,11 @@ The authorization server MUST:
      `urn:oasis:names:tc:SAML:2.0:status:Success`; and
    * no nested `Response/Status/StatusCode/StatusCode` element is present;
 4. validate the effective `Assertion` according to the assertion
-   processing rules in {{SAML2-CORE}} Section 3.5, including
-   `Assertion/Issuer`, time validity (enforcing both
-   `Conditions/@NotBefore` and `Conditions/@NotOnOrAfter`), conditions,
-   and subject confirmation;
+   processing rules in {{SAML2-CORE}} Section 2, including
+   `Assertion/Issuer` ({{SAML2-CORE}} Section 2.3.3), subject and
+   subject confirmation ({{SAML2-CORE}} Sections 2.4-2.4.1.3), and
+   conditions ({{SAML2-CORE}} Section 2.5), enforcing both
+   `Conditions/@NotBefore` and `Conditions/@NotOnOrAfter`;
 5. verify that the effective SAML `Assertion/Issuer` value matches the Trusted
    SAML IdP Entity ID defined in {{saml-and-oauth-issuer-boundary}};
 6. verify that the effective `Assertion` contains at least one
@@ -1281,25 +1368,29 @@ other specifications that accept
 `subject_token_type`, but those subsequent exchanges are defined by the
 respective specifications, not by this document.
 
-Subsequent refresh token requests for access tokens MAY use `resource` and
-`audience` according to {{RFC8707}}, {{RFC8693}}, and authorization server policy.
-This profile does not modify their meaning in refresh token requests. Scope
-reduction in subsequent refresh token requests is governed by {{RFC6749}} and is
-not modified by this profile.
-
 A refresh token issued under this profile is a regular OAuth 2.0 refresh
-token once issued. Its usable scope is bounded by the authorization server's
-policy for the authenticated client and the resolved Local Account, as
-established under {{authorization-and-consent-model}}, not by the specific scope
-or target service set requested in the initial Token Exchange.
+token once issued. {{RFC6749}} Section 6 requires that the scope of a
+subsequent refresh token request not exceed the scope originally granted
+to the refresh token. To make the migrated-session model interoperate
+cleanly with that rule, the authorization server MUST set the refresh
+token's granted scope, at issuance time, to the full envelope of scopes
+authorized by the authorization basis
+({{authorization-and-consent-model}}) for the authenticated client and
+the resolved Local Account, even when the initial Token Exchange
+request asked for a narrower scope. The Token Exchange response MUST
+include this granted scope in its `scope` member when it differs from
+the requested scope, per {{RFC6749}} Section 3.3 and {{RFC8693}}
+Section 2.2.
 
-The Migration Client MAY therefore request, in subsequent refresh token grant
-requests, any scope, `resource`, or `audience` value that policy permits for
-that client and Local Account, including values that were not part of the
-initial Token Exchange. The authorization server MUST apply
-{{authorization-and-consent-model}} to each such request and MUST reject any
-request whose granted scope, `resource`, or `audience` would exceed what
-policy authorizes, using `invalid_scope` or `invalid_target` as appropriate.
+Subsequent refresh token requests (per {{RFC6749}} Section 6) MAY
+therefore request any scope, `resource`, or `audience` value within the
+granted envelope, including values not present in the initial Token
+Exchange request. The authorization server MUST apply
+{{authorization-and-consent-model}} to each such request and MUST
+reject a request whose `scope`, `resource`, or `audience` falls outside
+the granted envelope with `invalid_scope` or `invalid_target` as
+appropriate. Resource indicator semantics in refresh token requests
+follow {{RFC8707}} and {{RFC8693}} and are not modified by this profile.
 
 The SAML SP relationship determines whether the Migration Client may
 bootstrap a session under this profile; it does not by itself impose a
@@ -1763,10 +1854,28 @@ authorization server.
 
 # Subject Identifier Mapping {#subject-identifier-mapping}
 
-The OpenID Connect `sub` claim is the primary continuity point for migrated
-relying parties. The authorization server MUST issue a `sub` value that is
-stable for the client and that preserves the semantics of the corresponding
-SAML deployment.
+Subject continuity is the central guarantee of this profile: the same
+end-user MUST be represented to the migrated relying party by a stable
+identifier that does not require account relinking. The OpenID Connect
+`sub` claim carries that continuity. The authorization server MUST
+issue a `sub` value that is stable for the client and that preserves
+the semantics of the corresponding SAML deployment.
+
+The rules in this section achieve subject continuity by:
+
+* reusing any persisted `sub` mapping the authorization server already
+  holds for the resolved Local Account under this client's effective
+  subject type;
+* otherwise deriving `sub` from stable SAML subject inputs, in
+  preference order: `subject-id` or `pairwise-id` attributes
+  ({{SAML2-SUBJ-ID}}), persistent `NameID`, and finally a deterministic
+  derivation from the Stable Local Subject Key;
+* preserving any pairwise scoping the SAML SP relationship already
+  used, via the bound `saml_sp_entity_id`;
+* excluding mutable identifiers (email, transient `NameID`, display
+  attributes) as `sub` sources; and
+* persisting whichever mapping is chosen so the same Local Account
+  resolves to the same `sub` on subsequent invocations.
 
 Most of this section concerns the rules for deriving `sub`. The final
 subsection ({{saml-subject-identifier-claim}}) defines an OPTIONAL
@@ -2039,6 +2148,28 @@ introspection responses under this profile. Values derived from SAML
 subject identifiers or authentication statements take precedence over
 generic attribute mapping.
 
+The following table summarizes the principal SAML inputs and their
+target OpenID Connect claims under this profile. Detailed rules,
+including precedence and edge cases, are in the subsections that
+follow.
+
+| SAML input | OpenID Connect target | Defined in |
+| --- | --- | --- |
+| Persistent `NameID`, `subject-id`, `pairwise-id`, or Stable Local Subject Key derivation | `sub` | {{subject-identifier-mapping}} |
+| `NameID` element (provenance preserved) | `sub_id` with `saml-nameid` format | {{saml-subject-identifier-claim}} |
+| `AuthnStatement/@AuthnInstant` | `auth_time` | {{authentication-event-claims}} |
+| `AuthnContext/AuthnContextClassRef` | `acr` | {{authentication-event-claims}} |
+| Concrete authentication methods derived from local policy or SAML evidence | `amr` | {{authentication-event-claims}} |
+| `AuthnStatement/@SessionIndex` | `sid` | {{authentication-event-claims}} |
+| `AttributeStatement` attributes (e.g., `mail`, `givenName`, `sn`, `displayName`) | Registered OIDC claims (`email`, `given_name`, `family_name`, `name`, etc.) | {{attribute-claims}} |
+| Other `AttributeStatement` attributes | Private claims by prior agreement | {{attribute-claims}} |
+
+This profile maps identity-bearing values for interoperability. It does
+not map SAML data whose purpose is authorization or entitlement
+(`AuthzDecisionStatement`, scoped affiliation values intended for
+access control, etc.) into OAuth scopes or authorization decisions; see
+{{non-goals}}.
+
 ## Authentication Event Claims {#authentication-event-claims}
 
 When a SAML assertion contains an `AuthnStatement`, the authorization server
@@ -2298,6 +2429,17 @@ termination signals to tokens it has issued, and how token revocation
 under this profile cascades through derived artifacts. It does not
 define a protocol for signaling SAML SLO between the SAML IdP and the
 authorization server; that is out of scope.
+
+SAML Single Logout (SLO) and OpenID Connect logout are not equivalent
+mechanisms, and this profile does not guarantee parity between them.
+SAML SLO is a multi-party protocol coordinated by the SAML IdP across
+all participating SPs; OIDC logout (front-channel, back-channel, and
+RP-Initiated Logout) targets OIDC clients individually. The operational
+semantics, failure modes, and trust requirements differ. Deployments
+that need coordinated logout across both protocols MUST design that
+coordination outside this profile; this profile defines only the
+authorization server's local obligations once it has learned that a
+SAML-authenticated session has ended (see {{session-termination}}).
 
 ## Session Termination {#session-termination}
 
@@ -2624,21 +2766,21 @@ Dynamic Client Registration Metadata registry established by {{RFC7591}}:
 * Client Metadata Name: `saml_sp_entity_id`
 * Client Metadata Description: Identifier of the SAML 2.0 Service Provider
   entity bound to the client for migration and subject continuity
-* Change Controller: IESG
+* Change Controller: IETF
 * Specification Document(s): This document, {{client-registration-saml-sp-entity-id}}
 
 * Client Metadata Name: `saml_idp_entity_id`
 * Client Metadata Description: Per-client override for the identifier of the
   SAML 2.0 Identity Provider entity expected to issue assertions for this
   client, when the SAML IdP emits per-SP entityIDs
-* Change Controller: IESG
+* Change Controller: IETF
 * Specification Document(s): This document, {{client-registration-saml-idp-entity-id}}
 
 * Client Metadata Name: `saml_metadata_uri`
 * Client Metadata Description: Per-client override for the HTTPS URI of the
   SAML metadata document describing the SAML 2.0 Identity Provider entity
   expected to issue assertions for this client
-* Change Controller: IESG
+* Change Controller: IETF
 * Specification Document(s): This document, {{client-registration-saml-metadata-uri}}
 
 ## OAuth Authorization Server Metadata {#iana-as-metadata}
@@ -2650,27 +2792,27 @@ Authorization Server Metadata registry established by {{RFC8414}}:
 * Metadata Description: Default identifier of the SAML 2.0 Identity Provider
   entity bound to the authorization server issuer; may be overridden per
   client registration
-* Change Controller: IESG
+* Change Controller: IETF
 * Specification Document(s): This document, {{metadata-saml-idp-entity-id}}
 
 * Metadata Name: `saml_metadata_uri`
 * Metadata Description: Default HTTPS URI for the SAML metadata describing
   the SAML Identity Provider entity bound to the authorization server
   issuer; may be overridden per client registration
-* Change Controller: IESG
+* Change Controller: IETF
 * Specification Document(s): This document, {{metadata-saml-metadata-uri}}
 
 * Metadata Name: `token_exchange_requested_token_types_supported`
 * Metadata Description: JSON array of token type URIs accepted as
   `requested_token_type` values for SAML token exchange under this profile
-* Change Controller: IESG
+* Change Controller: IETF
 * Specification Document(s): This document, {{metadata-token-exchange-requested-token-types-supported}}
 
 * Metadata Name: `introspection_token_types_supported`
 * Metadata Description: JSON array of token type URIs identifying token types
   accepted for direct introspection at the authorization server's
   introspection endpoint according to this profile
-* Change Controller: IESG
+* Change Controller: IETF
 * Specification Document(s): This document, {{metadata-introspection-token-types-supported}}
 
 ## OAuth Token Type Hints {#iana-token-type-hints}
@@ -2682,7 +2824,7 @@ available as a `token_type_hint` value at introspection and revocation
 endpoints, which use a separate registry.
 
 * Hint Value: `urn:ietf:params:oauth:token-type:saml2`
-* Change Controller: IESG
+* Change Controller: IETF
 * Specification Document(s): This document, {{introspection-request}}
 
 ## OAuth Token Introspection Response Registry {#iana-introspection-response-registry}
@@ -2693,7 +2835,7 @@ Introspection Response registry established by {{RFC7662}}:
 * Response Name: `saml`
 * Response Description: JSON object containing normalized SAML protocol metadata
   extracted from the validated SAML input
-* Change Controller: IESG
+* Change Controller: IETF
 * Specification Document(s): This document, {{introspection-successful-response}}
 
 * Response Name: `sub_id`
@@ -2701,8 +2843,51 @@ Introspection Response registry established by {{RFC7662}}:
   about the identifier, returned at the top level of the introspection
   response in parallel with its placement in ID Tokens and UserInfo
   responses
-* Change Controller: IESG
+* Change Controller: IETF
 * Specification Document(s): This document, {{introspection-successful-response}}, {{saml-subject-identifier-claim}}
+
+* Response Name: `auth_time`
+* Response Description: Time of end-user authentication, expressed as a
+  NumericDate value, with the same semantics as the OpenID Connect
+  `auth_time` claim; returned at the top level of the introspection
+  response under this profile
+* Change Controller: IETF
+* Specification Document(s): This document, {{introspection-successful-response}}, {{authentication-event-claims}}
+
+* Response Name: `acr`
+* Response Description: Authentication Context Class Reference value
+  with the same semantics as the OpenID Connect `acr` claim; returned
+  at the top level of the introspection response under this profile
+* Change Controller: IETF
+* Specification Document(s): This document, {{introspection-successful-response}}, {{authentication-event-claims}}
+
+* Response Name: `amr`
+* Response Description: JSON array of Authentication Method Reference
+  values with the same semantics as the OpenID Connect `amr` claim;
+  returned at the top level of the introspection response under this
+  profile
+* Change Controller: IETF
+* Specification Document(s): This document, {{introspection-successful-response}}, {{authentication-event-claims}}
+
+* Response Name: `sid`
+* Response Description: Session identifier with the same semantics as
+  the OpenID Connect `sid` claim ({{OIDC-FC-LOGOUT}}, {{OIDC-BC-LOGOUT}});
+  returned at the top level of the introspection response under this
+  profile
+* Change Controller: IETF
+* Specification Document(s): This document, {{introspection-successful-response}}, {{authentication-event-claims}}
+
+Other OpenID Connect standard claims listed in the IANA "JSON Web Token
+Claims" registry (such as `email`, `email_verified`, `given_name`,
+`family_name`, `name`, `preferred_username`, `phone_number`, and
+`phone_number_verified`) MAY also appear as top-level members of the
+introspection response under this profile when the claim mapping rules
+in {{claim-mapping}} produce them. Their semantics in the introspection
+response are the same as in the corresponding ID Token or UserInfo
+response; this document does not redefine those claims and does not
+introduce additional introspection-registry entries for them. A
+deployment that includes such a claim in its introspection response is
+relying on the existing JWT Claims registry definition.
 
 ## JSON Web Token Claims {#iana-jwt-claims}
 
@@ -2713,7 +2898,7 @@ This document requests registration of the following claim in the IANA
 * Claim Description: Structured subject identifier carrying provenance
   about the identifier (such as the original SAML NameID context)
   alongside the primary `sub` claim
-* Change Controller: IESG
+* Change Controller: IETF
 * Reference: This document, {{saml-subject-identifier-claim}}
 
 ## OAuth Scope Values {#iana-oauth-scope-values}
@@ -2734,7 +2919,7 @@ This document requests registration of the following value in the IANA
 * Format Name: `saml-nameid`
 * Description: Subject identifier format representing a SAML 2.0 `NameID`
   with its qualifiers and SAML Issuer
-* Change Controller: IESG
+* Change Controller: IETF
 * Reference: This document, {{saml-subject-identifier-claim}}
 
 --- back
