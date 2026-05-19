@@ -2229,7 +2229,10 @@ contains the Migration Client's <code>client_id</code> at the OP, not the Bridge
 Bridge <span class="bcp14">MUST</span> validate the <code>aud</code> claim against the set of authorized OP
 <code>client_id</code> values configured in the SP-Binding for this purpose. An ID Token
 whose <code>aud</code> is not in that authorized set <span class="bcp14">MUST</span> be rejected. This set <span class="bcp14">MUST</span> be
-maintained administratively and <span class="bcp14">MUST NOT</span> be inferred from the presented token.<a href="#section-8.1-5" class="pilcrow">¶</a></p>
+maintained administratively and <span class="bcp14">MUST NOT</span> be inferred from the presented token.
+If the ID Token contains multiple audiences, the Bridge <span class="bcp14">MUST</span> require an <code>azp</code>
+claim and <span class="bcp14">MUST</span> verify that <code>azp</code> identifies an OP client ID authorized for the
+SP-Binding.<a href="#section-8.1-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="id-token-freshness">
@@ -2528,7 +2531,7 @@ Content-Type: application/x-www-form-urlencoded
 grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Atoken-exchange
 &amp;subject_token_type=urn%3Aietf%3Aparams%3Aoauth%3Atoken-type%3Aid_token
 &amp;subject_token=eyJhbGciOiJSUzI1NiIsImtpZCI6IjEifQ...
-&amp;requested_token_type=urn%3Aoasis%3Anames%3Atc%3ASAML%3A2.0%3Aassertion
+&amp;requested_token_type=urn%3Aietf%3Aparams%3Aoauth%3Atoken-type%3Asaml2
 &amp;client_assertion_type=urn%3Aietf%3Aparams%3Aoauth%3Aclient-assertion-type%3Ajwt-bearer
 &amp;client_assertion=eyJhbGciOiJSUzI1NiJ9...
 </pre><a href="#section-10.1-3" class="pilcrow">¶</a>
@@ -2592,7 +2595,7 @@ form as defined by <span>[<a href="#OIDC-CORE" class="cite xref">OIDC-CORE</a>]<
 <p id="section-10.1-10"><code>subject_token_type</code>:<a href="#section-10.1-10" class="pilcrow">¶</a></p>
 <p id="section-10.1-11"><span class="bcp14">REQUIRED</span>. The value <code>urn:ietf:params:oauth:token-type:id_token</code>.<a href="#section-10.1-11" class="pilcrow">¶</a></p>
 <p id="section-10.1-12"><code>requested_token_type</code>:<a href="#section-10.1-12" class="pilcrow">¶</a></p>
-<p id="section-10.1-13"><span class="bcp14">REQUIRED</span>. The value <code>urn:oasis:names:tc:SAML:2.0:assertion</code>. <span>[<a href="#RFC8693" class="cite xref">RFC8693</a>]</span> marks
+<p id="section-10.1-13"><span class="bcp14">REQUIRED</span>. The value <code>urn:ietf:params:oauth:token-type:saml2</code>. <span>[<a href="#RFC8693" class="cite xref">RFC8693</a>]</span> marks
 <code>requested_token_type</code> as <span class="bcp14">OPTIONAL</span> at the Token Exchange protocol level. This
 profile narrows that rule: an absent or unsupported <code>requested_token_type</code> <span class="bcp14">MUST</span>
 be rejected with <code>invalid_request</code>.<a href="#section-10.1-13" class="pilcrow">¶</a></p>
@@ -2629,7 +2632,7 @@ corresponding to a configured SP-Binding;<a href="#section-10.2-2.2.1" class="pi
 </li>
           <li id="section-10.2-2.4">
             <p id="section-10.2-2.4.1">verify that the <code>requested_token_type</code> is
-<code>urn:oasis:names:tc:SAML:2.0:assertion</code>;<a href="#section-10.2-2.4.1" class="pilcrow">¶</a></p>
+<code>urn:ietf:params:oauth:token-type:saml2</code>;<a href="#section-10.2-2.4.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-10.2-2.5">
             <p id="section-10.2-2.5.1">resolve the end-user to a Local Account as described in
@@ -2669,7 +2672,7 @@ suspended, deprovisioned, or otherwise not eligible.<a href="#section-10.2-6" cl
 defined by <span>[<a href="#RFC8693" class="cite xref">RFC8693</a>]</span> with:<a href="#section-10.3-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-10.3-2.1">
-            <p id="section-10.3-2.1.1"><code>issued_token_type</code> set to <code>urn:oasis:names:tc:SAML:2.0:assertion</code>;<a href="#section-10.3-2.1.1" class="pilcrow">¶</a></p>
+            <p id="section-10.3-2.1.1"><code>issued_token_type</code> set to <code>urn:ietf:params:oauth:token-type:saml2</code>;<a href="#section-10.3-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-10.3-2.2">
             <p id="section-10.3-2.2.1"><code>access_token</code> containing the base64url-encoded SAML assertion, as defined
@@ -2686,7 +2689,7 @@ characters (<code>=</code>); and<a href="#section-10.3-2.2.1" class="pilcrow">¶
 <div class="lang-json sourcecode" id="section-10.3-5">
 <pre>
 {
-  "issued_token_type": "urn:oasis:names:tc:SAML:2.0:assertion",
+  "issued_token_type": "urn:ietf:params:oauth:token-type:saml2",
   "access_token": "PHNhbWwyOkFzc2VydGlvbi4uLjwvc2FtbDI6QXNzZXJ0aW9uPg",
   "token_type": "N_A",
   "expires_in": 300
@@ -2696,7 +2699,7 @@ characters (<code>=</code>); and<a href="#section-10.3-2.2.1" class="pilcrow">¶
 <p id="section-10.3-6"><span>[<a href="#RFC8693" class="cite xref">RFC8693</a>]</span> uses the <code>access_token</code> response member to carry all issued token
 types. Clients <span class="bcp14">MUST</span> interpret the <code>access_token</code> value as a base64url-encoded
 SAML 2.0 assertion when <code>issued_token_type</code> is
-<code>urn:oasis:names:tc:SAML:2.0:assertion</code>.<a href="#section-10.3-6" class="pilcrow">¶</a></p>
+<code>urn:ietf:params:oauth:token-type:saml2</code>.<a href="#section-10.3-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="token-exchange-error-response">
@@ -3066,11 +3069,12 @@ of the underlying OIDC session. It <span class="bcp14">MUST NOT</span> be derive
 <code>exp</code> claim, which reflects only token validity rather than session lifetime.<a href="#section-13.3-1" class="pilcrow">¶</a></p>
 <p id="section-13.3-2">The SAML <code>SessionNotOnOrAfter</code> attribute in <code>AuthnStatement</code>, when emitted,
 represents the end of the authenticated session. The Bridge <span class="bcp14">SHOULD</span> set
-<code>SessionNotOnOrAfter</code> to the earliest of: the OIDC session expiry as
-determined from the refresh token lifetime, the OP's session management
-state, or the SP-Binding's configured maximum session duration. If none of
-these can be determined, the Bridge <span class="bcp14">SHOULD</span> omit <code>SessionNotOnOrAfter</code> rather
-than guess.<a href="#section-13.3-2" class="pilcrow">¶</a></p>
+<code>SessionNotOnOrAfter</code> to the earliest of: the <code>session_expiry</code> claim defined
+by OpenID Connect Enterprise Extensions <span>[<a href="#OIDC-ENTERPRISE-EXTENSIONS" class="cite xref">OIDC-ENTERPRISE-EXTENSIONS</a>]</span> when
+present, the OIDC session expiry as determined from the refresh token
+lifetime, the OP's session management state, or the SP-Binding's configured
+maximum session duration. If none of these can be determined, the Bridge
+<span class="bcp14">SHOULD</span> omit <code>SessionNotOnOrAfter</code> rather than guess.<a href="#section-13.3-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -3788,9 +3792,8 @@ to publish the Bridge's own SAML IdP Entity ID.<a href="#section-18.2-2.2.1" cla
 <p id="section-18.2-3">No additional IANA registration is required for these parameters.<a href="#section-18.2-3" class="pilcrow">¶</a></p>
 <p id="section-18.2-4">The Token Exchange grant type <code>urn:ietf:params:oauth:grant-type:token-exchange</code>
 and the token type URIs <code>urn:ietf:params:oauth:token-type:id_token</code> and
-<code>urn:oasis:names:tc:SAML:2.0:assertion</code> used by this profile are already
-registered by <span>[<a href="#RFC8693" class="cite xref">RFC8693</a>]</span> and the OASIS SAML 2.0 specifications; this document
-does not modify those registrations.<a href="#section-18.2-4" class="pilcrow">¶</a></p>
+<code>urn:ietf:params:oauth:token-type:saml2</code> used by this profile are already
+registered by <span>[<a href="#RFC8693" class="cite xref">RFC8693</a>]</span>; this document does not modify those registrations.<a href="#section-18.2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -3817,6 +3820,10 @@ does not modify those registrations.<a href="#section-18.2-4" class="pilcrow">¶
 <dt id="OIDC-DISCOVERY">[OIDC-DISCOVERY]</dt>
         <dd>
 <span class="refAuthor">Sakimura, N.</span>, <span class="refAuthor">Bradley, J.</span>, <span class="refAuthor">Jones, M. B.</span>, and <span class="refAuthor">E. Jay</span>, <span class="refTitle">"OpenID Connect Discovery 1.0 incorporating errata set 2"</span>, <span>&lt;<a href="https://openid.net/specs/openid-connect-discovery-1_0.html">https://openid.net/specs/openid-connect-discovery-1_0.html</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="OIDC-ENTERPRISE-EXTENSIONS">[OIDC-ENTERPRISE-EXTENSIONS]</dt>
+        <dd>
+<span class="refAuthor">Hardt, D.</span> and <span class="refAuthor">K. McGuinness</span>, <span class="refTitle">"OpenID Connect Enterprise Extensions 1.0"</span>, <time datetime="2025-09" class="refDate">September 2025</time>, <span>&lt;<a href="https://openid.net/specs/openid-connect-enterprise-extensions-1_0.html">https://openid.net/specs/openid-connect-enterprise-extensions-1_0.html</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="OIDC-FC-LOGOUT">[OIDC-FC-LOGOUT]</dt>
         <dd>
@@ -4090,8 +4097,8 @@ it to the calendar ACS at <code>https://calendar.example.com/saml/acs</code>.<a 
 <a href="#appendix-A.2" class="section-number selfRef">A.2. </a><a href="#name-token-exchange-id-token-to-s" class="section-name selfRef">Token Exchange: ID Token to SAML Assertion</a>
         </h3>
 <p id="appendix-A.2-1">A migration tool has obtained an ID Token from the OP on behalf of Alice using
-a separate OIDC client credential flow and needs to produce a SAML assertion for
-the calendar SP to test a migration scenario. It presents the ID Token to the
+a permitted OIDC flow and needs to produce a SAML assertion for the calendar
+SP to test a migration scenario. It presents the ID Token to the
 Bridge's Token Exchange endpoint:<a href="#appendix-A.2-1" class="pilcrow">¶</a></p>
 <div class="lang-http sourcecode" id="appendix-A.2-2">
 <pre>
@@ -4101,8 +4108,8 @@ Content-Type: application/x-www-form-urlencoded
 
 grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 &amp;subject_token_type=urn:ietf:params:oauth:token-type:id_token
-&amp;subject_token=eyJhbGciOiJSUzI1NiIsImtpZCI6IjEifQ.eyJpc3MiOiJodHRwczovL29wLmV4YW1wbGUuY29tIiwic3ViIjoiMjQ4Mjg5NzYxMDAxIiwiYXVkIjoiYnJpZGdlLWNsaWVudCIsImV4cCI6MTc3NjgwODUwMCwiaWF0IjoxNzc2ODA0OTAwLCJhdXRoX3RpbWUiOjE3NzY3OTQ0MDAsImFjciI6InVybjpvYXNpczpuYW1lczp0YzpTQU1MOjIuMDphYzpjbGFzc2VzOlBhc3N3b3JkUHJvdGVjdGVkVHJhbnNwb3J0IiwiZW1haWwiOiJhbGljZUBleGFtcGxlLmNvbSIsImdpdmVuX25hbWUiOiJBbGljZSIsImZhbWlseV9uYW1lIjoiTmciLCJuYW1lIjoiQWxpY2UgTmcifQ.signature
-&amp;requested_token_type=urn:oasis:names:tc:SAML:2.0:assertion
+&amp;subject_token=eyJhbGciOiJSUzI1NiIsImtpZCI6IjEifQ.eyJpc3MiOiJodHRwczovL29wLmV4YW1wbGUuY29tIiwic3ViIjoiMjQ4Mjg5NzYxMDAxIiwiYXVkIjoiYnJpZGdlLWNsaWVudCIsImV4cCI6MTc3NjgwODUwMCwiaWF0IjoxNzc2ODA0OTAwLCJqdGkiOiJvcC1pZC10b2tlbi03ZjNhIiwiYXV0aF90aW1lIjoxNzc2Nzk0NDAwLCJhY3IiOiJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6YWM6Y2xhc3NlczpQYXNzd29yZFByb3RlY3RlZFRyYW5zcG9ydCIsImVtYWlsIjoiYWxpY2VAZXhhbXBsZS5jb20iLCJnaXZlbl9uYW1lIjoiQWxpY2UiLCJmYW1pbHlfbmFtZSI6Ik5nIiwibmFtZSI6IkFsaWNlIE5nIn0.signature
+&amp;requested_token_type=urn:ietf:params:oauth:token-type:saml2
 &amp;client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer
 &amp;client_assertion=eyJhbGciOiJSUzI1NiJ9...
 </pre><a href="#appendix-A.2-2" class="pilcrow">¶</a>
@@ -4112,7 +4119,7 @@ Alice's pairwise NameID for the calendar SP-Binding, and returns:<a href="#appen
 <div class="lang-json sourcecode" id="appendix-A.2-4">
 <pre>
 {
-  "issued_token_type": "urn:oasis:names:tc:SAML:2.0:assertion",
+  "issued_token_type": "urn:ietf:params:oauth:token-type:saml2",
   "access_token": "PHNhbWwyOkFzc2VydGlvbiBJRD0iX2JyaWRnZS1hc3NlcnRpb24tN2YzYTljMjEiLi4uPi4uLjwvc2FtbDI6QXNzZXJ0aW9uPg",
   "token_type": "N_A",
   "expires_in": 300
@@ -4226,7 +4233,7 @@ companion <span>[<a href="#SAML-OIDC-MIGRATION" class="cite xref">SAML-OIDC-MIGR
           <tr>
             <td class="text-left" rowspan="1" colspan="1">Replay prevention</td>
             <td class="text-left" rowspan="1" colspan="1">Assertion ID tracking at AS</td>
-            <td class="text-left" rowspan="1" colspan="1">ID Token <code>jti</code> / (<code>iss</code>, <code>sub</code>, <code>iat</code>, <code>exp</code>) tracking at Bridge</td>
+            <td class="text-left" rowspan="1" colspan="1">ID Token <code>jti</code> tracking at Bridge</td>
           </tr>
           <tr>
             <td class="text-left" rowspan="1" colspan="1">Logout: SP → IdP</td>

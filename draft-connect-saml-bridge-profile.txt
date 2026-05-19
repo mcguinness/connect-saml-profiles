@@ -792,7 +792,10 @@ Table of Contents
    set of authorized OP client_id values configured in the SP-Binding
    for this purpose.  An ID Token whose aud is not in that authorized
    set MUST be rejected.  This set MUST be maintained administratively
-   and MUST NOT be inferred from the presented token.
+   and MUST NOT be inferred from the presented token.  If the ID Token
+   contains multiple audiences, the Bridge MUST require an azp claim and
+   MUST verify that azp identifies an OP client ID authorized for the
+   SP-Binding.
 
 8.2.  Freshness and Authentication Time
 
@@ -1040,7 +1043,7 @@ Table of Contents
    grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Atoken-exchange
    &subject_token_type=urn%3Aietf%3Aparams%3Aoauth%3Atoken-type%3Aid_token
    &subject_token=eyJhbGciOiJSUzI1NiIsImtpZCI6IjEifQ...
-   &requested_token_type=urn%3Aoasis%3Anames%3Atc%3ASAML%3A2.0%3Aassertion
+   &requested_token_type=urn%3Aietf%3Aparams%3Aoauth%3Atoken-type%3Asaml2
    &client_assertion_type=urn%3Aietf%3Aparams%3Aoauth%3Aclient-assertion-type%3Ajwt-bearer
    &client_assertion=eyJhbGciOiJSUzI1NiJ9...
 
@@ -1081,7 +1084,7 @@ Table of Contents
 
    requested_token_type:
 
-   REQUIRED.  The value urn:oasis:names:tc:SAML:2.0:assertion.
+   REQUIRED.  The value urn:ietf:params:oauth:token-type:saml2.
    [RFC8693] marks requested_token_type as OPTIONAL at the Token
    Exchange protocol level.  This profile narrows that rule: an absent
    or unsupported requested_token_type MUST be rejected with
@@ -1114,7 +1117,7 @@ Table of Contents
    3.  validate the ID Token as described in Section 8;
 
    4.  verify that the requested_token_type is
-       urn:oasis:names:tc:SAML:2.0:assertion;
+       urn:ietf:params:oauth:token-type:saml2;
 
    5.  resolve the end-user to a Local Account as described in
        Section 11;
@@ -1147,7 +1150,7 @@ Table of Contents
    For a successful request, the Bridge MUST return a Token Exchange
    response as defined by [RFC8693] with:
 
-   *  issued_token_type set to urn:oasis:names:tc:SAML:2.0:assertion;
+   *  issued_token_type set to urn:ietf:params:oauth:token-type:saml2;
 
    *  access_token containing the base64url-encoded SAML assertion, as
       defined in Section 5 of [RFC4648], without line wrapping and
@@ -1161,7 +1164,7 @@ Table of Contents
    The following non-normative example shows a successful response:
 
    {
-     "issued_token_type": "urn:oasis:names:tc:SAML:2.0:assertion",
+     "issued_token_type": "urn:ietf:params:oauth:token-type:saml2",
      "access_token": "PHNhbWwyOkFzc2VydGlvbi4uLjwvc2FtbDI6QXNzZXJ0aW9uPg",
      "token_type": "N_A",
      "expires_in": 300
@@ -1170,7 +1173,7 @@ Table of Contents
    [RFC8693] uses the access_token response member to carry all issued
    token types.  Clients MUST interpret the access_token value as a
    base64url-encoded SAML 2.0 assertion when issued_token_type is
-   urn:oasis:names:tc:SAML:2.0:assertion.
+   urn:ietf:params:oauth:token-type:saml2.
 
 10.4.  Error Response
 
@@ -1473,11 +1476,13 @@ NameID = base64url( SHA-256( issuer || ":" || sub || ":" || sp_entity_id || ":" 
 
    The SAML SessionNotOnOrAfter attribute in AuthnStatement, when
    emitted, represents the end of the authenticated session.  The Bridge
-   SHOULD set SessionNotOnOrAfter to the earliest of: the OIDC session
-   expiry as determined from the refresh token lifetime, the OP's
-   session management state, or the SP-Binding's configured maximum
-   session duration.  If none of these can be determined, the Bridge
-   SHOULD omit SessionNotOnOrAfter rather than guess.
+   SHOULD set SessionNotOnOrAfter to the earliest of: the session_expiry
+   claim defined by OpenID Connect Enterprise Extensions
+   [OIDC-ENTERPRISE-EXTENSIONS] when present, the OIDC session expiry as
+   determined from the refresh token lifetime, the OP's session
+   management state, or the SP-Binding's configured maximum session
+   duration.  If none of these can be determined, the Bridge SHOULD omit
+   SessionNotOnOrAfter rather than guess.
 
 14.  SAML Assertion Construction
 
@@ -2051,9 +2056,9 @@ NameID = base64url( SHA-256( issuer || ":" || sub || ":" || sp_entity_id || ":" 
 
    The Token Exchange grant type urn:ietf:params:oauth:grant-type:token-
    exchange and the token type URIs urn:ietf:params:oauth:token-
-   type:id_token and urn:oasis:names:tc:SAML:2.0:assertion used by this
-   profile are already registered by [RFC8693] and the OASIS SAML 2.0
-   specifications; this document does not modify those registrations.
+   type:id_token and urn:ietf:params:oauth:token-type:saml2 used by this
+   profile are already registered by [RFC8693]; this document does not
+   modify those registrations.
 
 19.  References
 
@@ -2075,6 +2080,12 @@ NameID = base64url( SHA-256( issuer || ":" || sub || ":" || sp_entity_id || ":" 
               "OpenID Connect Discovery 1.0 incorporating errata set 2",
               <https://openid.net/specs/openid-connect-discovery-
               1_0.html>.
+
+   [OIDC-ENTERPRISE-EXTENSIONS]
+              Hardt, D. and K. McGuinness, "OpenID Connect Enterprise
+              Extensions 1.0", September 2025,
+              <https://openid.net/specs/openid-connect-enterprise-
+              extensions-1_0.html>.
 
    [OIDC-FC-LOGOUT]
               Jones, M. B., "OpenID Connect Front-Channel Logout 1.0",
@@ -2344,10 +2355,9 @@ A.1.  Browser-Based SAML SSO Flow
 A.2.  Token Exchange: ID Token to SAML Assertion
 
    A migration tool has obtained an ID Token from the OP on behalf of
-   Alice using a separate OIDC client credential flow and needs to
-   produce a SAML assertion for the calendar SP to test a migration
-   scenario.  It presents the ID Token to the Bridge's Token Exchange
-   endpoint:
+   Alice using a permitted OIDC flow and needs to produce a SAML
+   assertion for the calendar SP to test a migration scenario.  It
+   presents the ID Token to the Bridge's Token Exchange endpoint:
 
    POST /token HTTP/1.1
    Host: bridge.example.com
@@ -2355,8 +2365,8 @@ A.2.  Token Exchange: ID Token to SAML Assertion
 
    grant_type=urn:ietf:params:oauth:grant-type:token-exchange
    &subject_token_type=urn:ietf:params:oauth:token-type:id_token
-   &subject_token=eyJhbGciOiJSUzI1NiIsImtpZCI6IjEifQ.eyJpc3MiOiJodHRwczovL29wLmV4YW1wbGUuY29tIiwic3ViIjoiMjQ4Mjg5NzYxMDAxIiwiYXVkIjoiYnJpZGdlLWNsaWVudCIsImV4cCI6MTc3NjgwODUwMCwiaWF0IjoxNzc2ODA0OTAwLCJhdXRoX3RpbWUiOjE3NzY3OTQ0MDAsImFjciI6InVybjpvYXNpczpuYW1lczp0YzpTQU1MOjIuMDphYzpjbGFzc2VzOlBhc3N3b3JkUHJvdGVjdGVkVHJhbnNwb3J0IiwiZW1haWwiOiJhbGljZUBleGFtcGxlLmNvbSIsImdpdmVuX25hbWUiOiJBbGljZSIsImZhbWlseV9uYW1lIjoiTmciLCJuYW1lIjoiQWxpY2UgTmcifQ.signature
-   &requested_token_type=urn:oasis:names:tc:SAML:2.0:assertion
+   &subject_token=eyJhbGciOiJSUzI1NiIsImtpZCI6IjEifQ.eyJpc3MiOiJodHRwczovL29wLmV4YW1wbGUuY29tIiwic3ViIjoiMjQ4Mjg5NzYxMDAxIiwiYXVkIjoiYnJpZGdlLWNsaWVudCIsImV4cCI6MTc3NjgwODUwMCwiaWF0IjoxNzc2ODA0OTAwLCJqdGkiOiJvcC1pZC10b2tlbi03ZjNhIiwiYXV0aF90aW1lIjoxNzc2Nzk0NDAwLCJhY3IiOiJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6YWM6Y2xhc3NlczpQYXNzd29yZFByb3RlY3RlZFRyYW5zcG9ydCIsImVtYWlsIjoiYWxpY2VAZXhhbXBsZS5jb20iLCJnaXZlbl9uYW1lIjoiQWxpY2UiLCJmYW1pbHlfbmFtZSI6Ik5nIiwibmFtZSI6IkFsaWNlIE5nIn0.signature
+   &requested_token_type=urn:ietf:params:oauth:token-type:saml2
    &client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer
    &client_assertion=eyJhbGciOiJSUzI1NiJ9...
 
@@ -2365,7 +2375,7 @@ A.2.  Token Exchange: ID Token to SAML Assertion
    and returns:
 
    {
-     "issued_token_type": "urn:oasis:names:tc:SAML:2.0:assertion",
+     "issued_token_type": "urn:ietf:params:oauth:token-type:saml2",
      "access_token": "PHNhbWwyOkFzc2VydGlvbiBJRD0iX2JyaWRnZS1hc3NlcnRpb24tN2YzYTljMjEiLi4uPi4uLjwvc2FtbDI6QXNzZXJ0aW9uPg",
      "token_type": "N_A",
      "expires_in": 300
@@ -2427,9 +2437,8 @@ Appendix B.  Paired Profile Summary
    | Pairwise       | saml_sp_entity_id     | SP Entity ID + salt     |
    | subject key    | (OIDC Core §8 input)  | (hash-based derivation) |
    +----------------+-----------------------+-------------------------+
-   | Replay         | Assertion ID tracking | ID Token jti / (iss,    |
-   | prevention     | at AS                 | sub, iat, exp) tracking |
-   |                |                       | at Bridge               |
+   | Replay         | Assertion ID tracking | ID Token jti tracking   |
+   | prevention     | at AS                 | at Bridge               |
    +----------------+-----------------------+-------------------------+
    | Logout: SP →   | SAML SLO → AS session | SAML SLO → Bridge       |
    | IdP            | revocation            | propagates to OP        |
