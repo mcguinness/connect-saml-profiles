@@ -1372,6 +1372,11 @@ provisioning, governance models, or generalized SAML feature parity.<a href="#se
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13.2.1">
                 <p id="section-toc.1-1.13.2.1.1"><a href="#section-13.1" class="auto internal xref">13.1</a>.  <a href="#name-authentication-event-claims" class="internal xref">Authentication Event Claims</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13.2.1.2.1">
+                    <p id="section-toc.1-1.13.2.1.2.1.1"><a href="#section-13.1.1" class="auto internal xref">13.1.1</a>.  <a href="#name-acr-mapping" class="internal xref">ACR Mapping</a></p>
+</li>
+                </ul>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13.2.2">
                 <p id="section-toc.1-1.13.2.2.1"><a href="#section-13.2" class="auto internal xref">13.2</a>.  <a href="#name-attribute-claims" class="internal xref">Attribute Claims</a></p>
@@ -1397,6 +1402,35 @@ provisioning, governance models, or generalized SAML feature parity.<a href="#se
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.1">
                 <p id="section-toc.1-1.15.2.1.1"><a href="#section-15.1" class="auto internal xref">15.1</a>.  <a href="#name-threat-model" class="internal xref">Threat Model</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.2">
+                <p id="section-toc.1-1.15.2.2.1"><a href="#section-15.2" class="auto internal xref">15.2</a>.  <a href="#name-saml-assertion-and-signatur" class="internal xref">SAML Assertion and Signature Risks</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.2.2.1">
+                    <p id="section-toc.1-1.15.2.2.2.1.1"><a href="#section-15.2.1" class="auto internal xref">15.2.1</a>.  <a href="#name-idp-initiated-sso-and-missi" class="internal xref">IdP-Initiated SSO and Missing <code>InResponseTo</code></a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.2.2.2">
+                    <p id="section-toc.1-1.15.2.2.2.2.1"><a href="#section-15.2.2" class="auto internal xref">15.2.2</a>.  <a href="#name-xml-signature-wrapping" class="internal xref">XML Signature Wrapping</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.2.2.3">
+                    <p id="section-toc.1-1.15.2.2.2.3.1"><a href="#section-15.2.3" class="auto internal xref">15.2.3</a>.  <a href="#name-deprecated-cryptographic-al" class="internal xref">Deprecated Cryptographic Algorithms</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.3">
+                <p id="section-toc.1-1.15.2.3.1"><a href="#section-15.3" class="auto internal xref">15.3</a>.  <a href="#name-metadata-fetching-and-ssrf" class="internal xref">Metadata Fetching and SSRF</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.4">
+                <p id="section-toc.1-1.15.2.4.1"><a href="#section-15.4" class="auto internal xref">15.4</a>.  <a href="#name-replay-and-bearer-assertion" class="internal xref">Replay and Bearer Assertion Risks</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.5">
+                <p id="section-toc.1-1.15.2.5.1"><a href="#section-15.5" class="auto internal xref">15.5</a>.  <a href="#name-binding-security" class="internal xref">Binding Security</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.6">
+                <p id="section-toc.1-1.15.2.6.1"><a href="#section-15.6" class="auto internal xref">15.6</a>.  <a href="#name-token-and-claim-security" class="internal xref">Token and Claim Security</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.7">
+                <p id="section-toc.1-1.15.2.7.1"><a href="#section-15.7" class="auto internal xref">15.7</a>.  <a href="#name-protocol-confusion-and-tran" class="internal xref">Protocol Confusion and Transport Security</a></p>
 </li>
             </ul>
 </li>
@@ -1455,7 +1489,15 @@ provisioning, governance models, or generalized SAML feature parity.<a href="#se
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.20">
-            <p id="section-toc.1-1.20.1"><a href="#appendix-B" class="auto internal xref">Appendix B</a>.  <a href="#name-incommon-and-eduperson-depl" class="internal xref">InCommon and eduPerson Deployment Guidance</a></p>
+            <p id="section-toc.1-1.20.1"><a href="#appendix-B" class="auto internal xref">Appendix B</a>.  <a href="#name-attribute-mapping-examples" class="internal xref">Attribute Mapping Examples</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.20.2.1">
+                <p id="section-toc.1-1.20.2.1.1"><a href="#appendix-B.1" class="auto internal xref">B.1</a>.  <a href="#name-common-saml-attribute-mappi" class="internal xref">Common SAML Attribute Mappings</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.20.2.2">
+                <p id="section-toc.1-1.20.2.2.1"><a href="#appendix-B.2" class="auto internal xref">B.2</a>.  <a href="#name-incommon-and-eduperson-depl" class="internal xref">InCommon and eduPerson Deployments</a></p>
+</li>
+            </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.21">
             <p id="section-toc.1-1.21.1"><a href="#appendix-C" class="auto internal xref">Appendix C</a>.  <a href="#name-authentication-context-mapp" class="internal xref">Authentication Context Mapping Examples</a></p>
@@ -1486,14 +1528,18 @@ provisioning, governance models, or generalized SAML feature parity.<a href="#se
       <h2 id="name-introduction">
 <a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
       </h2>
-<p id="section-1-1">Many enterprise and SaaS deployments have a stable SAML 2.0 trust relationship
-between an Identity Provider (IdP) and a Service Provider (SP). When a relying
-party moves to OpenID Connect or OAuth 2.0, it typically must create a new
-client registration, a new issuer relationship, and a new subject identifier
-model, breaking the subject continuity, claim release policy, assurance
-signaling, and operational trust the deployment already relies on.<a href="#section-1-1" class="pilcrow">¶</a></p>
-<p id="section-1-2">This profile addresses four recurring scenarios in which preserving that
-existing trust relationship matters:<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-1">Many enterprise and SaaS deployments have a stable SAML 2.0 trust
+relationship between an Identity Provider (IdP) and a Service Provider
+(SP). When a relying party moves to OpenID Connect or OAuth 2.0, it
+typically must create a new client registration, a new issuer
+relationship, and a new subject identifier model. That break in
+continuity disrupts the subject identifiers, claim release policy,
+assurance signaling, and operational trust the deployment already
+relies on.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">This profile addresses federation interoperability and identity
+continuity across the SAML-to-OIDC transition. The four scenarios
+below illustrate where preserving the existing trust relationship
+matters:<a href="#section-1-2" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-1-3.1">
           <p id="section-1-3.1.1"><strong>API access from a SAML-authenticated session.</strong> An SP holds a SAML
@@ -1510,16 +1556,14 @@ that complexity and return structured claims over a plain HTTPS endpoint,
 leaving the application with no SAML dependency.<a href="#section-1-3.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-1-3.3">
-          <p id="section-1-3.3.1"><strong>Stack modernization and post-quantum readiness.</strong> SAML XML signature
-libraries are not well positioned for post-quantum cryptography migration.
-By submitting assertions to the authorization server and receiving
-JOSE-based tokens in return, the relying party can retire its XML
-processing stack and adopt post-quantum-ready JWT libraries without
-waiting for PQ support to land in SAML tooling. The supply-side actors
-(the SAML IdP and the authorization server, which are often operated by
-the same authority and may even be the same component) retain their SAML
-XML processing and migrate it on a coordinated timeline; this profile
-shifts the PQ burden away from the long tail of relying parties.<a href="#section-1-3.3.1" class="pilcrow">¶</a></p>
+          <p id="section-1-3.3.1"><strong>Post-quantum readiness for relying parties.</strong> SAML XML signature
+libraries are not well positioned for post-quantum cryptography
+migration. By submitting assertions to the authorization server and
+receiving JOSE-based tokens in return, a relying party can retire
+its XML processing stack and adopt PQ-ready JWT libraries without
+waiting for PQ support to land in SAML tooling. The authorization
+server and SAML IdP retain their SAML XML processing and migrate it
+on a coordinated timeline.<a href="#section-1-3.3.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-1-3.4">
           <p id="section-1-3.4.1"><strong>Non-disruptive migration.</strong> An SP wants to adopt OAuth 2.0 and OpenID
@@ -1529,8 +1573,7 @@ preserves the subject identifiers and claim release policy the SAML SP
 already relies on, enabling a gradual migration.<a href="#section-1-3.4.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-1-4">This document does not define a new grant type, a new assertion format, or a
-replacement for SAML Web Browser SSO. Instead, it defines a profile that:<a href="#section-1-4" class="pilcrow">¶</a></p>
+<p id="section-1-4">This profile:<a href="#section-1-4" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-1-5.1">
           <p id="section-1-5.1.1">binds an OAuth client to an existing SAML SP Entity ID;<a href="#section-1-5.1.1" class="pilcrow">¶</a></p>
@@ -1550,10 +1593,11 @@ needed; and<a href="#section-1-5.4.1" class="pilcrow">¶</a></p>
           <p id="section-1-5.5.1">preserves subject and claim continuity across the migration.<a href="#section-1-5.5.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-1-6">This profile extracts the migration-specific aspects of the approach defined in
+<p id="section-1-6">What this profile does not define is enumerated in <a href="#non-goals" class="auto internal xref">Section 1.1</a>.<a href="#section-1-6" class="pilcrow">¶</a></p>
+<p id="section-1-7">This profile extracts the migration-specific aspects of the approach defined in
 the Identity Assertion JWT Authorization Grant
 <span>[<a href="#I-D.ietf-oauth-identity-assertion-authz-grant" class="cite xref">I-D.ietf-oauth-identity-assertion-authz-grant</a>]</span> and defines them as a
-standalone, reusable OAuth and OpenID Connect profile.<a href="#section-1-6" class="pilcrow">¶</a></p>
+standalone, reusable OAuth and OpenID Connect profile.<a href="#section-1-7" class="pilcrow">¶</a></p>
 <div id="non-goals">
 <section id="section-1.1">
         <h3 id="name-non-goals">
@@ -3631,140 +3675,213 @@ identity claims.<a href="#section-10.2.3-12.6.1" class="pilcrow">¶</a></p>
           <dd class="break"></dd>
 </dl>
 <p id="section-10.2.3-13">When present, the <code>response</code> object <span class="bcp14">MAY</span> contain these members:<a href="#section-10.2.3-13" class="pilcrow">¶</a></p>
-<span class="break"></span><dl class="dlParallel" id="section-10.2.3-14">
-            <dt id="section-10.2.3-14.1">
-<code>id</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-14.2">
-              <p id="section-10.2.3-14.2.1">String. The extracted value of <code>Response/@ID</code>.<a href="#section-10.2.3-14.2.1" class="pilcrow">¶</a></p>
-</dd>
-            <dd class="break"></dd>
-<dt id="section-10.2.3-14.3">
-<code>issuer</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-14.4">
-              <p id="section-10.2.3-14.4.1">String. The extracted value of the <code>Response/Issuer</code> element.<a href="#section-10.2.3-14.4.1" class="pilcrow">¶</a></p>
-</dd>
-            <dd class="break"></dd>
-<dt id="section-10.2.3-14.5">
-<code>issue_instant</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-14.6">
-              <p id="section-10.2.3-14.6.1">String. The extracted value of <code>Response/@IssueInstant</code>.<a href="#section-10.2.3-14.6.1" class="pilcrow">¶</a></p>
-</dd>
-            <dd class="break"></dd>
-<dt id="section-10.2.3-14.7">
-<code>destination</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-14.8">
-              <p id="section-10.2.3-14.8.1">String. The extracted value of <code>Response/@Destination</code>.<a href="#section-10.2.3-14.8.1" class="pilcrow">¶</a></p>
-</dd>
-            <dd class="break"></dd>
-<dt id="section-10.2.3-14.9">
-<code>in_response_to</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-14.10">
-              <p id="section-10.2.3-14.10.1">String. The extracted value of <code>Response/@InResponseTo</code>.<a href="#section-10.2.3-14.10.1" class="pilcrow">¶</a></p>
-</dd>
-            <dd class="break"></dd>
-<dt id="section-10.2.3-14.11">
-<code>status_code</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-14.12">
-              <p id="section-10.2.3-14.12.1">String. The validated value of the top-level
-<code>Response/Status/StatusCode/@Value</code>.<a href="#section-10.2.3-14.12.1" class="pilcrow">¶</a></p>
-</dd>
-            <dd class="break"></dd>
-<dt id="section-10.2.3-14.13">
-<code>has_nested_status_code</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-14.14">
-              <p id="section-10.2.3-14.14.1">Boolean. <code>true</code> if a nested <code>Response/Status/StatusCode/StatusCode</code> element
-was present in the submitted Response, and <code>false</code> otherwise. Under this
-profile, an active response that includes a <code>response</code> object will normally
-have this value set to <code>false</code> because <a href="#response-wrapper-processing" class="auto internal xref">Section 8.2</a>
-requires the authorization server to reject a Response wrapper that contains a
-nested status code.<a href="#section-10.2.3-14.14.1" class="pilcrow">¶</a></p>
-</dd>
-          <dd class="break"></dd>
-</dl>
-<p id="section-10.2.3-15">When present, the <code>assertion</code> object <span class="bcp14">MAY</span> contain these members:<a href="#section-10.2.3-15" class="pilcrow">¶</a></p>
-<span class="break"></span><dl class="dlParallel" id="section-10.2.3-16">
-            <dt id="section-10.2.3-16.1">
-<code>id</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-16.2">
-              <p id="section-10.2.3-16.2.1">String. The value of <code>Assertion/@ID</code>.<a href="#section-10.2.3-16.2.1" class="pilcrow">¶</a></p>
-</dd>
-            <dd class="break"></dd>
-<dt id="section-10.2.3-16.3">
-<code>issuer</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-16.4">
-              <p id="section-10.2.3-16.4.1">String. The value of the <code>Assertion/Issuer</code> element.<a href="#section-10.2.3-16.4.1" class="pilcrow">¶</a></p>
-</dd>
-            <dd class="break"></dd>
-<dt id="section-10.2.3-16.5">
-<code>issue_instant</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-16.6">
-              <p id="section-10.2.3-16.6.1">String. The value of <code>Assertion/@IssueInstant</code>.<a href="#section-10.2.3-16.6.1" class="pilcrow">¶</a></p>
-</dd>
-            <dd class="break"></dd>
-<dt id="section-10.2.3-16.7">
-<code>audiences</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-16.8">
-              <p id="section-10.2.3-16.8.1">Array of strings. The <code>Audience</code> values from all <code>AudienceRestriction</code>
-conditions in the effective assertion.<a href="#section-10.2.3-16.8.1" class="pilcrow">¶</a></p>
-</dd>
-            <dd class="break"></dd>
-<dt id="section-10.2.3-16.9">
-<code>not_before</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-16.10">
-              <p id="section-10.2.3-16.10.1">String. The value of <code>Assertion/Conditions/@NotBefore</code>.<a href="#section-10.2.3-16.10.1" class="pilcrow">¶</a></p>
-</dd>
-            <dd class="break"></dd>
-<dt id="section-10.2.3-16.11">
-<code>not_on_or_after</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-16.12">
-              <p id="section-10.2.3-16.12.1">String. The value of <code>Assertion/Conditions/@NotOnOrAfter</code>.<a href="#section-10.2.3-16.12.1" class="pilcrow">¶</a></p>
-</dd>
-            <dd class="break"></dd>
-<dt id="section-10.2.3-16.13">
-<code>subject_confirmation</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-10.2.3-16.14">
-              <p id="section-10.2.3-16.14.1">JSON object. The fields from the bearer <code>SubjectConfirmation</code> that the
-authorization server treated as usable under <a href="#bearer-subject-confirmation-data-validation" class="auto internal xref">Section 8.6</a>.
-The object <span class="bcp14">MAY</span> contain these members:<a href="#section-10.2.3-16.14.1" class="pilcrow">¶</a></p>
-<span class="break"></span><dl class="dlParallel" id="section-10.2.3-16.14.2">
-                <dt id="section-10.2.3-16.14.2.1">
-<code>method</code>:</dt>
-                <dd style="margin-left: 1.5em" id="section-10.2.3-16.14.2.2">
-                  <p id="section-10.2.3-16.14.2.2.1">String. The <code>Method</code> value of the usable bearer <code>SubjectConfirmation</code>.<a href="#section-10.2.3-16.14.2.2.1" class="pilcrow">¶</a></p>
-</dd>
-                <dd class="break"></dd>
-<dt id="section-10.2.3-16.14.2.3">
-<code>recipient</code>:</dt>
-                <dd style="margin-left: 1.5em" id="section-10.2.3-16.14.2.4">
-                  <p id="section-10.2.3-16.14.2.4.1">String. The <code>Recipient</code> value from the <code>SubjectConfirmationData</code>.<a href="#section-10.2.3-16.14.2.4.1" class="pilcrow">¶</a></p>
-</dd>
-                <dd class="break"></dd>
-<dt id="section-10.2.3-16.14.2.5">
-<code>in_response_to</code>:</dt>
-                <dd style="margin-left: 1.5em" id="section-10.2.3-16.14.2.6">
-                  <p id="section-10.2.3-16.14.2.6.1">String. The <code>InResponseTo</code> value from the <code>SubjectConfirmationData</code>.<a href="#section-10.2.3-16.14.2.6.1" class="pilcrow">¶</a></p>
-</dd>
-                <dd class="break"></dd>
-<dt id="section-10.2.3-16.14.2.7">
-<code>not_on_or_after</code>:</dt>
-                <dd style="margin-left: 1.5em" id="section-10.2.3-16.14.2.8">
-                  <p id="section-10.2.3-16.14.2.8.1">String. The <code>NotOnOrAfter</code> value from the <code>SubjectConfirmationData</code>.<a href="#section-10.2.3-16.14.2.8.1" class="pilcrow">¶</a></p>
-</dd>
-              <dd class="break"></dd>
-</dl>
-<p id="section-10.2.3-16.14.3">The authorization server <span class="bcp14">MUST</span> omit any member for which it has no
-  extracted value.<a href="#section-10.2.3-16.14.3" class="pilcrow">¶</a></p>
-</dd>
-          <dd class="break"></dd>
-</dl>
-<p id="section-10.2.3-17">Date and time values in the <code>saml</code> object <span class="bcp14">SHOULD</span> be represented as strings
+<table class="center" id="table-5">
+            <caption><a href="#table-5" class="selfRef">Table 5</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">Member</th>
+                <th class="text-left" rowspan="1" colspan="1">Type</th>
+                <th class="text-left" rowspan="1" colspan="1">Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>id</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">String</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>Response/@ID</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>issuer</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">String</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>Response/Issuer</code> element</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>issue_instant</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">String</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>Response/@IssueInstant</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>destination</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">String</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>Response/@Destination</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>in_response_to</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">String</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>Response/@InResponseTo</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>status_code</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">String</td>
+                <td class="text-left" rowspan="1" colspan="1">validated value of <code>Response/Status/StatusCode/@Value</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>has_nested_status_code</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">Boolean</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>true</code> iff a nested <code>Response/Status/StatusCode/StatusCode</code> element was present</td>
+              </tr>
+            </tbody>
+          </table>
+<p id="section-10.2.3-15">Under this profile, an active response that includes a <code>response</code> object
+will normally have <code>has_nested_status_code</code> set to <code>false</code> because
+<a href="#response-wrapper-processing" class="auto internal xref">Section 8.2</a> requires the authorization server to
+reject a Response wrapper that contains a nested status code.<a href="#section-10.2.3-15" class="pilcrow">¶</a></p>
+<p id="section-10.2.3-16">When present, the <code>assertion</code> object <span class="bcp14">MAY</span> contain these members:<a href="#section-10.2.3-16" class="pilcrow">¶</a></p>
+<table class="center" id="table-6">
+            <caption><a href="#table-6" class="selfRef">Table 6</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">Member</th>
+                <th class="text-left" rowspan="1" colspan="1">Type</th>
+                <th class="text-left" rowspan="1" colspan="1">Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>id</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">String</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>Assertion/@ID</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>issuer</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">String</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>Assertion/Issuer</code> element</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>issue_instant</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">String</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>Assertion/@IssueInstant</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>audiences</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">Array of strings</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>Audience</code> values from all <code>AudienceRestriction</code> conditions</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>not_before</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">String</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>Assertion/Conditions/@NotBefore</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>not_on_or_after</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">String</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>Assertion/Conditions/@NotOnOrAfter</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>subject_confirmation</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">JSON object</td>
+                <td class="text-left" rowspan="1" colspan="1">fields from the bearer <code>SubjectConfirmation</code> treated as usable under <a href="#bearer-subject-confirmation-data-validation" class="auto internal xref">Section 8.6</a>; see below</td>
+              </tr>
+            </tbody>
+          </table>
+<p id="section-10.2.3-18">The <code>subject_confirmation</code> object <span class="bcp14">MAY</span> contain these members:<a href="#section-10.2.3-18" class="pilcrow">¶</a></p>
+<table class="center" id="table-7">
+            <caption><a href="#table-7" class="selfRef">Table 7</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">Member</th>
+                <th class="text-left" rowspan="1" colspan="1">Type</th>
+                <th class="text-left" rowspan="1" colspan="1">Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>method</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">String</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>Method</code> value of the usable bearer <code>SubjectConfirmation</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>recipient</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">String</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>Recipient</code> value from the <code>SubjectConfirmationData</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>in_response_to</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">String</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>InResponseTo</code> value from the <code>SubjectConfirmationData</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>not_on_or_after</code>
+</td>
+                <td class="text-left" rowspan="1" colspan="1">String</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>NotOnOrAfter</code> value from the <code>SubjectConfirmationData</code>
+</td>
+              </tr>
+            </tbody>
+          </table>
+<p id="section-10.2.3-20">The authorization server <span class="bcp14">MUST</span> omit any member for which it has no
+extracted value.<a href="#section-10.2.3-20" class="pilcrow">¶</a></p>
+<p id="section-10.2.3-21">Date and time values in the <code>saml</code> object <span class="bcp14">SHOULD</span> be represented as strings
 preserving the SAML dateTime semantics. Implementations <span class="bcp14">MAY</span> normalize
 equivalent dateTime values to a consistent UTC representation. Clients <span class="bcp14">MUST</span>
 compare these values according to SAML dateTime semantics, not by lexical string
-comparison unless the representation has first been normalized.<a href="#section-10.2.3-17" class="pilcrow">¶</a></p>
-<p id="section-10.2.3-18">This profile does not require the introspection response to include OAuth token
+comparison unless the representation has first been normalized.<a href="#section-10.2.3-21" class="pilcrow">¶</a></p>
+<p id="section-10.2.3-22">This profile does not require the introspection response to include OAuth token
 metadata fields such as <code>scope</code>, <code>token_type</code>, <code>exp</code>, or <code>iss</code>, because no
-OAuth token is being issued by the introspection operation.<a href="#section-10.2.3-18" class="pilcrow">¶</a></p>
+OAuth token is being issued by the introspection operation.<a href="#section-10.2.3-22" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -4249,8 +4366,8 @@ generic attribute mapping.<a href="#section-13-1" class="pilcrow">¶</a></p>
 target OpenID Connect claims under this profile. Detailed rules,
 including precedence and edge cases, are in the subsections that
 follow.<a href="#section-13-2" class="pilcrow">¶</a></p>
-<table class="center" id="table-5">
-        <caption><a href="#table-5" class="selfRef">Table 5</a></caption>
+<table class="center" id="table-8">
+        <caption><a href="#table-8" class="selfRef">Table 8</a></caption>
 <thead>
           <tr>
             <th class="text-left" rowspan="1" colspan="1">SAML input</th>
@@ -4356,32 +4473,8 @@ OpenID Connect <code>auth_time</code> claim as a NumericDate value. Implementati
 1970-01-01T00:00:00Z when producing this NumericDate value.<a href="#section-13.1-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-13.1-2.2">
-            <p id="section-13.1-2.2.1"><code>AuthnContext/AuthnContextClassRef</code> maps to the OpenID Connect <code>acr</code> claim
-as follows:<a href="#section-13.1-2.2.1" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-13.1-2.2.2.1">
-                <p id="section-13.1-2.2.2.1.1">if local policy maps SAML context class references to a registered
-Level of Assurance scheme, that mapping <span class="bcp14">MUST</span> be applied;<a href="#section-13.1-2.2.2.1.1" class="pilcrow">¶</a></p>
-</li>
-              <li class="normal" id="section-13.1-2.2.2.2">
-                <p id="section-13.1-2.2.2.2.1">otherwise, the authorization server <span class="bcp14">SHOULD</span> copy the SAML URI without
-transformation;<a href="#section-13.1-2.2.2.2.1" class="pilcrow">¶</a></p>
-</li>
-              <li class="normal" id="section-13.1-2.2.2.3">
-                <p id="section-13.1-2.2.2.3.1">the authorization server <span class="bcp14">MUST NOT</span> advertise an <code>acr</code> value in
-<code>acr_values_supported</code> that it cannot emit. If <code>acr_values_supported</code>
-enumerates only the mapped Level-of-Assurance values, the authorization
-server <span class="bcp14">MAY</span> still emit pass-through SAML <code>AuthnContextClassRef</code> URIs
-that are not enumerated, provided the asserted URI satisfies the
-pass-through rule above.<a href="#section-13.1-2.2.2.3.1" class="pilcrow">¶</a></p>
-</li>
-            </ul>
-<p id="section-13.1-2.2.3">
-Clients receiving raw SAML authentication context class URIs as <code>acr</code>
-  values (for example,
-  <code>urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport</code>)
-  <span class="bcp14">MUST</span> be prepared to handle them, as they are not registered OpenID
-  Connect ACR values.<a href="#section-13.1-2.2.3" class="pilcrow">¶</a></p>
+            <p id="section-13.1-2.2.1"><code>AuthnContext/AuthnContextClassRef</code> maps to the OpenID Connect <code>acr</code>
+claim. Mapping rules are in <a href="#acr-mapping" class="auto internal xref">Section 13.1.1</a>.<a href="#section-13.1-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-13.1-2.3">
             <p id="section-13.1-2.3.1"><code>AuthnStatement/@SessionIndex</code> <span class="bcp14">MAY</span> be used as authoritative input to the
@@ -4473,6 +4566,41 @@ omitted.<a href="#section-13.1-11" class="pilcrow">¶</a></p>
 <p id="section-13.1-12">Such values <span class="bcp14">MAY</span> be conveyed in private claims by prior agreement between the
 authorization server and client. Deployments using such claims <span class="bcp14">SHOULD</span> use
 collision-resistant claim names.<a href="#section-13.1-12" class="pilcrow">¶</a></p>
+<div id="acr-mapping">
+<section id="section-13.1.1">
+          <h4 id="name-acr-mapping">
+<a href="#section-13.1.1" class="section-number selfRef">13.1.1. </a><a href="#name-acr-mapping" class="section-name selfRef">ACR Mapping</a>
+          </h4>
+<p id="section-13.1.1-1">The <code>acr</code> claim derived from <code>AuthnContext/AuthnContextClassRef</code> <span class="bcp14">MUST</span> be
+produced as follows:<a href="#section-13.1.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-13.1.1-2.1">
+              <p id="section-13.1.1-2.1.1">if local policy maps SAML context class references to a registered
+Level-of-Assurance scheme, that mapping <span class="bcp14">MUST</span> be applied;<a href="#section-13.1.1-2.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-13.1.1-2.2">
+              <p id="section-13.1.1-2.2.1">otherwise, the authorization server <span class="bcp14">SHOULD</span> copy the SAML URI without
+transformation;<a href="#section-13.1.1-2.2.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-13.1.1-2.3">
+              <p id="section-13.1.1-2.3.1">the authorization server <span class="bcp14">MUST NOT</span> advertise an <code>acr</code> value in
+<code>acr_values_supported</code> that it cannot emit. If <code>acr_values_supported</code>
+enumerates only the mapped Level-of-Assurance values, the
+authorization server <span class="bcp14">MAY</span> still emit pass-through SAML
+<code>AuthnContextClassRef</code> URIs that are not enumerated, provided the
+asserted URI satisfies the pass-through rule above.<a href="#section-13.1.1-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<p id="section-13.1.1-3">Clients receiving raw SAML authentication context class URIs as <code>acr</code>
+values (for example,
+<code>urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport</code>)
+<span class="bcp14">MUST</span> be prepared to handle them, as they are not registered OpenID
+Connect ACR values.<a href="#section-13.1.1-3" class="pilcrow">¶</a></p>
+<p id="section-13.1.1-4">Non-normative example mappings from common SAML AuthnContextClassRef
+URIs to OIDC <code>acr</code>/<code>amr</code> values appear in
+<a href="#authentication-context-mapping-examples" class="auto internal xref">Appendix C</a>.<a href="#section-13.1.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
 </section>
 </div>
 <div id="attribute-claims">
@@ -4503,100 +4631,81 @@ SAML attribute and no deterministic local precedence rule exists, the
 authorization server <span class="bcp14">SHOULD</span> omit the <code>email</code> claim rather than guess. An
 emailAddress <code>NameID</code> <span class="bcp14">MUST NOT</span> by itself cause the authorization server to
 emit <code>email_verified=true</code>.<a href="#section-13.2-3" class="pilcrow">¶</a></p>
-<p id="section-13.2-4">When a SAML attribute directly corresponds to a registered OpenID Connect claim,
-the authorization server <span class="bcp14">SHOULD</span> emit that claim. Common mappings include:<a href="#section-13.2-4" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-13.2-5.1">
-            <p id="section-13.2-5.1.1"><code>givenName</code> or <code>given_name</code> to <code>given_name</code><a href="#section-13.2-5.1.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-13.2-5.2">
-            <p id="section-13.2-5.2.1"><code>sn</code>, <code>surname</code>, or <code>family_name</code> to <code>family_name</code><a href="#section-13.2-5.2.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-13.2-5.3">
-            <p id="section-13.2-5.3.1"><code>displayName</code> or <code>name</code> to <code>name</code><a href="#section-13.2-5.3.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-13.2-5.4">
-            <p id="section-13.2-5.4.1"><code>mail</code> or <code>email</code> to <code>email</code><a href="#section-13.2-5.4.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-13.2-5.5">
-            <p id="section-13.2-5.5.1"><code>uid</code> or <code>preferred_username</code> to <code>preferred_username</code><a href="#section-13.2-5.5.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-13.2-5.6">
-            <p id="section-13.2-5.6.1"><code>telephoneNumber</code> or <code>phone_number</code> to <code>phone_number</code><a href="#section-13.2-5.6.1" class="pilcrow">¶</a></p>
-</li>
-        </ul>
-<p id="section-13.2-6">When the SAML deployment uses attribute <code>Name</code> values based on object
-identifiers or URIs, the authorization server <span class="bcp14">MAY</span> apply a deployment-specific
-mapping table that resolves those names to the equivalent OpenID Connect claim
-names.<a href="#section-13.2-6" class="pilcrow">¶</a></p>
-<p id="section-13.2-7">Appendix B provides non-normative deployment guidance for common InCommon and
-<code>eduPerson</code> attribute mappings.<a href="#section-13.2-7" class="pilcrow">¶</a></p>
-<p id="section-13.2-8">All <code>AttributeStatement</code> elements in the assertion <span class="bcp14">MUST</span> be processed as a
+<p id="section-13.2-4">When a SAML attribute directly corresponds to a registered OpenID
+Connect claim, the authorization server <span class="bcp14">SHOULD</span> emit that claim. When
+the SAML deployment uses attribute <code>Name</code> values based on object
+identifiers or URIs, the authorization server <span class="bcp14">MAY</span> apply a
+deployment-specific mapping table that resolves those names to the
+equivalent OpenID Connect claim names.<a href="#section-13.2-4" class="pilcrow">¶</a></p>
+<p id="section-13.2-5">Non-normative example mappings for common SAML attributes and for
+InCommon and <code>eduPerson</code> deployments are provided in
+<a href="#incommon-and-eduperson-deployment-guidance" class="auto internal xref">Appendix B</a>.<a href="#section-13.2-5" class="pilcrow">¶</a></p>
+<p id="section-13.2-6">All <code>AttributeStatement</code> elements in the assertion <span class="bcp14">MUST</span> be processed as a
 single logical attribute set. Attributes having the same <code>Name</code> and the same
 <code>NameFormat</code> are part of the same logical attribute and their values <span class="bcp14">MUST</span> be
 combined in document order. Attributes that differ by <code>Name</code> or <code>NameFormat</code>
           <span class="bcp14">MUST</span> be treated as distinct inputs even if their <code>FriendlyName</code> values are the
-same.<a href="#section-13.2-8" class="pilcrow">¶</a></p>
-<p id="section-13.2-9">An omitted <code>NameFormat</code> <span class="bcp14">MUST</span> be treated as
+same.<a href="#section-13.2-6" class="pilcrow">¶</a></p>
+<p id="section-13.2-7">An omitted <code>NameFormat</code> <span class="bcp14">MUST</span> be treated as
 <code>urn:oasis:names:tc:SAML:2.0:attrname-format:unspecified</code> for purposes of
-attribute grouping and mapping under this profile.<a href="#section-13.2-9" class="pilcrow">¶</a></p>
-<p id="section-13.2-10">Mapping decisions <span class="bcp14">MUST</span> be based primarily on the SAML attribute <code>Name</code> and
+attribute grouping and mapping under this profile.<a href="#section-13.2-7" class="pilcrow">¶</a></p>
+<p id="section-13.2-8">Mapping decisions <span class="bcp14">MUST</span> be based primarily on the SAML attribute <code>Name</code> and
 <code>NameFormat</code>. <code>FriendlyName</code> <span class="bcp14">MAY</span> be used only as a secondary hint when no
 deterministic <code>Name</code>-based mapping exists. If <code>Name</code>, <code>NameFormat</code>, and
 <code>FriendlyName</code> would imply conflicting claim mappings, the authorization server
-<span class="bcp14">MUST</span> use the <code>Name</code> and <code>NameFormat</code> interpretation.<a href="#section-13.2-10" class="pilcrow">¶</a></p>
-<p id="section-13.2-11">The registered OpenID Connect claims listed above are single-valued string
+<span class="bcp14">MUST</span> use the <code>Name</code> and <code>NameFormat</code> interpretation.<a href="#section-13.2-8" class="pilcrow">¶</a></p>
+<p id="section-13.2-9">The registered OpenID Connect claims listed above are single-valued string
 claims if present. The <code>auth_time</code> claim is a single numeric value. The <code>amr</code>
-claim is an array of strings.<a href="#section-13.2-11" class="pilcrow">¶</a></p>
-<p id="section-13.2-12">Attribute processing <span class="bcp14">MUST</span> follow these rules:<a href="#section-13.2-12" class="pilcrow">¶</a></p>
+claim is an array of strings.<a href="#section-13.2-9" class="pilcrow">¶</a></p>
+<p id="section-13.2-10">Attribute processing <span class="bcp14">MUST</span> follow these rules:<a href="#section-13.2-10" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-13.2-13.1">
-            <p id="section-13.2-13.1.1">a single SAML <code>AttributeValue</code> maps to a single JSON value;<a href="#section-13.2-13.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-13.2-11.1">
+            <p id="section-13.2-11.1.1">a single SAML <code>AttributeValue</code> maps to a single JSON value;<a href="#section-13.2-11.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-13.2-13.2">
-            <p id="section-13.2-13.2.1">multiple SAML <code>AttributeValue</code> elements <span class="bcp14">MAY</span> map to a JSON array only for
+          <li class="normal" id="section-13.2-11.2">
+            <p id="section-13.2-11.2.1">multiple SAML <code>AttributeValue</code> elements <span class="bcp14">MAY</span> map to a JSON array only for
 claims whose syntax permits arrays or for private claims defined by prior
-agreement;<a href="#section-13.2-13.2.1" class="pilcrow">¶</a></p>
+agreement;<a href="#section-13.2-11.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-13.2-13.3">
-            <p id="section-13.2-13.3.1">boolean-valued SAML attributes <span class="bcp14">SHOULD</span> map to JSON booleans when the XML type
-is unambiguous;<a href="#section-13.2-13.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-13.2-11.3">
+            <p id="section-13.2-11.3.1">boolean-valued SAML attributes <span class="bcp14">SHOULD</span> map to JSON booleans when the XML type
+is unambiguous;<a href="#section-13.2-11.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-13.2-13.4">
-            <p id="section-13.2-13.4.1">if multiple source values are available for a registered single-valued claim,
+          <li class="normal" id="section-13.2-11.4">
+            <p id="section-13.2-11.4.1">if multiple source values are available for a registered single-valued claim,
 the authorization server <span class="bcp14">MUST</span> either apply a deterministic, claim-specific
-precedence rule or omit that claim;<a href="#section-13.2-13.4.1" class="pilcrow">¶</a></p>
+precedence rule or omit that claim;<a href="#section-13.2-11.4.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-13.2-13.5">
-            <p id="section-13.2-13.5.1">if multiple distinct SAML attributes could map to the same registered claim,
+          <li class="normal" id="section-13.2-11.5">
+            <p id="section-13.2-11.5.1">if multiple distinct SAML attributes could map to the same registered claim,
 the authorization server <span class="bcp14">MUST</span> apply a deterministic precedence rule based on
-SAML attribute identifiers or omit that claim;<a href="#section-13.2-13.5.1" class="pilcrow">¶</a></p>
+SAML attribute identifiers or omit that claim;<a href="#section-13.2-11.5.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-13.2-13.6">
-            <p id="section-13.2-13.6.1">when multiple SAML attributes from the same logical attribute set could
+          <li class="normal" id="section-13.2-11.6">
+            <p id="section-13.2-11.6.1">when multiple SAML attributes from the same logical attribute set could
 map to the same registered OpenID Connect claim and they differ only by
 <code>NameFormat</code>, the authorization server <span class="bcp14">SHOULD</span> prefer the attribute whose
 <code>NameFormat</code> is <code>urn:oasis:names:tc:SAML:2.0:attrname-format:uri</code> (the
-canonical federation form) over <code>:basic</code> or <code>:unspecified</code> forms;<a href="#section-13.2-13.6.1" class="pilcrow">¶</a></p>
+canonical federation form) over <code>:basic</code> or <code>:unspecified</code> forms;<a href="#section-13.2-11.6.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-13.2-13.7">
-            <p id="section-13.2-13.7.1">the authorization server <span class="bcp14">MUST NOT</span> emit a JSON array for a registered
-single-valued claim; and<a href="#section-13.2-13.7.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-13.2-11.7">
+            <p id="section-13.2-11.7.1">the authorization server <span class="bcp14">MUST NOT</span> emit a JSON array for a registered
+single-valued claim; and<a href="#section-13.2-11.7.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-13.2-13.8">
-            <p id="section-13.2-13.8.1">generic attribute mapping <span class="bcp14">MUST NOT</span> overwrite <code>sub</code>, <code>auth_time</code>, <code>acr</code>,
-<code>amr</code>, or <code>sid</code> values that were derived by the rules in this document.<a href="#section-13.2-13.8.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-13.2-11.8">
+            <p id="section-13.2-11.8.1">generic attribute mapping <span class="bcp14">MUST NOT</span> overwrite <code>sub</code>, <code>auth_time</code>, <code>acr</code>,
+<code>amr</code>, or <code>sid</code> values that were derived by the rules in this document.<a href="#section-13.2-11.8.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-13.2-14">The authorization server <span class="bcp14">MUST NOT</span> infer <code>email_verified</code> from the mere
+<p id="section-13.2-12">The authorization server <span class="bcp14">MUST NOT</span> infer <code>email_verified</code> from the mere
 presence of an <code>email</code> attribute. The authorization server <span class="bcp14">MUST NOT</span> infer
 <code>phone_number_verified</code> from the mere presence of a <code>phone_number</code> attribute.
 These verified status claims <span class="bcp14">MUST</span> be populated only when an explicit
 verification assertion is available from the SAML deployment or from a local
-policy determination.<a href="#section-13.2-14" class="pilcrow">¶</a></p>
-<p id="section-13.2-15">Attributes that do not correspond to standard OpenID Connect claims <span class="bcp14">MAY</span> be
+policy determination.<a href="#section-13.2-12" class="pilcrow">¶</a></p>
+<p id="section-13.2-13">Attributes that do not correspond to standard OpenID Connect claims <span class="bcp14">MAY</span> be
 returned as private claims when both parties have a prior agreement on syntax
-and semantics.<a href="#section-13.2-15" class="pilcrow">¶</a></p>
+and semantics.<a href="#section-13.2-13" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="userinfo-responses">
@@ -4863,142 +4972,210 @@ and addressed in <a href="#session-termination-and-revocation" class="auto inter
             <p id="section-15.1-6.4.1">End-user account compromise upstream of the SAML IdP.<a href="#section-15.1-6.4.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-15.1-7">When a SAML assertion is submitted without an <code>InResponseTo</code> element in its
+</section>
+</div>
+<div id="assertion-signature-risks">
+<section id="section-15.2">
+        <h3 id="name-saml-assertion-and-signatur">
+<a href="#section-15.2" class="section-number selfRef">15.2. </a><a href="#name-saml-assertion-and-signatur" class="section-name selfRef">SAML Assertion and Signature Risks</a>
+        </h3>
+<div id="idp-initiated-sso">
+<section id="section-15.2.1">
+          <h4 id="name-idp-initiated-sso-and-missi">
+<a href="#section-15.2.1" class="section-number selfRef">15.2.1. </a><a href="#name-idp-initiated-sso-and-missi" class="section-name selfRef">IdP-Initiated SSO and Missing <code>InResponseTo</code></a>
+          </h4>
+<p id="section-15.2.1-1">When a SAML assertion is submitted without an <code>InResponseTo</code> element in its
 <code>SubjectConfirmationData</code>, the authorization server cannot confirm that the
-assertion was issued in response to a specific <code>&lt;AuthnRequest&gt;</code>. This pattern
-is common in IdP-initiated SSO flows. Deployments <span class="bcp14">SHOULD</span> require SP-initiated
-flows and <span class="bcp14">SHOULD</span> reject assertions that lack <code>InResponseTo</code> unless the
-deployment threat model has explicitly assessed and accepted the associated
-risks, including the potential for session fixation and assertion injection
-attacks.<a href="#section-15.1-7" class="pilcrow">¶</a></p>
-<p id="section-15.1-8">XML Signature Wrapping (XSW) attacks allow an adversary to manipulate a
+assertion was issued in response to a specific <code>&lt;AuthnRequest&gt;</code>. This
+pattern is common in IdP-initiated SSO flows. Deployments <span class="bcp14">SHOULD</span> require
+SP-initiated flows and <span class="bcp14">SHOULD</span> reject assertions that lack <code>InResponseTo</code>
+unless the deployment threat model has explicitly assessed and accepted
+the associated risks, including session fixation and assertion injection.<a href="#section-15.2.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="xsw">
+<section id="section-15.2.2">
+          <h4 id="name-xml-signature-wrapping">
+<a href="#section-15.2.2" class="section-number selfRef">15.2.2. </a><a href="#name-xml-signature-wrapping" class="section-name selfRef">XML Signature Wrapping</a>
+          </h4>
+<p id="section-15.2.2-1">XML Signature Wrapping (XSW) attacks allow an adversary to manipulate a
 SAML document by inserting a malicious element while retaining a valid
 signature on a benign element elsewhere in the document structure.
-Implementations <span class="bcp14">MUST</span> validate SAML signatures in a manner resistant to XSW
-attacks. Specifically:<a href="#section-15.1-8" class="pilcrow">¶</a></p>
+Implementations <span class="bcp14">MUST</span> validate SAML signatures in a manner resistant to
+XSW attacks. Specifically:<a href="#section-15.2.2-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-15.1-9.1">
-            <p id="section-15.1-9.1.1">when the authorization server relies on an assertion signature, it <span class="bcp14">MUST</span>
-verify that the element referenced by the signature's <code>Reference/@URI</code> is
-the same assertion element being processed; and<a href="#section-15.1-9.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-15.2.2-2.1">
+              <p id="section-15.2.2-2.1.1">when the authorization server relies on an assertion signature, it
+<span class="bcp14">MUST</span> verify that the element referenced by the signature's
+<code>Reference/@URI</code> is the same assertion element being processed; and<a href="#section-15.2.2-2.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-15.1-9.2">
-            <p id="section-15.1-9.2.1">when the authorization server relies on a signed SAML <code>Response</code> wrapper, it
-<span class="bcp14">MUST</span> verify that the element referenced by the signature's <code>Reference/@URI</code>
-is the same <code>Response</code> element being processed, and that the effective
-enclosed assertion selected under <a href="#saml-input-validation-and-binding" class="auto internal xref">Section 8</a> is the unique
-assertion bound to that validated wrapper.<a href="#section-15.1-9.2.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="section-15.2.2-2.2">
+              <p id="section-15.2.2-2.2.1">when the authorization server relies on a signed SAML <code>Response</code>
+wrapper, it <span class="bcp14">MUST</span> verify that the element referenced by the
+signature's <code>Reference/@URI</code> is the same <code>Response</code> element being
+processed, and that the effective enclosed assertion selected under
+<a href="#saml-input-validation-and-binding" class="auto internal xref">Section 8</a> is the unique assertion bound
+to that validated wrapper.<a href="#section-15.2.2-2.2.1" class="pilcrow">¶</a></p>
 </li>
-        </ul>
-<p id="section-15.1-10">The authorization server <span class="bcp14">MUST</span> reject any document structure where these
+          </ul>
+<p id="section-15.2.2-3">The authorization server <span class="bcp14">MUST</span> reject any document structure where these
 bindings cannot be confirmed unambiguously. Implementations <span class="bcp14">SHOULD</span> use
-established SAML processing libraries that have been tested against known XSW
-attack patterns.<a href="#section-15.1-10" class="pilcrow">¶</a></p>
-<p id="section-15.1-11">Implementations <span class="bcp14">MUST NOT</span> accept SAML assertions signed using deprecated
-cryptographic algorithms. Any signature algorithm using SHA-1 as the message
-digest <span class="bcp14">MUST</span> be rejected, including RSA with SHA-1
+established SAML processing libraries that have been tested against
+known XSW attack patterns.<a href="#section-15.2.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="deprecated-algorithms">
+<section id="section-15.2.3">
+          <h4 id="name-deprecated-cryptographic-al">
+<a href="#section-15.2.3" class="section-number selfRef">15.2.3. </a><a href="#name-deprecated-cryptographic-al" class="section-name selfRef">Deprecated Cryptographic Algorithms</a>
+          </h4>
+<p id="section-15.2.3-1">Implementations <span class="bcp14">MUST NOT</span> accept SAML assertions signed using deprecated
+cryptographic algorithms. Any signature algorithm using SHA-1 as the
+message digest <span class="bcp14">MUST</span> be rejected, including RSA with SHA-1
 (<code>http://www.w3.org/2000/09/xmldsig#rsa-sha1</code>), DSA with SHA-1
 (<code>http://www.w3.org/2000/09/xmldsig#dsa-sha1</code>), and ECDSA with SHA-1
 (<code>http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha1</code>). Authorization
-servers <span class="bcp14">SHOULD</span> require RSA with SHA-256 or stronger and <span class="bcp14">SHOULD</span> document their
-minimum acceptable algorithm requirements.<a href="#section-15.1-11" class="pilcrow">¶</a></p>
-<p id="section-15.1-12">Beyond SHA-1, deployments <span class="bcp14">SHOULD</span> reject other algorithms whose security
-margins are no longer adequate by current cryptographic guidance --
+servers <span class="bcp14">SHOULD</span> require RSA with SHA-256 or stronger and <span class="bcp14">SHOULD</span> document
+their minimum acceptable algorithm requirements.<a href="#section-15.2.3-1" class="pilcrow">¶</a></p>
+<p id="section-15.2.3-2">Beyond SHA-1, deployments <span class="bcp14">SHOULD</span> reject other algorithms whose security
+margins are no longer adequate by current cryptographic guidance,
 including MD5-based digests, RSA signatures with key sizes below 2048
 bits, and elliptic curves with effective security below 128 bits.
 Authorization servers <span class="bcp14">SHOULD</span> track current guidance from bodies such as
 NIST and ENISA and adjust their minimum-algorithm policy accordingly.
-SHA-1 is named explicitly above because of its prevalence in legacy SAML
-deployments; other deprecated algorithms are subject to the same
-prohibition by this rule.<a href="#section-15.1-12" class="pilcrow">¶</a></p>
-<p id="section-15.1-13">When an authorization server or migration tooling fetches the
+SHA-1 is named above because of its prevalence in legacy SAML deployments.<a href="#section-15.2.3-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="metadata-ssrf">
+<section id="section-15.3">
+        <h3 id="name-metadata-fetching-and-ssrf">
+<a href="#section-15.3" class="section-number selfRef">15.3. </a><a href="#name-metadata-fetching-and-ssrf" class="section-name selfRef">Metadata Fetching and SSRF</a>
+        </h3>
+<p id="section-15.3-1">When an authorization server or migration tooling fetches a
 <code>saml_metadata_uri</code> at either the authorization server metadata level or
 the client registration level, the fetch target is derived from a
 configuration value that may be attacker-influenced in some deployment
 models. Per-client <code>saml_metadata_uri</code> values registered through dynamic
-client registration are particularly exposed, since they originate from a
-registering party. Implementations <span class="bcp14">MUST</span> restrict fetches to URIs that use
-the HTTPS scheme and <span class="bcp14">MUST NOT</span> follow redirects to non-HTTPS URIs.
+client registration are particularly exposed, since they originate from
+a registering party. Implementations <span class="bcp14">MUST</span> restrict fetches to URIs that
+use the HTTPS scheme and <span class="bcp14">MUST NOT</span> follow redirects to non-HTTPS URIs.
 Deployments <span class="bcp14">SHOULD</span> additionally constrain permitted fetch targets to a
 pre-approved allowlist of hosts, in order to prevent Server-Side Request
-Forgery (SSRF) attacks that could expose internal services. The
-registration authorization rules in
+Forgery (SSRF) attacks against internal services. The registration
+authorization rules in
 <a href="#client-registration-saml-sp-entity-id-authorization" class="auto internal xref">Section 6.1.1</a> apply to
-per-client <code>saml_metadata_uri</code> values, so an attacker registering through
-dynamic client registration cannot freely set this value.<a href="#section-15.1-13" class="pilcrow">¶</a></p>
-<p id="section-15.1-14">Mixing SAML trust inputs and OAuth trust inputs creates a risk of protocol
-confusion. Implementations <span class="bcp14">MUST</span> validate SAML assertions using SAML metadata and
-<span class="bcp14">MUST</span> validate ID Tokens and other JOSE objects using OAuth or OpenID Connect key
-discovery. Implementations <span class="bcp14">MUST NOT</span> assume that a key published in one metadata
-format is automatically valid in the other.<a href="#section-15.1-14" class="pilcrow">¶</a></p>
-<p id="section-15.1-15">Authorization servers <span class="bcp14">MUST</span> apply transport security to the token endpoint,
-introspection endpoint, metadata retrieval, and any other endpoint used by this
-profile in the same manner as the underlying OAuth, OpenID Connect, and SAML
-specifications that they extend.<a href="#section-15.1-15" class="pilcrow">¶</a></p>
-<p id="section-15.1-16">SAML assertions used with Token Exchange or introspection are bearer
-artifacts. Authorization servers <span class="bcp14">MUST</span> detect and prevent replay of the same
-assertion according to the security properties of the underlying SAML
-deployment, any SAML <code>OneTimeUse</code> condition, and the replay rules in
-<a href="#saml-input-validation-and-binding" class="auto internal xref">Section 8</a>. Client authentication alone is not sufficient
-protection against replay of a stolen assertion.<a href="#section-15.1-16" class="pilcrow">¶</a></p>
-<p id="section-15.1-17">Authorization servers deployed across multiple nodes <span class="bcp14">MUST</span> share assertion
-identifier state used for replay detection across all nodes, or use
-equivalent distributed coordination. Per-node replay stores are insufficient.<a href="#section-15.1-17" class="pilcrow">¶</a></p>
-<p id="section-15.1-18">When this profile accepts a signed SAML <code>Response</code> as a wrapper for the
-effective assertion, response-level signature validation does not by itself
-validate response-level protocol fields such as <code>Destination</code> or
-<code>Response/@InResponseTo</code>. This profile does require the wrapped <code>Response</code> to
-carry a top-level SAML <code>StatusCode</code> of <code>Success</code> with no subordinate status
-code, but other response-level protocol checks remain outside this profile.
-Deployments that depend on those additional checks <span class="bcp14">MUST</span> ensure they are
-performed outside this profile before the enclosed assertion is used to issue
-tokens or return claims.<a href="#section-15.1-18" class="pilcrow">¶</a></p>
-<p id="section-15.1-19">The bindings defined by <code>saml_sp_entity_id</code> and <code>saml_idp_entity_id</code> are
-security-critical, both at the authorization server metadata level and at
-the per-client registration level. If a client can register an arbitrary
-<code>saml_sp_entity_id</code> or <code>saml_idp_entity_id</code>, it may be able to exchange
-any SAML assertion captured for that SP-IdP pair into OAuth tokens or
-claims under the bound relying-party relationship, collapsing the
-three-way binding defined in <a href="#migration-binding-rationale" class="auto internal xref">Section 4</a>. Authorization
-servers <span class="bcp14">MUST</span> therefore protect registration and administrative mapping of
-both values according to the rules in
-<a href="#client-registration-saml-sp-entity-id-authorization" class="auto internal xref">Section 6.1.1</a>. In particular,
-anonymous or open dynamic client registration <span class="bcp14">MUST NOT</span> be permitted to
-set either <code>saml_sp_entity_id</code> or <code>saml_idp_entity_id</code>.<a href="#section-15.1-19" class="pilcrow">¶</a></p>
-<p id="section-15.1-20">When multiple OAuth clients share the same <code>saml_sp_entity_id</code>, the
-authorization server is intentionally treating them as the same relying-party
-context. Such sharing <span class="bcp14">MUST</span> therefore be an explicit IdP or authorization server
-policy decision. Accidental sharing can expose the same pairwise <code>sub</code> values
-and claims to clients that should have been isolated from one another.<a href="#section-15.1-20" class="pilcrow">¶</a></p>
-<p id="section-15.1-21">Incorrect <code>amr</code> translation can overstate the assurance of an authentication.
-Implementations <span class="bcp14">SHOULD</span> pass through the SAML <code>AuthnContextClassRef</code> as the
-<code>acr</code> value rather than attempting to derive <code>amr</code> from it, and <span class="bcp14">SHOULD</span> emit
-<code>amr</code> values only when the actual authentication methods are known.<a href="#section-15.1-21" class="pilcrow">¶</a></p>
-<p id="section-15.1-22">Implementations <span class="bcp14">MUST NOT</span> use mutable identifiers, transient identifiers, or
-reassignable <code>NameID</code> formats as OpenID Connect <code>sub</code> values. Doing so would
-break the <code>sub</code> stability requirements and can cause account takeover or
-misbinding after identifier reuse.<a href="#section-15.1-22" class="pilcrow">¶</a></p>
-<p id="section-15.1-23">The introspection alternative can expose normalized claims without minting OAuth
-tokens. Authorization servers therefore <span class="bcp14">MUST</span> strongly authenticate clients to
-the introspection endpoint and <span class="bcp14">MUST</span> return
-<code>"active": false</code> when the client is not entitled to introspect the presented
-SAML assertion.<a href="#section-15.1-23" class="pilcrow">¶</a></p>
-<p id="section-15.1-24">When issuing an ID Token directly from Token Exchange, the authorization server
-<span class="bcp14">MUST</span> ensure that the resulting token meets the same signing, audience, issuer,
-and claim integrity requirements that would apply if the token had been issued
-through an ordinary OpenID Connect flow.<a href="#section-15.1-24" class="pilcrow">¶</a></p>
-<p id="section-15.1-25">Access tokens issued under this profile are bearer tokens by default. They
-are therefore subject to the usual risks associated with bearer credentials,
-including replay by any party that obtains the token value through
-interception, log leakage, or compromise of an intermediary.<a href="#section-15.1-25" class="pilcrow">¶</a></p>
-<p id="section-15.1-26">Deployments protecting sensitive resources <span class="bcp14">SHOULD</span> consider sender-constrained
-access tokens, such as DPoP-bound tokens or mTLS
-client-certificate-bound tokens, in accordance with the underlying OAuth
-sender-constraint specifications. This profile does not preclude their use: a
-Migration Client <span class="bcp14">MAY</span> present a DPoP proof or use mTLS client authentication
-at the token endpoint, and the authorization server <span class="bcp14">MAY</span> issue
-sender-constrained access tokens in the Token Exchange response when its
-policy and the client's registration support that mechanism.<a href="#section-15.1-26" class="pilcrow">¶</a></p>
+per-client <code>saml_metadata_uri</code> values, so an attacker using dynamic
+client registration cannot freely set this value.<a href="#section-15.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="replay-and-bearer-risks">
+<section id="section-15.4">
+        <h3 id="name-replay-and-bearer-assertion">
+<a href="#section-15.4" class="section-number selfRef">15.4. </a><a href="#name-replay-and-bearer-assertion" class="section-name selfRef">Replay and Bearer Assertion Risks</a>
+        </h3>
+<p id="section-15.4-1">SAML assertions used with Token Exchange or introspection are bearer
+artifacts. Authorization servers <span class="bcp14">MUST</span> detect and prevent replay of the
+same assertion according to the security properties of the underlying
+SAML deployment, any SAML <code>OneTimeUse</code> condition, and the replay rules
+in <a href="#saml-input-validation-and-binding" class="auto internal xref">Section 8</a>. Client authentication alone
+is not sufficient protection against replay of a stolen assertion.<a href="#section-15.4-1" class="pilcrow">¶</a></p>
+<p id="section-15.4-2">Authorization servers deployed across multiple nodes <span class="bcp14">MUST</span> share
+assertion identifier state used for replay detection across all nodes,
+or use equivalent distributed coordination. Per-node replay stores are
+insufficient.<a href="#section-15.4-2" class="pilcrow">¶</a></p>
+<p id="section-15.4-3">When this profile accepts a signed SAML <code>Response</code> as a wrapper for the
+effective assertion, response-level signature validation does not by
+itself validate response-level protocol fields such as <code>Destination</code> or
+<code>Response/@InResponseTo</code>. This profile requires the wrapped <code>Response</code>
+to carry a top-level SAML <code>StatusCode</code> of <code>Success</code> with no subordinate
+status code, but other response-level protocol checks remain outside
+this profile. Deployments that depend on those additional checks <span class="bcp14">MUST</span>
+ensure they are performed outside this profile before the enclosed
+assertion is used to issue tokens or return claims.<a href="#section-15.4-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="binding-security">
+<section id="section-15.5">
+        <h3 id="name-binding-security">
+<a href="#section-15.5" class="section-number selfRef">15.5. </a><a href="#name-binding-security" class="section-name selfRef">Binding Security</a>
+        </h3>
+<p id="section-15.5-1">The bindings defined by <code>saml_sp_entity_id</code> and <code>saml_idp_entity_id</code>
+are security-critical, both at the authorization server metadata level
+and at the per-client registration level. If a client can register an
+arbitrary <code>saml_sp_entity_id</code> or <code>saml_idp_entity_id</code>, it may be able
+to exchange any SAML assertion captured for that SP-IdP pair into
+OAuth tokens or claims under the bound relying-party relationship,
+collapsing the three-way binding defined in
+<a href="#migration-binding-rationale" class="auto internal xref">Section 4</a>. Authorization servers <span class="bcp14">MUST</span> therefore
+protect registration and administrative mapping of both values
+according to <a href="#client-registration-saml-sp-entity-id-authorization" class="auto internal xref">Section 6.1.1</a>.
+In particular, anonymous or open dynamic client registration <span class="bcp14">MUST NOT</span>
+be permitted to set either value.<a href="#section-15.5-1" class="pilcrow">¶</a></p>
+<p id="section-15.5-2">When multiple OAuth clients share the same <code>saml_sp_entity_id</code>, the
+authorization server is intentionally treating them as the same
+relying-party context. Such sharing <span class="bcp14">MUST</span> therefore be an explicit IdP
+or authorization server policy decision. Accidental sharing can expose
+the same pairwise <code>sub</code> values and claims to clients that should have
+been isolated from one another.<a href="#section-15.5-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="token-and-claim-security">
+<section id="section-15.6">
+        <h3 id="name-token-and-claim-security">
+<a href="#section-15.6" class="section-number selfRef">15.6. </a><a href="#name-token-and-claim-security" class="section-name selfRef">Token and Claim Security</a>
+        </h3>
+<p id="section-15.6-1">Identifiers used as the OpenID Connect <code>sub</code> claim <span class="bcp14">MUST</span> satisfy the
+stability rules in <a href="#subject-identifier-common-rules" class="auto internal xref">Section 12.5</a>; mutable,
+transient, or reassignable <code>NameID</code> formats are excluded there
+because their use as <code>sub</code> can cause account takeover or misbinding
+after identifier reuse.<a href="#section-15.6-1" class="pilcrow">¶</a></p>
+<p id="section-15.6-2">Incorrect <code>amr</code> translation can overstate the assurance of an
+authentication. Implementations <span class="bcp14">SHOULD</span> pass through the SAML
+<code>AuthnContextClassRef</code> as the <code>acr</code> value rather than attempting to
+derive <code>amr</code> from it, and <span class="bcp14">SHOULD</span> emit <code>amr</code> values only when the
+actual authentication methods are known.<a href="#section-15.6-2" class="pilcrow">¶</a></p>
+<p id="section-15.6-3">The introspection alternative can expose normalized claims without
+minting OAuth tokens. Authorization servers therefore <span class="bcp14">MUST</span> strongly
+authenticate clients to the introspection endpoint and <span class="bcp14">MUST</span> return
+<code>"active": false</code> when the client is not entitled to introspect the
+presented SAML assertion.<a href="#section-15.6-3" class="pilcrow">¶</a></p>
+<p id="section-15.6-4">When issuing an ID Token directly from Token Exchange, the
+authorization server <span class="bcp14">MUST</span> ensure that the resulting token meets the
+same signing, audience, issuer, and claim integrity requirements that
+would apply if the token had been issued through an ordinary OpenID
+Connect flow.<a href="#section-15.6-4" class="pilcrow">¶</a></p>
+<p id="section-15.6-5">Access tokens issued under this profile are bearer tokens by default.
+They are therefore subject to the usual risks associated with bearer
+credentials, including replay by any party that obtains the token
+value through interception, log leakage, or compromise of an
+intermediary. Deployments protecting sensitive resources <span class="bcp14">SHOULD</span>
+consider sender-constrained access tokens, such as DPoP-bound tokens
+or mTLS client-certificate-bound tokens, in accordance with the
+underlying OAuth sender-constraint specifications. This profile does
+not preclude their use: a Migration Client <span class="bcp14">MAY</span> present a DPoP proof or
+use mTLS client authentication at the token endpoint, and the
+authorization server <span class="bcp14">MAY</span> issue sender-constrained access tokens in
+the Token Exchange response when its policy and the client's
+registration support that mechanism.<a href="#section-15.6-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="protocol-confusion-and-transport">
+<section id="section-15.7">
+        <h3 id="name-protocol-confusion-and-tran">
+<a href="#section-15.7" class="section-number selfRef">15.7. </a><a href="#name-protocol-confusion-and-tran" class="section-name selfRef">Protocol Confusion and Transport Security</a>
+        </h3>
+<p id="section-15.7-1">Mixing SAML trust inputs and OAuth trust inputs creates a risk of
+protocol confusion. Implementations <span class="bcp14">MUST</span> validate SAML assertions
+using SAML metadata and <span class="bcp14">MUST</span> validate ID Tokens and other JOSE objects
+using OAuth or OpenID Connect key discovery. Implementations <span class="bcp14">MUST NOT</span>
+assume that a key published in one metadata format is automatically
+valid in the other.<a href="#section-15.7-1" class="pilcrow">¶</a></p>
+<p id="section-15.7-2">Authorization servers <span class="bcp14">MUST</span> apply transport security to the token
+endpoint, introspection endpoint, metadata retrieval, and any other
+endpoint used by this profile in the same manner as the underlying
+OAuth, OpenID Connect, and SAML specifications that they extend.<a href="#section-15.7-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -5864,79 +6041,154 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 </div>
 <div id="incommon-and-eduperson-deployment-guidance">
 <section id="appendix-B">
-      <h2 id="name-incommon-and-eduperson-depl">
-<a href="#appendix-B" class="section-number selfRef">Appendix B. </a><a href="#name-incommon-and-eduperson-depl" class="section-name selfRef">InCommon and eduPerson Deployment Guidance</a>
+      <h2 id="name-attribute-mapping-examples">
+<a href="#appendix-B" class="section-number selfRef">Appendix B. </a><a href="#name-attribute-mapping-examples" class="section-name selfRef">Attribute Mapping Examples</a>
       </h2>
 <p id="appendix-B-1">This appendix is non-normative.<a href="#appendix-B-1" class="pilcrow">¶</a></p>
-<p id="appendix-B-2">Many InCommon deployments use <code>eduPerson</code> attributes, including the REFEDS
-Research and Scholarship attribute bundle. InCommon deployments commonly use
-<code>urn:oid:</code> Name values in addition to friendly names; the mapping rules in
-<a href="#attribute-claims" class="auto internal xref">Section 13.2</a> govern how such OID-based names are resolved to OpenID
-Connect claims. The core rules in <a href="#claim-mapping" class="auto internal xref">Section 13</a> still govern claim typing,
-precedence, and subject handling. Within that framework, deployments commonly
-use the following mappings and constraints:<a href="#appendix-B-2" class="pilcrow">¶</a></p>
+<div id="common-saml-attribute-mappings">
+<section id="appendix-B.1">
+        <h3 id="name-common-saml-attribute-mappi">
+<a href="#appendix-B.1" class="section-number selfRef">B.1. </a><a href="#name-common-saml-attribute-mappi" class="section-name selfRef">Common SAML Attribute Mappings</a>
+        </h3>
+<p id="appendix-B.1-1">Many SAML deployments use a small set of attribute names that map
+directly to registered OpenID Connect claims. Common examples:<a href="#appendix-B.1-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-9">
+          <caption><a href="#table-9" class="selfRef">Table 9</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">SAML attribute (friendly name)</th>
+              <th class="text-left" rowspan="1" colspan="1">OpenID Connect claim</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">
+                <code>givenName</code> (or <code>given_name</code>)</td>
+              <td class="text-left" rowspan="1" colspan="1">
+                <code>given_name</code>
+</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">
+                <code>sn</code>, <code>surname</code>, or <code>family_name</code>
+</td>
+              <td class="text-left" rowspan="1" colspan="1">
+                <code>family_name</code>
+</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">
+                <code>displayName</code> (or <code>name</code>)</td>
+              <td class="text-left" rowspan="1" colspan="1">
+                <code>name</code>
+</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">
+                <code>mail</code> (or <code>email</code>)</td>
+              <td class="text-left" rowspan="1" colspan="1">
+                <code>email</code>
+</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">
+                <code>uid</code> (or <code>preferred_username</code>)</td>
+              <td class="text-left" rowspan="1" colspan="1">
+                <code>preferred_username</code>
+</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">
+                <code>telephoneNumber</code> (or <code>phone_number</code>)</td>
+              <td class="text-left" rowspan="1" colspan="1">
+                <code>phone_number</code>
+</td>
+            </tr>
+          </tbody>
+        </table>
+<p id="appendix-B.1-3">The rules in <a href="#attribute-claims" class="auto internal xref">Section 13.2</a> (in particular, the NameFormat
+preference rule preferring <code>urn:oasis:names:tc:SAML:2.0:attrname-format:uri</code>
+over <code>:basic</code>/<code>:unspecified</code>) govern how these are resolved when the
+assertion uses <code>urn:oid:</code> Name values alongside friendly names.<a href="#appendix-B.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="incommon-and-eduperson-deployments">
+<section id="appendix-B.2">
+        <h3 id="name-incommon-and-eduperson-depl">
+<a href="#appendix-B.2" class="section-number selfRef">B.2. </a><a href="#name-incommon-and-eduperson-depl" class="section-name selfRef">InCommon and eduPerson Deployments</a>
+        </h3>
+<p id="appendix-B.2-1">Many InCommon deployments use <code>eduPerson</code> attributes, including the
+REFEDS Research and Scholarship attribute bundle. InCommon deployments
+commonly use <code>urn:oid:</code> Name values in addition to friendly names; the
+mapping rules in <a href="#attribute-claims" class="auto internal xref">Section 13.2</a> govern how such OID-based names
+are resolved to OpenID Connect claims. The core rules in
+<a href="#claim-mapping" class="auto internal xref">Section 13</a> still govern claim typing, precedence, and subject
+handling. Within that framework, deployments commonly use the following
+mappings and constraints:<a href="#appendix-B.2-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="appendix-B-3.1">
-          <p id="appendix-B-3.1.1"><code>mail</code> to <code>email</code><a href="#appendix-B-3.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="appendix-B.2-2.1">
+            <p id="appendix-B.2-2.1.1"><code>mail</code> to <code>email</code><a href="#appendix-B.2-2.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="appendix-B-3.2">
-          <p id="appendix-B-3.2.1"><code>displayName</code> to <code>name</code><a href="#appendix-B-3.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="appendix-B.2-2.2">
+            <p id="appendix-B.2-2.2.1"><code>displayName</code> to <code>name</code><a href="#appendix-B.2-2.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="appendix-B-3.3">
-          <p id="appendix-B-3.3.1"><code>givenName</code> to <code>given_name</code><a href="#appendix-B-3.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="appendix-B.2-2.3">
+            <p id="appendix-B.2-2.3.1"><code>givenName</code> to <code>given_name</code><a href="#appendix-B.2-2.3.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="appendix-B-3.4">
-          <p id="appendix-B-3.4.1"><code>sn</code> or <code>surname</code> to <code>family_name</code><a href="#appendix-B-3.4.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="appendix-B.2-2.4">
+            <p id="appendix-B.2-2.4.1"><code>sn</code> or <code>surname</code> to <code>family_name</code><a href="#appendix-B.2-2.4.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="appendix-B-3.5">
-          <p id="appendix-B-3.5.1"><code>eduPersonNickname</code> to <code>nickname</code>, when locally useful<a href="#appendix-B-3.5.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="appendix-B.2-2.5">
+            <p id="appendix-B.2-2.5.1"><code>eduPersonNickname</code> to <code>nickname</code>, when locally useful<a href="#appendix-B.2-2.5.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="appendix-B-3.6">
-          <p id="appendix-B-3.6.1"><code>telephoneNumber</code> to <code>phone_number</code>, when locally useful<a href="#appendix-B-3.6.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="appendix-B.2-2.6">
+            <p id="appendix-B.2-2.6.1"><code>telephoneNumber</code> to <code>phone_number</code>, when locally useful<a href="#appendix-B.2-2.6.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="appendix-B-3.7">
-          <p id="appendix-B-3.7.1"><code>eduPersonPrincipalName</code> to <code>preferred_username</code> only when local policy
-permits release as a user-facing identifier; it should not determine <code>sub</code><a href="#appendix-B-3.7.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="appendix-B.2-2.7">
+            <p id="appendix-B.2-2.7.1"><code>eduPersonPrincipalName</code> to <code>preferred_username</code> only when local policy
+permits release as a user-facing identifier; it should not determine <code>sub</code><a href="#appendix-B.2-2.7.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="appendix-B-3.8">
-          <p id="appendix-B-3.8.1"><code>eduPersonScopedAffiliation</code> in a collision-resistant private claim that
-preserves its multi-valued syntax<a href="#appendix-B-3.8.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="appendix-B.2-2.8">
+            <p id="appendix-B.2-2.8.1"><code>eduPersonScopedAffiliation</code> in a collision-resistant private claim that
+preserves its multi-valued syntax<a href="#appendix-B.2-2.8.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="appendix-B-3.9">
-          <p id="appendix-B-3.9.1"><code>eduPersonAffiliation</code> and <code>eduPersonPrimaryAffiliation</code> in collision-
-resistant private claims rather than overloaded standard claims<a href="#appendix-B-3.9.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="appendix-B.2-2.9">
+            <p id="appendix-B.2-2.9.1"><code>eduPersonAffiliation</code> and <code>eduPersonPrimaryAffiliation</code> in collision-
+resistant private claims rather than overloaded standard claims<a href="#appendix-B.2-2.9.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="appendix-B-3.10">
-          <p id="appendix-B-3.10.1"><code>eduPersonEntitlement</code> in a collision-resistant private claim; it should not
-be translated directly into OAuth <code>scope</code><a href="#appendix-B-3.10.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="appendix-B.2-2.10">
+            <p id="appendix-B.2-2.10.1"><code>eduPersonEntitlement</code> in a collision-resistant private claim; it should not
+be translated directly into OAuth <code>scope</code><a href="#appendix-B.2-2.10.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="appendix-B-3.11">
-          <p id="appendix-B-3.11.1"><code>eduPersonAssurance</code> in a collision-resistant private claim or as input to
+          <li class="normal" id="appendix-B.2-2.11">
+            <p id="appendix-B.2-2.11.1"><code>eduPersonAssurance</code> in a collision-resistant private claim or as input to
 local assurance policy; it should not be copied directly into <code>amr</code> and
 should not overwrite <code>acr</code> unless local policy explicitly defines that
-translation<a href="#appendix-B-3.11.1" class="pilcrow">¶</a></p>
+translation<a href="#appendix-B.2-2.11.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="appendix-B-3.12">
-          <p id="appendix-B-3.12.1"><code>eduPersonUniqueId</code> as a stable account-linking or subject-continuity input,
-and only secondarily as a private claim when needed<a href="#appendix-B-3.12.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="appendix-B.2-2.12">
+            <p id="appendix-B.2-2.12.1"><code>eduPersonUniqueId</code> as a stable account-linking or subject-continuity input,
+and only secondarily as a private claim when needed<a href="#appendix-B.2-2.12.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="appendix-B-3.13">
-          <p id="appendix-B-3.13.1"><code>eduPersonTargetedID</code> as a legacy pairwise subject continuity input, not as a
-general-purpose user-facing claim<a href="#appendix-B-3.13.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="appendix-B.2-2.13">
+            <p id="appendix-B.2-2.13.1"><code>eduPersonTargetedID</code> as a legacy pairwise subject continuity input, not as a
+general-purpose user-facing claim<a href="#appendix-B.2-2.13.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="appendix-B-3.14">
-          <p id="appendix-B-3.14.1"><code>eduPersonOrcid</code> in a collision-resistant private claim<a href="#appendix-B-3.14.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="appendix-B.2-2.14">
+            <p id="appendix-B.2-2.14.1"><code>eduPersonOrcid</code> in a collision-resistant private claim<a href="#appendix-B.2-2.14.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="appendix-B-3.15">
-          <p id="appendix-B-3.15.1"><code>eduPersonPrincipalNamePrior</code> only by explicit policy for relying parties that
-require historical identifier information<a href="#appendix-B-3.15.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="appendix-B.2-2.15">
+            <p id="appendix-B.2-2.15.1"><code>eduPersonPrincipalNamePrior</code> only by explicit policy for relying parties that
+require historical identifier information<a href="#appendix-B.2-2.15.1" class="pilcrow">¶</a></p>
 </li>
-      </ul>
-<p id="appendix-B-4">For InCommon-style bundles used only to preserve legacy application behavior,
+        </ul>
+<p id="appendix-B.2-3">For InCommon-style bundles used only to preserve legacy application behavior,
 the authorization server <span class="bcp14">SHOULD</span> prefer standard OpenID Connect claims when
 there is a good semantic match and <span class="bcp14">SHOULD</span> retain the original attribute
 semantics in private claims rather than mapping them to unrelated standard
-claims such as <code>groups</code>, <code>roles</code>, or <code>scope</code>.<a href="#appendix-B-4" class="pilcrow">¶</a></p>
+claims such as <code>groups</code>, <code>roles</code>, or <code>scope</code>.<a href="#appendix-B.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
 </section>
 </div>
 <div id="authentication-context-mapping-examples">
@@ -5957,8 +6209,8 @@ define their own as local policy dictates.<a href="#appendix-C-2" class="pilcrow
         <h3 id="name-common-saml-authncontextcla">
 <a href="#appendix-C.1" class="section-number selfRef">C.1. </a><a href="#name-common-saml-authncontextcla" class="section-name selfRef">Common SAML AuthnContextClassRef URIs</a>
         </h3>
-<table class="center" id="table-6">
-          <caption><a href="#table-6" class="selfRef">Table 6</a></caption>
+<table class="center" id="table-10">
+          <caption><a href="#table-10" class="selfRef">Table 10</a></caption>
 <thead>
             <tr>
               <th class="text-left" rowspan="1" colspan="1">SAML AuthnContextClassRef</th>
