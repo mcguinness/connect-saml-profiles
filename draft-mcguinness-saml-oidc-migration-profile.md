@@ -157,15 +157,19 @@ provisioning, governance models, or generalized SAML feature parity.
 
 # Introduction {#introduction}
 
-Many enterprise and SaaS deployments have a stable SAML 2.0 trust relationship
-between an Identity Provider (IdP) and a Service Provider (SP). When a relying
-party moves to OpenID Connect or OAuth 2.0, it typically must create a new
-client registration, a new issuer relationship, and a new subject identifier
-model, breaking the subject continuity, claim release policy, assurance
-signaling, and operational trust the deployment already relies on.
+Many enterprise and SaaS deployments have a stable SAML 2.0 trust
+relationship between an Identity Provider (IdP) and a Service Provider
+(SP). When a relying party moves to OpenID Connect or OAuth 2.0, it
+typically must create a new client registration, a new issuer
+relationship, and a new subject identifier model. That break in
+continuity disrupts the subject identifiers, claim release policy,
+assurance signaling, and operational trust the deployment already
+relies on.
 
-This profile addresses four recurring scenarios in which preserving that
-existing trust relationship matters:
+This profile addresses federation interoperability and identity
+continuity across the SAML-to-OIDC transition. The four scenarios
+below illustrate where preserving the existing trust relationship
+matters:
 
 * **API access from a SAML-authenticated session.** An SP holds a SAML
   assertion and needs an OAuth access token to call APIs protected by an
@@ -179,16 +183,14 @@ existing trust relationship matters:
   that complexity and return structured claims over a plain HTTPS endpoint,
   leaving the application with no SAML dependency.
 
-* **Stack modernization and post-quantum readiness.** SAML XML signature
-  libraries are not well positioned for post-quantum cryptography migration.
-  By submitting assertions to the authorization server and receiving
-  JOSE-based tokens in return, the relying party can retire its XML
-  processing stack and adopt post-quantum-ready JWT libraries without
-  waiting for PQ support to land in SAML tooling. The supply-side actors
-  (the SAML IdP and the authorization server, which are often operated by
-  the same authority and may even be the same component) retain their SAML
-  XML processing and migrate it on a coordinated timeline; this profile
-  shifts the PQ burden away from the long tail of relying parties.
+* **Post-quantum readiness for relying parties.** SAML XML signature
+  libraries are not well positioned for post-quantum cryptography
+  migration. By submitting assertions to the authorization server and
+  receiving JOSE-based tokens in return, a relying party can retire
+  its XML processing stack and adopt PQ-ready JWT libraries without
+  waiting for PQ support to land in SAML tooling. The authorization
+  server and SAML IdP retain their SAML XML processing and migrate it
+  on a coordinated timeline.
 
 * **Non-disruptive migration.** An SP wants to adopt OAuth 2.0 and OpenID
   Connect without forcing end users to reauthenticate or requiring
@@ -196,8 +198,7 @@ existing trust relationship matters:
   preserves the subject identifiers and claim release policy the SAML SP
   already relies on, enabling a gradual migration.
 
-This document does not define a new grant type, a new assertion format, or a
-replacement for SAML Web Browser SSO. Instead, it defines a profile that:
+This profile:
 
 * binds an OAuth client to an existing SAML SP Entity ID;
 * binds an OAuth issuer to an existing SAML IdP Entity ID;
@@ -206,6 +207,8 @@ replacement for SAML Web Browser SSO. Instead, it defines a profile that:
 * defines how a SAML assertion can be introspected when token issuance is not
   needed; and
 * preserves subject and claim continuity across the migration.
+
+What this profile does not define is enumerated in {{non-goals}}.
 
 This profile extracts the migration-specific aspects of the approach defined in
 the Identity Assertion JWT Authorization Grant
@@ -1713,73 +1716,44 @@ The `saml` object MAY contain these members:
 
 When present, the `response` object MAY contain these members:
 
-`id`:
-: String. The extracted value of `Response/@ID`.
+| Member | Type | Source |
+| --- | --- | --- |
+| `id` | String | `Response/@ID` |
+| `issuer` | String | `Response/Issuer` element |
+| `issue_instant` | String | `Response/@IssueInstant` |
+| `destination` | String | `Response/@Destination` |
+| `in_response_to` | String | `Response/@InResponseTo` |
+| `status_code` | String | validated value of `Response/Status/StatusCode/@Value` |
+| `has_nested_status_code` | Boolean | `true` iff a nested `Response/Status/StatusCode/StatusCode` element was present |
 
-`issuer`:
-: String. The extracted value of the `Response/Issuer` element.
-
-`issue_instant`:
-: String. The extracted value of `Response/@IssueInstant`.
-
-`destination`:
-: String. The extracted value of `Response/@Destination`.
-
-`in_response_to`:
-: String. The extracted value of `Response/@InResponseTo`.
-
-`status_code`:
-: String. The validated value of the top-level
-  `Response/Status/StatusCode/@Value`.
-
-`has_nested_status_code`:
-: Boolean. `true` if a nested `Response/Status/StatusCode/StatusCode` element
-  was present in the submitted Response, and `false` otherwise. Under this
-  profile, an active response that includes a `response` object will normally
-  have this value set to `false` because {{response-wrapper-processing}}
-  requires the authorization server to reject a Response wrapper that contains a
-  nested status code.
+Under this profile, an active response that includes a `response` object
+will normally have `has_nested_status_code` set to `false` because
+{{response-wrapper-processing}} requires the authorization server to
+reject a Response wrapper that contains a nested status code.
 
 When present, the `assertion` object MAY contain these members:
 
-`id`:
-: String. The value of `Assertion/@ID`.
+| Member | Type | Source |
+| --- | --- | --- |
+| `id` | String | `Assertion/@ID` |
+| `issuer` | String | `Assertion/Issuer` element |
+| `issue_instant` | String | `Assertion/@IssueInstant` |
+| `audiences` | Array of strings | `Audience` values from all `AudienceRestriction` conditions |
+| `not_before` | String | `Assertion/Conditions/@NotBefore` |
+| `not_on_or_after` | String | `Assertion/Conditions/@NotOnOrAfter` |
+| `subject_confirmation` | JSON object | fields from the bearer `SubjectConfirmation` treated as usable under {{bearer-subject-confirmation-data-validation}}; see below |
 
-`issuer`:
-: String. The value of the `Assertion/Issuer` element.
+The `subject_confirmation` object MAY contain these members:
 
-`issue_instant`:
-: String. The value of `Assertion/@IssueInstant`.
+| Member | Type | Source |
+| --- | --- | --- |
+| `method` | String | `Method` value of the usable bearer `SubjectConfirmation` |
+| `recipient` | String | `Recipient` value from the `SubjectConfirmationData` |
+| `in_response_to` | String | `InResponseTo` value from the `SubjectConfirmationData` |
+| `not_on_or_after` | String | `NotOnOrAfter` value from the `SubjectConfirmationData` |
 
-`audiences`:
-: Array of strings. The `Audience` values from all `AudienceRestriction`
-  conditions in the effective assertion.
-
-`not_before`:
-: String. The value of `Assertion/Conditions/@NotBefore`.
-
-`not_on_or_after`:
-: String. The value of `Assertion/Conditions/@NotOnOrAfter`.
-
-`subject_confirmation`:
-: JSON object. The fields from the bearer `SubjectConfirmation` that the
-  authorization server treated as usable under {{bearer-subject-confirmation-data-validation}}.
-  The object MAY contain these members:
-
-    `method`:
-    : String. The `Method` value of the usable bearer `SubjectConfirmation`.
-
-    `recipient`:
-    : String. The `Recipient` value from the `SubjectConfirmationData`.
-
-    `in_response_to`:
-    : String. The `InResponseTo` value from the `SubjectConfirmationData`.
-
-    `not_on_or_after`:
-    : String. The `NotOnOrAfter` value from the `SubjectConfirmationData`.
-
-    The authorization server MUST omit any member for which it has no
-    extracted value.
+The authorization server MUST omit any member for which it has no
+extracted value.
 
 Date and time values in the `saml` object SHOULD be represented as strings
 preserving the SAML dateTime semantics. Implementations MAY normalize
@@ -2179,25 +2153,8 @@ SHOULD map its contents as follows:
   OpenID Connect `auth_time` claim as a NumericDate value. Implementations
   MUST convert the XML dateTime value to the number of seconds elapsed since
   1970-01-01T00:00:00Z when producing this NumericDate value.
-* `AuthnContext/AuthnContextClassRef` maps to the OpenID Connect `acr` claim
-  as follows:
-
-    * if local policy maps SAML context class references to a registered
-      Level of Assurance scheme, that mapping MUST be applied;
-    * otherwise, the authorization server SHOULD copy the SAML URI without
-      transformation;
-    * the authorization server MUST NOT advertise an `acr` value in
-      `acr_values_supported` that it cannot emit. If `acr_values_supported`
-      enumerates only the mapped Level-of-Assurance values, the authorization
-      server MAY still emit pass-through SAML `AuthnContextClassRef` URIs
-      that are not enumerated, provided the asserted URI satisfies the
-      pass-through rule above.
-
-    Clients receiving raw SAML authentication context class URIs as `acr`
-    values (for example,
-    `urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport`)
-    MUST be prepared to handle them, as they are not registered OpenID
-    Connect ACR values.
+* `AuthnContext/AuthnContextClassRef` maps to the OpenID Connect `acr`
+  claim. Mapping rules are in {{acr-mapping}}.
 * `AuthnStatement/@SessionIndex` MAY be used as authoritative input to the
   OpenID Connect `sid` claim, as defined by {{OIDC-FC-LOGOUT}} and
   {{OIDC-BC-LOGOUT}}, when the deployment supports session continuity or logout
@@ -2270,6 +2227,32 @@ Such values MAY be conveyed in private claims by prior agreement between the
 authorization server and client. Deployments using such claims SHOULD use
 collision-resistant claim names.
 
+### ACR Mapping {#acr-mapping}
+
+The `acr` claim derived from `AuthnContext/AuthnContextClassRef` MUST be
+produced as follows:
+
+* if local policy maps SAML context class references to a registered
+  Level-of-Assurance scheme, that mapping MUST be applied;
+* otherwise, the authorization server SHOULD copy the SAML URI without
+  transformation;
+* the authorization server MUST NOT advertise an `acr` value in
+  `acr_values_supported` that it cannot emit. If `acr_values_supported`
+  enumerates only the mapped Level-of-Assurance values, the
+  authorization server MAY still emit pass-through SAML
+  `AuthnContextClassRef` URIs that are not enumerated, provided the
+  asserted URI satisfies the pass-through rule above.
+
+Clients receiving raw SAML authentication context class URIs as `acr`
+values (for example,
+`urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport`)
+MUST be prepared to handle them, as they are not registered OpenID
+Connect ACR values.
+
+Non-normative example mappings from common SAML AuthnContextClassRef
+URIs to OIDC `acr`/`amr` values appear in
+{{authentication-context-mapping-examples}}.
+
 ## Attribute Claims {#attribute-claims}
 
 A `NameID` in emailAddress format is not by itself an attribute mapping input.
@@ -2290,23 +2273,16 @@ authorization server SHOULD omit the `email` claim rather than guess. An
 emailAddress `NameID` MUST NOT by itself cause the authorization server to
 emit `email_verified=true`.
 
-When a SAML attribute directly corresponds to a registered OpenID Connect claim,
-the authorization server SHOULD emit that claim. Common mappings include:
+When a SAML attribute directly corresponds to a registered OpenID
+Connect claim, the authorization server SHOULD emit that claim. When
+the SAML deployment uses attribute `Name` values based on object
+identifiers or URIs, the authorization server MAY apply a
+deployment-specific mapping table that resolves those names to the
+equivalent OpenID Connect claim names.
 
-* `givenName` or `given_name` to `given_name`
-* `sn`, `surname`, or `family_name` to `family_name`
-* `displayName` or `name` to `name`
-* `mail` or `email` to `email`
-* `uid` or `preferred_username` to `preferred_username`
-* `telephoneNumber` or `phone_number` to `phone_number`
-
-When the SAML deployment uses attribute `Name` values based on object
-identifiers or URIs, the authorization server MAY apply a deployment-specific
-mapping table that resolves those names to the equivalent OpenID Connect claim
-names.
-
-Appendix B provides non-normative deployment guidance for common InCommon and
-`eduPerson` attribute mappings.
+Non-normative example mappings for common SAML attributes and for
+InCommon and `eduPerson` deployments are provided in
+{{incommon-and-eduperson-deployment-guidance}}.
 
 All `AttributeStatement` elements in the assertion MUST be processed as a
 single logical attribute set. Attributes having the same `Name` and the same
@@ -2557,155 +2533,177 @@ deployment's responsibility:
   and addressed in {{session-termination-and-revocation}}.
 * End-user account compromise upstream of the SAML IdP.
 
+## SAML Assertion and Signature Risks {#assertion-signature-risks}
+
+### IdP-Initiated SSO and Missing `InResponseTo` {#idp-initiated-sso}
+
 When a SAML assertion is submitted without an `InResponseTo` element in its
 `SubjectConfirmationData`, the authorization server cannot confirm that the
-assertion was issued in response to a specific `<AuthnRequest>`. This pattern
-is common in IdP-initiated SSO flows. Deployments SHOULD require SP-initiated
-flows and SHOULD reject assertions that lack `InResponseTo` unless the
-deployment threat model has explicitly assessed and accepted the associated
-risks, including the potential for session fixation and assertion injection
-attacks.
+assertion was issued in response to a specific `<AuthnRequest>`. This
+pattern is common in IdP-initiated SSO flows. Deployments SHOULD require
+SP-initiated flows and SHOULD reject assertions that lack `InResponseTo`
+unless the deployment threat model has explicitly assessed and accepted
+the associated risks, including session fixation and assertion injection.
+
+### XML Signature Wrapping {#xsw}
 
 XML Signature Wrapping (XSW) attacks allow an adversary to manipulate a
 SAML document by inserting a malicious element while retaining a valid
 signature on a benign element elsewhere in the document structure.
-Implementations MUST validate SAML signatures in a manner resistant to XSW
-attacks. Specifically:
+Implementations MUST validate SAML signatures in a manner resistant to
+XSW attacks. Specifically:
 
-* when the authorization server relies on an assertion signature, it MUST
-  verify that the element referenced by the signature's `Reference/@URI` is
-  the same assertion element being processed; and
-* when the authorization server relies on a signed SAML `Response` wrapper, it
-  MUST verify that the element referenced by the signature's `Reference/@URI`
-  is the same `Response` element being processed, and that the effective
-  enclosed assertion selected under {{saml-input-validation-and-binding}} is the unique
-  assertion bound to that validated wrapper.
+* when the authorization server relies on an assertion signature, it
+  MUST verify that the element referenced by the signature's
+  `Reference/@URI` is the same assertion element being processed; and
+* when the authorization server relies on a signed SAML `Response`
+  wrapper, it MUST verify that the element referenced by the
+  signature's `Reference/@URI` is the same `Response` element being
+  processed, and that the effective enclosed assertion selected under
+  {{saml-input-validation-and-binding}} is the unique assertion bound
+  to that validated wrapper.
 
 The authorization server MUST reject any document structure where these
 bindings cannot be confirmed unambiguously. Implementations SHOULD use
-established SAML processing libraries that have been tested against known XSW
-attack patterns.
+established SAML processing libraries that have been tested against
+known XSW attack patterns.
+
+### Deprecated Cryptographic Algorithms {#deprecated-algorithms}
 
 Implementations MUST NOT accept SAML assertions signed using deprecated
-cryptographic algorithms. Any signature algorithm using SHA-1 as the message
-digest MUST be rejected, including RSA with SHA-1
+cryptographic algorithms. Any signature algorithm using SHA-1 as the
+message digest MUST be rejected, including RSA with SHA-1
 (`http://www.w3.org/2000/09/xmldsig#rsa-sha1`), DSA with SHA-1
 (`http://www.w3.org/2000/09/xmldsig#dsa-sha1`), and ECDSA with SHA-1
 (`http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha1`). Authorization
-servers SHOULD require RSA with SHA-256 or stronger and SHOULD document their
-minimum acceptable algorithm requirements.
+servers SHOULD require RSA with SHA-256 or stronger and SHOULD document
+their minimum acceptable algorithm requirements.
 
 Beyond SHA-1, deployments SHOULD reject other algorithms whose security
-margins are no longer adequate by current cryptographic guidance --
+margins are no longer adequate by current cryptographic guidance,
 including MD5-based digests, RSA signatures with key sizes below 2048
 bits, and elliptic curves with effective security below 128 bits.
 Authorization servers SHOULD track current guidance from bodies such as
 NIST and ENISA and adjust their minimum-algorithm policy accordingly.
-SHA-1 is named explicitly above because of its prevalence in legacy SAML
-deployments; other deprecated algorithms are subject to the same
-prohibition by this rule.
+SHA-1 is named above because of its prevalence in legacy SAML deployments.
 
-When an authorization server or migration tooling fetches the
+## Metadata Fetching and SSRF {#metadata-ssrf}
+
+When an authorization server or migration tooling fetches a
 `saml_metadata_uri` at either the authorization server metadata level or
 the client registration level, the fetch target is derived from a
 configuration value that may be attacker-influenced in some deployment
 models. Per-client `saml_metadata_uri` values registered through dynamic
-client registration are particularly exposed, since they originate from a
-registering party. Implementations MUST restrict fetches to URIs that use
-the HTTPS scheme and MUST NOT follow redirects to non-HTTPS URIs.
+client registration are particularly exposed, since they originate from
+a registering party. Implementations MUST restrict fetches to URIs that
+use the HTTPS scheme and MUST NOT follow redirects to non-HTTPS URIs.
 Deployments SHOULD additionally constrain permitted fetch targets to a
 pre-approved allowlist of hosts, in order to prevent Server-Side Request
-Forgery (SSRF) attacks that could expose internal services. The
-registration authorization rules in
+Forgery (SSRF) attacks against internal services. The registration
+authorization rules in
 {{client-registration-saml-sp-entity-id-authorization}} apply to
-per-client `saml_metadata_uri` values, so an attacker registering through
-dynamic client registration cannot freely set this value.
+per-client `saml_metadata_uri` values, so an attacker using dynamic
+client registration cannot freely set this value.
 
-Mixing SAML trust inputs and OAuth trust inputs creates a risk of protocol
-confusion. Implementations MUST validate SAML assertions using SAML metadata and
-MUST validate ID Tokens and other JOSE objects using OAuth or OpenID Connect key
-discovery. Implementations MUST NOT assume that a key published in one metadata
-format is automatically valid in the other.
-
-Authorization servers MUST apply transport security to the token endpoint,
-introspection endpoint, metadata retrieval, and any other endpoint used by this
-profile in the same manner as the underlying OAuth, OpenID Connect, and SAML
-specifications that they extend.
+## Replay and Bearer Assertion Risks {#replay-and-bearer-risks}
 
 SAML assertions used with Token Exchange or introspection are bearer
-artifacts. Authorization servers MUST detect and prevent replay of the same
-assertion according to the security properties of the underlying SAML
-deployment, any SAML `OneTimeUse` condition, and the replay rules in
-{{saml-input-validation-and-binding}}. Client authentication alone is not sufficient
-protection against replay of a stolen assertion.
+artifacts. Authorization servers MUST detect and prevent replay of the
+same assertion according to the security properties of the underlying
+SAML deployment, any SAML `OneTimeUse` condition, and the replay rules
+in {{saml-input-validation-and-binding}}. Client authentication alone
+is not sufficient protection against replay of a stolen assertion.
 
-Authorization servers deployed across multiple nodes MUST share assertion
-identifier state used for replay detection across all nodes, or use
-equivalent distributed coordination. Per-node replay stores are insufficient.
+Authorization servers deployed across multiple nodes MUST share
+assertion identifier state used for replay detection across all nodes,
+or use equivalent distributed coordination. Per-node replay stores are
+insufficient.
 
 When this profile accepts a signed SAML `Response` as a wrapper for the
-effective assertion, response-level signature validation does not by itself
-validate response-level protocol fields such as `Destination` or
-`Response/@InResponseTo`. This profile does require the wrapped `Response` to
-carry a top-level SAML `StatusCode` of `Success` with no subordinate status
-code, but other response-level protocol checks remain outside this profile.
-Deployments that depend on those additional checks MUST ensure they are
-performed outside this profile before the enclosed assertion is used to issue
-tokens or return claims.
+effective assertion, response-level signature validation does not by
+itself validate response-level protocol fields such as `Destination` or
+`Response/@InResponseTo`. This profile requires the wrapped `Response`
+to carry a top-level SAML `StatusCode` of `Success` with no subordinate
+status code, but other response-level protocol checks remain outside
+this profile. Deployments that depend on those additional checks MUST
+ensure they are performed outside this profile before the enclosed
+assertion is used to issue tokens or return claims.
 
-The bindings defined by `saml_sp_entity_id` and `saml_idp_entity_id` are
-security-critical, both at the authorization server metadata level and at
-the per-client registration level. If a client can register an arbitrary
-`saml_sp_entity_id` or `saml_idp_entity_id`, it may be able to exchange
-any SAML assertion captured for that SP-IdP pair into OAuth tokens or
-claims under the bound relying-party relationship, collapsing the
-three-way binding defined in {{migration-binding-rationale}}. Authorization
-servers MUST therefore protect registration and administrative mapping of
-both values according to the rules in
-{{client-registration-saml-sp-entity-id-authorization}}. In particular,
-anonymous or open dynamic client registration MUST NOT be permitted to
-set either `saml_sp_entity_id` or `saml_idp_entity_id`.
+## Binding Security {#binding-security}
+
+The bindings defined by `saml_sp_entity_id` and `saml_idp_entity_id`
+are security-critical, both at the authorization server metadata level
+and at the per-client registration level. If a client can register an
+arbitrary `saml_sp_entity_id` or `saml_idp_entity_id`, it may be able
+to exchange any SAML assertion captured for that SP-IdP pair into
+OAuth tokens or claims under the bound relying-party relationship,
+collapsing the three-way binding defined in
+{{migration-binding-rationale}}. Authorization servers MUST therefore
+protect registration and administrative mapping of both values
+according to {{client-registration-saml-sp-entity-id-authorization}}.
+In particular, anonymous or open dynamic client registration MUST NOT
+be permitted to set either value.
 
 When multiple OAuth clients share the same `saml_sp_entity_id`, the
-authorization server is intentionally treating them as the same relying-party
-context. Such sharing MUST therefore be an explicit IdP or authorization server
-policy decision. Accidental sharing can expose the same pairwise `sub` values
-and claims to clients that should have been isolated from one another.
+authorization server is intentionally treating them as the same
+relying-party context. Such sharing MUST therefore be an explicit IdP
+or authorization server policy decision. Accidental sharing can expose
+the same pairwise `sub` values and claims to clients that should have
+been isolated from one another.
 
-Incorrect `amr` translation can overstate the assurance of an authentication.
-Implementations SHOULD pass through the SAML `AuthnContextClassRef` as the
-`acr` value rather than attempting to derive `amr` from it, and SHOULD emit
-`amr` values only when the actual authentication methods are known.
+## Token and Claim Security {#token-and-claim-security}
 
-Implementations MUST NOT use mutable identifiers, transient identifiers, or
-reassignable `NameID` formats as OpenID Connect `sub` values. Doing so would
-break the `sub` stability requirements and can cause account takeover or
-misbinding after identifier reuse.
+Identifiers used as the OpenID Connect `sub` claim MUST satisfy the
+stability rules in {{subject-identifier-common-rules}}; mutable,
+transient, or reassignable `NameID` formats are excluded there
+because their use as `sub` can cause account takeover or misbinding
+after identifier reuse.
 
-The introspection alternative can expose normalized claims without minting OAuth
-tokens. Authorization servers therefore MUST strongly authenticate clients to
-the introspection endpoint and MUST return
-`"active": false` when the client is not entitled to introspect the presented
-SAML assertion.
+Incorrect `amr` translation can overstate the assurance of an
+authentication. Implementations SHOULD pass through the SAML
+`AuthnContextClassRef` as the `acr` value rather than attempting to
+derive `amr` from it, and SHOULD emit `amr` values only when the
+actual authentication methods are known.
 
-When issuing an ID Token directly from Token Exchange, the authorization server
-MUST ensure that the resulting token meets the same signing, audience, issuer,
-and claim integrity requirements that would apply if the token had been issued
-through an ordinary OpenID Connect flow.
+The introspection alternative can expose normalized claims without
+minting OAuth tokens. Authorization servers therefore MUST strongly
+authenticate clients to the introspection endpoint and MUST return
+`"active": false` when the client is not entitled to introspect the
+presented SAML assertion.
 
-Access tokens issued under this profile are bearer tokens by default. They
-are therefore subject to the usual risks associated with bearer credentials,
-including replay by any party that obtains the token value through
-interception, log leakage, or compromise of an intermediary.
+When issuing an ID Token directly from Token Exchange, the
+authorization server MUST ensure that the resulting token meets the
+same signing, audience, issuer, and claim integrity requirements that
+would apply if the token had been issued through an ordinary OpenID
+Connect flow.
 
-Deployments protecting sensitive resources SHOULD consider sender-constrained
-access tokens, such as DPoP-bound tokens or mTLS
-client-certificate-bound tokens, in accordance with the underlying OAuth
-sender-constraint specifications. This profile does not preclude their use: a
-Migration Client MAY present a DPoP proof or use mTLS client authentication
-at the token endpoint, and the authorization server MAY issue
-sender-constrained access tokens in the Token Exchange response when its
-policy and the client's registration support that mechanism.
+Access tokens issued under this profile are bearer tokens by default.
+They are therefore subject to the usual risks associated with bearer
+credentials, including replay by any party that obtains the token
+value through interception, log leakage, or compromise of an
+intermediary. Deployments protecting sensitive resources SHOULD
+consider sender-constrained access tokens, such as DPoP-bound tokens
+or mTLS client-certificate-bound tokens, in accordance with the
+underlying OAuth sender-constraint specifications. This profile does
+not preclude their use: a Migration Client MAY present a DPoP proof or
+use mTLS client authentication at the token endpoint, and the
+authorization server MAY issue sender-constrained access tokens in
+the Token Exchange response when its policy and the client's
+registration support that mechanism.
+
+## Protocol Confusion and Transport Security {#protocol-confusion-and-transport}
+
+Mixing SAML trust inputs and OAuth trust inputs creates a risk of
+protocol confusion. Implementations MUST validate SAML assertions
+using SAML metadata and MUST validate ID Tokens and other JOSE objects
+using OAuth or OpenID Connect key discovery. Implementations MUST NOT
+assume that a key published in one metadata format is automatically
+valid in the other.
+
+Authorization servers MUST apply transport security to the token
+endpoint, introspection endpoint, metadata retrieval, and any other
+endpoint used by this profile in the same manner as the underlying
+OAuth, OpenID Connect, and SAML specifications that they extend.
 
 # Privacy Considerations {#privacy-considerations}
 
@@ -3258,17 +3256,39 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 }
 ~~~
 
-# InCommon and eduPerson Deployment Guidance
+# Attribute Mapping Examples {#incommon-and-eduperson-deployment-guidance}
 
 This appendix is non-normative.
 
-Many InCommon deployments use `eduPerson` attributes, including the REFEDS
-Research and Scholarship attribute bundle. InCommon deployments commonly use
-`urn:oid:` Name values in addition to friendly names; the mapping rules in
-{{attribute-claims}} govern how such OID-based names are resolved to OpenID
-Connect claims. The core rules in {{claim-mapping}} still govern claim typing,
-precedence, and subject handling. Within that framework, deployments commonly
-use the following mappings and constraints:
+## Common SAML Attribute Mappings
+
+Many SAML deployments use a small set of attribute names that map
+directly to registered OpenID Connect claims. Common examples:
+
+| SAML attribute (friendly name) | OpenID Connect claim |
+| --- | --- |
+| `givenName` (or `given_name`) | `given_name` |
+| `sn`, `surname`, or `family_name` | `family_name` |
+| `displayName` (or `name`) | `name` |
+| `mail` (or `email`) | `email` |
+| `uid` (or `preferred_username`) | `preferred_username` |
+| `telephoneNumber` (or `phone_number`) | `phone_number` |
+
+The rules in {{attribute-claims}} (in particular, the NameFormat
+preference rule preferring `urn:oasis:names:tc:SAML:2.0:attrname-format:uri`
+over `:basic`/`:unspecified`) govern how these are resolved when the
+assertion uses `urn:oid:` Name values alongside friendly names.
+
+## InCommon and eduPerson Deployments
+
+Many InCommon deployments use `eduPerson` attributes, including the
+REFEDS Research and Scholarship attribute bundle. InCommon deployments
+commonly use `urn:oid:` Name values in addition to friendly names; the
+mapping rules in {{attribute-claims}} govern how such OID-based names
+are resolved to OpenID Connect claims. The core rules in
+{{claim-mapping}} still govern claim typing, precedence, and subject
+handling. Within that framework, deployments commonly use the following
+mappings and constraints:
 
 * `mail` to `email`
 * `displayName` to `name`
@@ -3302,7 +3322,7 @@ there is a good semantic match and SHOULD retain the original attribute
 semantics in private claims rather than mapping them to unrelated standard
 claims such as `groups`, `roles`, or `scope`.
 
-# Authentication Context Mapping Examples
+# Authentication Context Mapping Examples {#authentication-context-mapping-examples}
 
 This appendix is non-normative.
 
