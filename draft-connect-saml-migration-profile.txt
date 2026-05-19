@@ -2444,38 +2444,44 @@ Table of Contents
    including precedence and edge cases, are in the subsections that
    follow.
 
-   +==============================+==========================+=========+
-   | SAML input                   | OpenID Connect target    | Defined |
-   |                              |                          | in      |
-   +==============================+==========================+=========+
-   | Persistent NameID, subject-  | sub                      | Section |
-   | id, pairwise-id, or Stable   |                          | 12      |
-   | Local Subject Key derivation |                          |         |
-   +------------------------------+--------------------------+---------+
-   | NameID element (provenance   | sub_id with saml-        | Section |
-   | preserved)                   | nameid format            | 12.6    |
-   +------------------------------+--------------------------+---------+
-   | AuthnStatement/@AuthnInstant | auth_time                | Section |
-   |                              |                          | 13.1    |
-   +------------------------------+--------------------------+---------+
-   | AuthnContext/                | acr                      | Section |
-   | AuthnContextClassRef         |                          | 13.1    |
-   +------------------------------+--------------------------+---------+
-   | Concrete authentication      | amr                      | Section |
-   | methods derived from local   |                          | 13.1    |
-   | policy or SAML evidence      |                          |         |
-   +------------------------------+--------------------------+---------+
-   | AuthnStatement/@SessionIndex | sid                      | Section |
-   |                              |                          | 13.1    |
-   +------------------------------+--------------------------+---------+
-   | AttributeStatement           | Registered OIDC claims   | Section |
-   | attributes (e.g., mail,      | (email, given_name,      | 13.2    |
-   | givenName, sn, displayName)  | family_name, name,       |         |
-   |                              | etc.)                    |         |
-   +------------------------------+--------------------------+---------+
-   | Other AttributeStatement     | Private claims by        | Section |
-   | attributes                   | prior agreement          | 13.2    |
-   +------------------------------+--------------------------+---------+
+    +=====================================+=================+=========+
+    | SAML input                          | OpenID Connect  | Defined |
+    |                                     | target          | in      |
+    +=====================================+=================+=========+
+    | Persistent NameID, subject-id,      | sub             | Section |
+    | pairwise-id, or Stable Local        |                 | 12      |
+    | Subject Key derivation              |                 |         |
+    +-------------------------------------+-----------------+---------+
+    | NameID element (provenance          | sub_id with     | Section |
+    | preserved)                          | saml-nameid     | 12.6    |
+    |                                     | format          |         |
+    +-------------------------------------+-----------------+---------+
+    | AuthnStatement/@AuthnInstant        | auth_time       | Section |
+    |                                     |                 | 13.1    |
+    +-------------------------------------+-----------------+---------+
+    | AuthnContext/AuthnContextClassRef   | acr             | Section |
+    |                                     |                 | 13.1    |
+    +-------------------------------------+-----------------+---------+
+    | Concrete authentication methods     | amr             | Section |
+    | derived from local policy or SAML   |                 | 13.1    |
+    | evidence                            |                 |         |
+    +-------------------------------------+-----------------+---------+
+    | AuthnStatement/@SessionIndex        | sid             | Section |
+    |                                     |                 | 13.1    |
+    +-------------------------------------+-----------------+---------+
+    | AuthnStatement/@SessionNotOnOrAfter | session_expiry  | Section |
+    |                                     |                 | 13.1    |
+    +-------------------------------------+-----------------+---------+
+    | AttributeStatement attributes       | Registered OIDC | Section |
+    | (e.g., mail, givenName, sn,         | claims (email,  | 13.2    |
+    | displayName)                        | given_name,     |         |
+    |                                     | family_name,    |         |
+    |                                     | name, etc.)     |         |
+    +-------------------------------------+-----------------+---------+
+    | Other AttributeStatement attributes | Private claims  | Section |
+    |                                     | by prior        | 13.2    |
+    |                                     | agreement       |         |
+    +-------------------------------------+-----------------+---------+
 
                                   Table 8
 
@@ -2515,6 +2521,17 @@ Table of Contents
       selected AuthnStatement, sid MUST NOT be emitted unless the
       authorization server has another authoritative session identifier
       for that SAML-authenticated session.
+
+   *  AuthnStatement/@SessionNotOnOrAfter MAY be emitted as the OpenID
+      Connect Enterprise Extensions session_expiry claim
+      ([OIDC-ENTERPRISE-EXTENSIONS]) when an ID Token is issued for the
+      same SAML-authenticated session.  When emitted, session_expiry
+      MUST be a JSON integer containing the number of seconds elapsed
+      since 1970-01-01T00:00:00Z, and its value MUST NOT be later than
+      the selected AuthnStatement/@SessionNotOnOrAfter.  The
+      authorization server MUST NOT derive session_expiry from the SAML
+      assertion's Conditions/@NotOnOrAfter, because that value limits
+      assertion validity, not the underlying authenticated session.
 
    The OpenID Connect amr claim identifies authentication methods, not
    an authentication context class.  Therefore:
@@ -3392,6 +3409,12 @@ Table of Contents
               "OpenID Connect Discovery 1.0 incorporating errata set 2",
               <https://openid.net/specs/openid-connect-discovery-
               1_0.html>.
+
+   [OIDC-ENTERPRISE-EXTENSIONS]
+              Hardt, D. and K. McGuinness, "OpenID Connect Enterprise
+              Extensions 1.0", September 2025,
+              <https://openid.net/specs/openid-connect-enterprise-
+              extensions-1_0.html>.
 
    [OIDC-FC-LOGOUT]
               Jones, M. B., "OpenID Connect Front-Channel Logout 1.0",

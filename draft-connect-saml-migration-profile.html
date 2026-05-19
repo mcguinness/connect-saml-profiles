@@ -4329,6 +4329,17 @@ follow.<a href="#section-13-2" class="pilcrow">¶</a></p>
           </tr>
           <tr>
             <td class="text-left" rowspan="1" colspan="1">
+              <code>AuthnStatement/@SessionNotOnOrAfter</code>
+</td>
+            <td class="text-left" rowspan="1" colspan="1">
+              <code>session_expiry</code>
+</td>
+            <td class="text-left" rowspan="1" colspan="1">
+              <a href="#authentication-event-claims" class="auto internal xref">Section 13.1</a>
+</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">
               <code>AttributeStatement</code> attributes (e.g., <code>mail</code>, <code>givenName</code>, <code>sn</code>, <code>displayName</code>)</td>
             <td class="text-left" rowspan="1" colspan="1">Registered OIDC claims (<code>email</code>, <code>given_name</code>, <code>family_name</code>, <code>name</code>, etc.)</td>
             <td class="text-left" rowspan="1" colspan="1">
@@ -4383,6 +4394,18 @@ bound to that SAML-authenticated session. If <code>SessionIndex</code> is absent
 the selected <code>AuthnStatement</code>, <code>sid</code> <span class="bcp14">MUST NOT</span> be emitted unless the
 authorization server has another authoritative session identifier for that
 SAML-authenticated session.<a href="#section-13.1-2.3.2" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-13.1-2.4">
+            <p id="section-13.1-2.4.1"><code>AuthnStatement/@SessionNotOnOrAfter</code> <span class="bcp14">MAY</span> be emitted as the
+OpenID Connect Enterprise Extensions <code>session_expiry</code> claim
+(<span>[<a href="#OIDC-ENTERPRISE-EXTENSIONS" class="cite xref">OIDC-ENTERPRISE-EXTENSIONS</a>]</span>) when an ID Token is issued for the same
+SAML-authenticated session. When emitted, <code>session_expiry</code> <span class="bcp14">MUST</span> be a JSON
+integer containing the number of seconds elapsed since
+1970-01-01T00:00:00Z, and its value <span class="bcp14">MUST NOT</span> be later than the selected
+<code>AuthnStatement/@SessionNotOnOrAfter</code>. The authorization server <span class="bcp14">MUST NOT</span>
+derive <code>session_expiry</code> from the SAML assertion's
+<code>Conditions/@NotOnOrAfter</code>, because that value limits assertion validity,
+not the underlying authenticated session.<a href="#section-13.1-2.4.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 <p id="section-13.1-3">The OpenID Connect <code>amr</code> claim identifies authentication methods, not an
@@ -5461,6 +5484,10 @@ with its qualifiers and SAML Issuer<a href="#section-17.7-2.2.1" class="pilcrow"
 <dt id="OIDC-DISCOVERY">[OIDC-DISCOVERY]</dt>
         <dd>
 <span class="refAuthor">Sakimura, N.</span>, <span class="refAuthor">Bradley, J.</span>, <span class="refAuthor">Jones, M. B.</span>, and <span class="refAuthor">E. Jay</span>, <span class="refTitle">"OpenID Connect Discovery 1.0 incorporating errata set 2"</span>, <span>&lt;<a href="https://openid.net/specs/openid-connect-discovery-1_0.html">https://openid.net/specs/openid-connect-discovery-1_0.html</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="OIDC-ENTERPRISE-EXTENSIONS">[OIDC-ENTERPRISE-EXTENSIONS]</dt>
+        <dd>
+<span class="refAuthor">Hardt, D.</span> and <span class="refAuthor">K. McGuinness</span>, <span class="refTitle">"OpenID Connect Enterprise Extensions 1.0"</span>, <time datetime="2025-09" class="refDate">September 2025</time>, <span>&lt;<a href="https://openid.net/specs/openid-connect-enterprise-extensions-1_0.html">https://openid.net/specs/openid-connect-enterprise-extensions-1_0.html</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="OIDC-FC-LOGOUT">[OIDC-FC-LOGOUT]</dt>
         <dd>
