@@ -1645,39 +1645,47 @@ When present, the `response` object MAY contain these members:
 | Member | Type | Source |
 | --- | --- | --- |
 | `id` | String | `Response/@ID` |
-| `issuer` | String | `Response/Issuer` element |
 | `issue_instant` | String | `Response/@IssueInstant` |
 | `destination` | String | `Response/@Destination` |
 | `in_response_to` | String | `Response/@InResponseTo` |
-| `status_code` | String | validated value of `Response/Status/StatusCode/@Value` |
-| `has_nested_status_code` | Boolean | `true` iff a nested `Response/Status/StatusCode/StatusCode` element was present |
 
-Under this profile, an active response that includes a `response` object
-will normally have `has_nested_status_code` set to `false` because
-{{response-wrapper-processing}} requires the authorization server to
-reject a Response wrapper that contains a nested status code.
+The Response Issuer and status-code values are not exposed in the
+`response` object: an active introspection response implies the
+authorization server has already verified the Response Issuer against
+the effective `saml_idp_entity_id` (per {{saml-and-oauth-issuer-boundary}})
+and `Response/Status/StatusCode/@Value` is
+`urn:oasis:names:tc:SAML:2.0:status:Success` with no nested status code
+per {{response-wrapper-processing}}.
 
 When present, the `assertion` object MAY contain these members:
 
 | Member | Type | Source |
 | --- | --- | --- |
 | `id` | String | `Assertion/@ID` |
-| `issuer` | String | `Assertion/Issuer` element |
 | `issue_instant` | String | `Assertion/@IssueInstant` |
 | `audiences` | Array of strings | `Audience` values from all `AudienceRestriction` conditions |
 | `not_before` | String | `Assertion/Conditions/@NotBefore` |
 | `not_on_or_after` | String | `Assertion/Conditions/@NotOnOrAfter` |
 | `subject_confirmation` | JSON object | fields from the bearer `SubjectConfirmation` treated as usable under {{bearer-subject-confirmation-data-validation}}; see below |
 
+The Assertion Issuer is not exposed in the `assertion` object for the
+same reason as in `response`: validation under
+{{signature-saml-issuer-and-audience-binding}} guarantees it equals the
+effective `saml_idp_entity_id`. Clients that need the issuer value as a
+durable reference can use the `sub_id.issuer` member defined in
+{{saml-subject-identifier-claim}}.
+
 The `subject_confirmation` object MAY contain these members:
 
 | Member | Type | Source |
 | --- | --- | --- |
-| `method` | String | `Method` value of the usable bearer `SubjectConfirmation` |
 | `recipient` | String | `Recipient` value from the `SubjectConfirmationData` |
 | `in_response_to` | String | `InResponseTo` value from the `SubjectConfirmationData` |
 | `not_on_or_after` | String | `NotOnOrAfter` value from the `SubjectConfirmationData` |
 
+The confirmation method is not exposed: an active introspection response
+implies the authorization server has identified a usable bearer
+`SubjectConfirmation` per {{bearer-subject-confirmation-data-validation}}.
 The authorization server MUST omit any member for which it has no
 extracted value.
 
@@ -3043,16 +3051,12 @@ token=PHNhbWwycDpSZXNwb25zZSB4bWxuczpzYW1sMj0iLi4uIiB4bWxuczpzYW1sMnA9Ii4uLiI-Li
   "saml": {
     "response": {
       "id": "_d71b9f4f8b5b4a4b8f2f",
-      "issuer": "https://login.example.com/idp",
       "issue_instant": "2026-04-21T18:00:00Z",
       "destination": "https://calendar.example.com/saml/acs",
-      "in_response_to": "_sp-authnrequest-8f3a",
-      "status_code": "urn:oasis:names:tc:SAML:2.0:status:Success",
-      "has_nested_status_code": false
+      "in_response_to": "_sp-authnrequest-8f3a"
     },
     "assertion": {
       "id": "_a75adf55d9a24d6f8c2b",
-      "issuer": "https://login.example.com/idp",
       "issue_instant": "2026-04-21T18:00:00Z",
       "audiences": [
         "https://calendar.example.com/saml/sp"
@@ -3060,7 +3064,6 @@ token=PHNhbWwycDpSZXNwb25zZSB4bWxuczpzYW1sMj0iLi4uIiB4bWxuczpzYW1sMnA9Ii4uLiI-Li
       "not_before": "2026-04-21T17:55:00Z",
       "not_on_or_after": "2026-04-21T18:05:00Z",
       "subject_confirmation": {
-        "method": "urn:oasis:names:tc:SAML:2.0:cm:bearer",
         "recipient": "https://calendar.example.com/saml/acs",
         "in_response_to": "_sp-authnrequest-8f3a",
         "not_on_or_after": "2026-04-21T18:05:00Z"
@@ -3096,15 +3099,11 @@ correlation and location checks over the returned JSON values, for example:
 
 ~~~ text
 saml.response is present
-saml.response.issuer == stored.idp_entity_id
-saml.assertion.issuer == stored.idp_entity_id
 saml.response.destination == stored.acs_url
 saml.response.in_response_to == stored.request_id
 saml.assertion.subject_confirmation.recipient == stored.acs_url
 saml.assertion.subject_confirmation.in_response_to == stored.request_id
 stored.sp_entity_id is in saml.assertion.audiences
-saml.response.status_code == "urn:oasis:names:tc:SAML:2.0:status:Success"
-saml.response.has_nested_status_code == false
 current_time < saml.assertion.subject_confirmation.not_on_or_after
 current_time < saml.assertion.not_on_or_after
 ~~~
