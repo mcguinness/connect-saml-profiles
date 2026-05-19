@@ -55,6 +55,13 @@ normative:
       - ins: J. Bradley
       - ins: M.B. Jones
     date: false
+  OIDC-ENTERPRISE-EXTENSIONS:
+    title: "OpenID Connect Enterprise Extensions 1.0"
+    target: "https://openid.net/specs/openid-connect-enterprise-extensions-1_0.html"
+    author:
+      - ins: D. Hardt
+      - ins: K. McGuinness
+    date: 2025-09
   SAML2-CORE:
     title: "Assertions and Protocols for the OASIS Security Assertion Markup Language (SAML) V2.0"
     target: "https://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf"
@@ -2068,6 +2075,7 @@ follow.
 | `AuthnContext/AuthnContextClassRef` | `acr` | {{authentication-event-claims}} |
 | Concrete authentication methods derived from local policy or SAML evidence | `amr` | {{authentication-event-claims}} |
 | `AuthnStatement/@SessionIndex` | `sid` | {{authentication-event-claims}} |
+| `AuthnStatement/@SessionNotOnOrAfter` | `session_expiry` | {{authentication-event-claims}} |
 | `AttributeStatement` attributes (e.g., `mail`, `givenName`, `sn`, `displayName`) | Registered OIDC claims (`email`, `given_name`, `family_name`, `name`, etc.) | {{attribute-claims}} |
 | Other `AttributeStatement` attributes | Private claims by prior agreement | {{attribute-claims}} |
 
@@ -2103,6 +2111,16 @@ SHOULD map its contents as follows:
   the selected `AuthnStatement`, `sid` MUST NOT be emitted unless the
   authorization server has another authoritative session identifier for that
   SAML-authenticated session.
+* `AuthnStatement/@SessionNotOnOrAfter` MAY be emitted as the
+  OpenID Connect Enterprise Extensions `session_expiry` claim
+  ({{OIDC-ENTERPRISE-EXTENSIONS}}) when an ID Token is issued for the same
+  SAML-authenticated session. When emitted, `session_expiry` MUST be a JSON
+  integer containing the number of seconds elapsed since
+  1970-01-01T00:00:00Z, and its value MUST NOT be later than the selected
+  `AuthnStatement/@SessionNotOnOrAfter`. The authorization server MUST NOT
+  derive `session_expiry` from the SAML assertion's
+  `Conditions/@NotOnOrAfter`, because that value limits assertion validity,
+  not the underlying authenticated session.
 
 The OpenID Connect `amr` claim identifies authentication methods, not an
 authentication context class. Therefore:
