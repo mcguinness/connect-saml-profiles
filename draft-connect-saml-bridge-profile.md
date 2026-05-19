@@ -1,8 +1,8 @@
 ---
-title: OpenID Connect Bridge Profile for SAML 2.0 Service Providers"
+title: "OpenID Connect Bridge Profile for SAML 2.0 Service Providers"
 abbrev: "OIDC-SAML SP Bridge"
 category: info
-docname: openid-connect-saml-sp-bridge-profile-latest
+docname: draft-connect-saml-bridge-profile-latest
 submissiontype: independent
 number:
 date:

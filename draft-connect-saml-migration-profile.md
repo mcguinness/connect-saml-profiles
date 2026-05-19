@@ -2,7 +2,7 @@
 title: "OpenID Connect Migration Profile for SAML 2.0 Service Providers"
 abbrev: "SAML SP-OIDC Migration"
 category: info
-docname: openid-connect-saml-sp-migration-profile-latest
+docname: draft-connect-saml-migration-profile-latest
 submissiontype: independent
 number:
 date:
