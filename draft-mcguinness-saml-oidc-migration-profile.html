@@ -7,21 +7,29 @@
 <title>SAML 2.0 to OpenID Connect and OAuth 2.0 Migration Profile</title>
 <meta content="Karl McGuinness" name="author">
 <meta content="
-       This document defines a migration profile for SAML 2.0 Service Provider
-deployments transitioning to OpenID Connect and OAuth 2.0. The profile extends
-the existing SAML trust relationship rather than replacing it: client metadata
-binds an OAuth client to an existing SAML SP entity identifier, authorization
+       This document defines an interoperability profile for SAML 2.0 Service
+Provider deployments that adopt OpenID Connect and OAuth 2.0 while
+preserving the existing SAML federation trust relationship. The profile
+extends that relationship rather than replacing it: client metadata binds
+an OAuth client to an existing SAML SP entity identifier, authorization
 server metadata binds an OAuth issuer to an existing SAML IdP entity
 identifier, and mapping rules translate SAML subject identifiers,
-authentication context, and attributes into OpenID Connect claims. 
-       Two operational patterns are defined. Token Exchange allows a client to present
-a SAML assertion and receive an access token, refresh token, or ID Token. A
-SAML assertion introspection extension allows a client to validate a SAML
-assertion and receive normalized JSON claims without issuing any OAuth token.
-Both patterns accept either a signed SAML assertion or a signed SAML  Response 
-wrapper conveying exactly one bearer assertion. 
-       The intent is to let relying parties adopt OAuth 2.0 and OpenID Connect without
-changing the underlying SSO trust model or relinking existing user accounts. 
+authentication context, and attributes into OpenID Connect claims so
+that the same end-user is represented by the same subject after the
+transition. 
+       Two operational patterns are defined. Token Exchange allows a client to
+present a SAML assertion and receive an access token, refresh token, or
+ID Token. A SAML assertion introspection extension allows a client to
+validate a SAML assertion and receive normalized JSON claims without
+issuing any OAuth token. Both patterns accept either a signed SAML
+assertion or a signed SAML  Response  wrapper conveying exactly one
+bearer assertion. 
+       The intent is to let relying parties adopt OAuth 2.0 and OpenID Connect
+without changing the underlying SSO trust model, without breaking
+subject continuity, and without relinking existing user accounts. The
+profile is scoped to federation interoperability and identity
+continuity; it does not define authorization architectures,
+provisioning, governance models, or generalized SAML feature parity. 
     " name="description">
 <meta content="xml2rfc 3.33.0" name="generator">
 <meta content="draft-mcguinness-saml-oidc-migration-profile-latest" name="ietf.draft">
@@ -1062,7 +1070,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </tr></thead>
 <tfoot><tr>
 <td class="left">McGuinness</td>
-<td class="center">Expires 17 November 2026</td>
+<td class="center">Expires 20 November 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1075,12 +1083,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-mcguinness-saml-oidc-migration-profile-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-05-16" class="published">16 May 2026</time>
+<time datetime="2026-05-19" class="published">19 May 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-11-17">17 November 2026</time></dd>
+<dd class="expires"><time datetime="2026-11-20">20 November 2026</time></dd>
 <dt class="label-authors">Author:</dt>
 <dd class="authors">
 <div class="author">
@@ -1093,21 +1101,29 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <h1 id="title">SAML 2.0 to OpenID Connect and OAuth 2.0 Migration Profile</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
-<p id="section-abstract-1">This document defines a migration profile for SAML 2.0 Service Provider
-deployments transitioning to OpenID Connect and OAuth 2.0. The profile extends
-the existing SAML trust relationship rather than replacing it: client metadata
-binds an OAuth client to an existing SAML SP entity identifier, authorization
+<p id="section-abstract-1">This document defines an interoperability profile for SAML 2.0 Service
+Provider deployments that adopt OpenID Connect and OAuth 2.0 while
+preserving the existing SAML federation trust relationship. The profile
+extends that relationship rather than replacing it: client metadata binds
+an OAuth client to an existing SAML SP entity identifier, authorization
 server metadata binds an OAuth issuer to an existing SAML IdP entity
 identifier, and mapping rules translate SAML subject identifiers,
-authentication context, and attributes into OpenID Connect claims.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
-<p id="section-abstract-2">Two operational patterns are defined. Token Exchange allows a client to present
-a SAML assertion and receive an access token, refresh token, or ID Token. A
-SAML assertion introspection extension allows a client to validate a SAML
-assertion and receive normalized JSON claims without issuing any OAuth token.
-Both patterns accept either a signed SAML assertion or a signed SAML <code>Response</code>
-wrapper conveying exactly one bearer assertion.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
-<p id="section-abstract-3">The intent is to let relying parties adopt OAuth 2.0 and OpenID Connect without
-changing the underlying SSO trust model or relinking existing user accounts.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
+authentication context, and attributes into OpenID Connect claims so
+that the same end-user is represented by the same subject after the
+transition.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-2">Two operational patterns are defined. Token Exchange allows a client to
+present a SAML assertion and receive an access token, refresh token, or
+ID Token. A SAML assertion introspection extension allows a client to
+validate a SAML assertion and receive normalized JSON claims without
+issuing any OAuth token. Both patterns accept either a signed SAML
+assertion or a signed SAML <code>Response</code> wrapper conveying exactly one
+bearer assertion.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
+<p id="section-abstract-3">The intent is to let relying parties adopt OAuth 2.0 and OpenID Connect
+without changing the underlying SSO trust model, without breaking
+subject continuity, and without relinking existing user accounts. The
+profile is scoped to federation interoperability and identity
+continuity; it does not define authorization architectures,
+provisioning, governance models, or generalized SAML feature parity.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-discussion-venues">
@@ -1136,7 +1152,7 @@ changing the underlying SSO trust model or relinking existing user accounts.<a h
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 17 November 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 20 November 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1164,6 +1180,11 @@ changing the underlying SSO trust model or relinking existing user accounts.<a h
 <nav class="toc"><ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
             <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.1">
+                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-non-goals" class="internal xref">Non-Goals</a></p>
+</li>
+            </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
             <p id="section-toc.1-1.2.1"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-conventions-and-terminology" class="internal xref">Conventions and Terminology</a></p>
@@ -1172,7 +1193,7 @@ changing the underlying SSO trust model or relinking existing user accounts.<a h
                 <p id="section-toc.1-1.2.2.1.1" class="keepWithNext"><a href="#section-2.1" class="auto internal xref">2.1</a>.  <a href="#name-requirements-notation" class="internal xref">Requirements Notation</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.2">
-                <p id="section-toc.1-1.2.2.2.1" class="keepWithNext"><a href="#section-2.2" class="auto internal xref">2.2</a>.  <a href="#name-terminology" class="internal xref">Terminology</a></p>
+                <p id="section-toc.1-1.2.2.2.1"><a href="#section-2.2" class="auto internal xref">2.2</a>.  <a href="#name-terminology" class="internal xref">Terminology</a></p>
 </li>
             </ul>
 </li>
@@ -1224,6 +1245,9 @@ changing the underlying SSO trust model or relinking existing user accounts.<a h
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.6">
                 <p id="section-toc.1-1.7.2.6.1"><a href="#section-7.6" class="auto internal xref">7.6</a>.  <a href="#name-saml-key-material" class="internal xref">SAML Key Material</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.7">
+                <p id="section-toc.1-1.7.2.7.1"><a href="#section-7.7" class="auto internal xref">7.7</a>.  <a href="#name-federation-metadata-coexist" class="internal xref">Federation Metadata Coexistence</a></p>
 </li>
             </ul>
 </li>
@@ -1530,6 +1554,45 @@ needed; and<a href="#section-1-5.4.1" class="pilcrow">¶</a></p>
 the Identity Assertion JWT Authorization Grant
 <span>[<a href="#I-D.ietf-oauth-identity-assertion-authz-grant" class="cite xref">I-D.ietf-oauth-identity-assertion-authz-grant</a>]</span> and defines them as a
 standalone, reusable OAuth and OpenID Connect profile.<a href="#section-1-6" class="pilcrow">¶</a></p>
+<div id="non-goals">
+<section id="section-1.1">
+        <h3 id="name-non-goals">
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-non-goals" class="section-name selfRef">Non-Goals</a>
+        </h3>
+<p id="section-1.1-1">The profile is scoped to federation interoperability and identity
+continuity. It does NOT define:<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1.1-2.1">
+            <p id="section-1.1-2.1.1">API authorization architectures, scope design, or resource-server
+authorization policy;<a href="#section-1.1-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.1-2.2">
+            <p id="section-1.1-2.2.1">entitlement systems or portable role/group authorization;<a href="#section-1.1-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.1-2.3">
+            <p id="section-1.1-2.3.1">provisioning, SCIM integration, or account-lifecycle workflows;<a href="#section-1.1-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.1-2.4">
+            <p id="section-1.1-2.4.1">runtime authorization policy expression or evaluation;<a href="#section-1.1-2.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.1-2.5">
+            <p id="section-1.1-2.5.1">governance models (approval, attestation, audit, segregation of
+duties);<a href="#section-1.1-2.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.1-2.6">
+            <p id="section-1.1-2.6.1">continuous access evaluation protocols (CAEP and similar);<a href="#section-1.1-2.6.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.1-2.7">
+            <p id="section-1.1-2.7.1">migration methodology (rollout patterns, cutover sequencing); or<a href="#section-1.1-2.7.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.1-2.8">
+            <p id="section-1.1-2.8.1">generalized SAML feature parity: SAML SLO, AuthzDecisionStatement,
+AttributeQuery, SP-specific extensions, and Holder-of-Key
+SubjectConfirmation are out of scope.<a href="#section-1.1-2.8.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
 </section>
 </div>
 <div id="conventions-and-terminology">
@@ -2006,6 +2069,28 @@ submitted by this client.<a href="#section-6.3-3" class="pilcrow">¶</a></p>
       <h2 id="name-authorization-server-metada">
 <a href="#section-7" class="section-number selfRef">7. </a><a href="#name-authorization-server-metada" class="section-name selfRef">Authorization Server Metadata</a>
       </h2>
+<p id="section-7-1">The metadata parameters defined in this section are registered in the
+IANA "OAuth Authorization Server Metadata" registry established by
+<span>[<a href="#RFC8414" class="cite xref">RFC8414</a>]</span>. Per <span>[<a href="#OIDC-DISCOVERY" class="cite xref">OIDC-DISCOVERY</a>]</span> Section 3, where OAuth 2.0
+Authorization Server Metadata and OpenID Provider configuration
+overlap, that same IANA registry is authoritative for both. The
+metadata parameters defined here are therefore equally valid in:<a href="#section-7-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7-2.1">
+          <p id="section-7-2.1.1">OAuth 2.0 Authorization Server Metadata documents published at the
+<code>.well-known/oauth-authorization-server</code> endpoint defined by
+<span>[<a href="#RFC8414" class="cite xref">RFC8414</a>]</span>; and<a href="#section-7-2.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-7-2.2">
+          <p id="section-7-2.2.1">OpenID Provider configuration documents published at the
+<code>.well-known/openid-configuration</code> endpoint defined by
+<span>[<a href="#OIDC-DISCOVERY" class="cite xref">OIDC-DISCOVERY</a>]</span>.<a href="#section-7-2.2.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-7-3">An authorization server that is also an OpenID Provider <span class="bcp14">SHOULD</span> publish
+the applicable parameters in whichever discovery document(s) its
+clients consume. Their semantics and processing are identical in
+either context.<a href="#section-7-3" class="pilcrow">¶</a></p>
 <div id="metadata-saml-idp-entity-id">
 <section id="section-7.1">
         <h3 id="name-saml_idp_entity_id-2">
@@ -2264,6 +2349,58 @@ material is reused, it <span class="bcp14">MUST</span> be published and validate
 encoding rules of each protocol separately.<a href="#section-7.6-2" class="pilcrow">¶</a></p>
 </section>
 </div>
+<div id="federation-metadata-coexistence">
+<section id="section-7.7">
+        <h3 id="name-federation-metadata-coexist">
+<a href="#section-7.7" class="section-number selfRef">7.7. </a><a href="#name-federation-metadata-coexist" class="section-name selfRef">Federation Metadata Coexistence</a>
+        </h3>
+<p id="section-7.7-1">A deployment migrating from SAML 2.0 to this profile typically operates
+both protocols in parallel for some period. The two protocols publish
+metadata through independent mechanisms that this profile does not
+unify: SAML 2.0 metadata as <code>EntityDescriptor</code> documents
+(<span>[<a href="#SAML2-METADATA" class="cite xref">SAML2-METADATA</a>]</span>), OAuth/OIDC metadata at the
+<code>.well-known/oauth-authorization-server</code> and
+<code>.well-known/openid-configuration</code> endpoints (<span>[<a href="#RFC8414" class="cite xref">RFC8414</a>]</span>,
+<span>[<a href="#OIDC-DISCOVERY" class="cite xref">OIDC-DISCOVERY</a>]</span>). Both can be published from the same authority
+simultaneously.<a href="#section-7.7-1" class="pilcrow">¶</a></p>
+<p id="section-7.7-2">Deployments <span class="bcp14">SHOULD</span> observe the following during parallel operation:<a href="#section-7.7-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.7-3.1">
+            <p id="section-7.7-3.1.1">The SAML IdP <code>entityID</code> and the OAuth <code>issuer</code> identify the same
+administrative authority but remain distinct values used in their
+own protocol contexts; see <a href="#saml-and-oauth-issuer-boundary" class="auto internal xref">Section 8.4</a> for
+the validation rule, including incidental string equality.<a href="#section-7.7-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-7.7-3.2">
+            <p id="section-7.7-3.2.1">SAML signing keys (published via <code>KeyDescriptor</code>) and OAuth/OIDC
+signing keys (published via <code>jwks_uri</code>) rotate on independent
+schedules. A SAML-side key rollover does not affect ID Token
+signature validation, and a JWS-side rollover does not affect SAML
+assertion signature validation. Deployments <span class="bcp14">SHOULD</span> coordinate
+rollover windows to avoid cross-protocol confusion in operational
+tooling.<a href="#section-7.7-3.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-7.7-3.3">
+            <p id="section-7.7-3.3.1">The bidirectional metadata pointer described in
+<a href="#metadata-saml-metadata-uri" class="auto internal xref">Section 7.2</a> (SAML metadata
+<code>AdditionalMetadataLocation</code> referencing the OAuth/OIDC metadata
+document, and AS metadata <code>saml_metadata_uri</code> referencing the SAML
+metadata document) is <span class="bcp14">OPTIONAL</span> but <span class="bcp14">RECOMMENDED</span> for discovery tooling
+during the migration period. It allows administrators and federation
+registries to traverse from either side to the other.<a href="#section-7.7-3.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-7.7-3.4">
+            <p id="section-7.7-3.4.1">Discovery clients that consume SAML metadata to locate the IdP, and
+separately consume OAuth/OIDC metadata to locate the authorization
+server, are unchanged. This profile does not alter the discovery
+flow for either protocol.<a href="#section-7.7-3.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-7.7-4">This profile does not define a mechanism for retiring the SAML side of
+a deployment, nor for archiving SAML metadata after a migration
+completes. Those operational decisions are outside the profile.<a href="#section-7.7-4" class="pilcrow">¶</a></p>
+</section>
+</div>
 </section>
 </div>
 <div id="saml-input-validation-and-binding">
@@ -2453,10 +2590,11 @@ defined in <a href="#saml-and-oauth-issuer-boundary" class="auto internal xref">
 </li>
           <li id="section-8.5-2.4">
             <p id="section-8.5-2.4.1">validate the effective <code>Assertion</code> according to the assertion
-processing rules in <span>[<a href="#SAML2-CORE" class="cite xref">SAML2-CORE</a>]</span> Section 3.5, including
-<code>Assertion/Issuer</code>, time validity (enforcing both
-<code>Conditions/@NotBefore</code> and <code>Conditions/@NotOnOrAfter</code>), conditions,
-and subject confirmation;<a href="#section-8.5-2.4.1" class="pilcrow">¶</a></p>
+processing rules in <span>[<a href="#SAML2-CORE" class="cite xref">SAML2-CORE</a>]</span> Section 2, including
+<code>Assertion/Issuer</code> (<span>[<a href="#SAML2-CORE" class="cite xref">SAML2-CORE</a>]</span> Section 2.3.3), subject and
+subject confirmation (<span>[<a href="#SAML2-CORE" class="cite xref">SAML2-CORE</a>]</span> Sections 2.4-2.4.1.3), and
+conditions (<span>[<a href="#SAML2-CORE" class="cite xref">SAML2-CORE</a>]</span> Section 2.5), enforcing both
+<code>Conditions/@NotBefore</code> and <code>Conditions/@NotOnOrAfter</code>;<a href="#section-8.5-2.4.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-8.5-2.5">
             <p id="section-8.5-2.5.1">verify that the effective SAML <code>Assertion/Issuer</code> value matches the Trusted
@@ -3029,38 +3167,43 @@ other specifications that accept
 <code>urn:ietf:params:oauth:token-type:refresh_token</code> as a Token Exchange
 <code>subject_token_type</code>, but those subsequent exchanges are defined by the
 respective specifications, not by this document.<a href="#section-9.2.3-7" class="pilcrow">¶</a></p>
-<p id="section-9.2.3-8">Subsequent refresh token requests for access tokens <span class="bcp14">MAY</span> use <code>resource</code> and
-<code>audience</code> according to <span>[<a href="#RFC8707" class="cite xref">RFC8707</a>]</span>, <span>[<a href="#RFC8693" class="cite xref">RFC8693</a>]</span>, and authorization server policy.
-This profile does not modify their meaning in refresh token requests. Scope
-reduction in subsequent refresh token requests is governed by <span>[<a href="#RFC6749" class="cite xref">RFC6749</a>]</span> and is
-not modified by this profile.<a href="#section-9.2.3-8" class="pilcrow">¶</a></p>
-<p id="section-9.2.3-9">A refresh token issued under this profile is a regular OAuth 2.0 refresh
-token once issued. Its usable scope is bounded by the authorization server's
-policy for the authenticated client and the resolved Local Account, as
-established under <a href="#authorization-and-consent-model" class="auto internal xref">Section 5</a>, not by the specific scope
-or target service set requested in the initial Token Exchange.<a href="#section-9.2.3-9" class="pilcrow">¶</a></p>
-<p id="section-9.2.3-10">The Migration Client <span class="bcp14">MAY</span> therefore request, in subsequent refresh token grant
-requests, any scope, <code>resource</code>, or <code>audience</code> value that policy permits for
-that client and Local Account, including values that were not part of the
-initial Token Exchange. The authorization server <span class="bcp14">MUST</span> apply
-<a href="#authorization-and-consent-model" class="auto internal xref">Section 5</a> to each such request and <span class="bcp14">MUST</span> reject any
-request whose granted scope, <code>resource</code>, or <code>audience</code> would exceed what
-policy authorizes, using <code>invalid_scope</code> or <code>invalid_target</code> as appropriate.<a href="#section-9.2.3-10" class="pilcrow">¶</a></p>
-<p id="section-9.2.3-11">The SAML SP relationship determines whether the Migration Client may
+<p id="section-9.2.3-8">A refresh token issued under this profile is a regular OAuth 2.0 refresh
+token once issued. <span>[<a href="#RFC6749" class="cite xref">RFC6749</a>]</span> Section 6 requires that the scope of a
+subsequent refresh token request not exceed the scope originally granted
+to the refresh token. To make the migrated-session model interoperate
+cleanly with that rule, the authorization server <span class="bcp14">MUST</span> set the refresh
+token's granted scope, at issuance time, to the full envelope of scopes
+authorized by the authorization basis
+(<a href="#authorization-and-consent-model" class="auto internal xref">Section 5</a>) for the authenticated client and
+the resolved Local Account, even when the initial Token Exchange
+request asked for a narrower scope. The Token Exchange response <span class="bcp14">MUST</span>
+include this granted scope in its <code>scope</code> member when it differs from
+the requested scope, per <span>[<a href="#RFC6749" class="cite xref">RFC6749</a>]</span> Section 3.3 and <span>[<a href="#RFC8693" class="cite xref">RFC8693</a>]</span>
+Section 2.2.<a href="#section-9.2.3-8" class="pilcrow">¶</a></p>
+<p id="section-9.2.3-9">Subsequent refresh token requests (per <span>[<a href="#RFC6749" class="cite xref">RFC6749</a>]</span> Section 6) <span class="bcp14">MAY</span>
+therefore request any scope, <code>resource</code>, or <code>audience</code> value within the
+granted envelope, including values not present in the initial Token
+Exchange request. The authorization server <span class="bcp14">MUST</span> apply
+<a href="#authorization-and-consent-model" class="auto internal xref">Section 5</a> to each such request and <span class="bcp14">MUST</span>
+reject a request whose <code>scope</code>, <code>resource</code>, or <code>audience</code> falls outside
+the granted envelope with <code>invalid_scope</code> or <code>invalid_target</code> as
+appropriate. Resource indicator semantics in refresh token requests
+follow <span>[<a href="#RFC8707" class="cite xref">RFC8707</a>]</span> and <span>[<a href="#RFC8693" class="cite xref">RFC8693</a>]</span> and are not modified by this profile.<a href="#section-9.2.3-9" class="pilcrow">¶</a></p>
+<p id="section-9.2.3-10">The SAML SP relationship determines whether the Migration Client may
 bootstrap a session under this profile; it does not by itself impose a
-ceiling on later use of the resulting refresh token.<a href="#section-9.2.3-11" class="pilcrow">¶</a></p>
-<p id="section-9.2.3-12">Subsequent refresh token grants are not re-validated against the original
+ceiling on later use of the resulting refresh token.<a href="#section-9.2.3-10" class="pilcrow">¶</a></p>
+<p id="section-9.2.3-11">Subsequent refresh token grants are not re-validated against the original
 SAML assertion. The assertion may have expired, may have been issued for a
 different purpose, or may no longer satisfy this profile's input-validation
 rules; none of that affects the validity of refresh token use, which is
 governed solely by authorization server policy and the <code>SessionNotOnOrAfter</code>
-cap (when one was established).<a href="#section-9.2.3-12" class="pilcrow">¶</a></p>
-<p id="section-9.2.3-13">When a refresh token issued under this profile expires or is revoked, the client
+cap (when one was established).<a href="#section-9.2.3-11" class="pilcrow">¶</a></p>
+<p id="section-9.2.3-12">When a refresh token issued under this profile expires or is revoked, the client
 <span class="bcp14">MAY</span> obtain a new SAML assertion through the SAML 2.0 deployment and perform a
 new Token Exchange request. The client <span class="bcp14">MAY</span> also use any other OAuth 2.0 or
-OpenID Connect flow that the authorization server supports.<a href="#section-9.2.3-13" class="pilcrow">¶</a></p>
-<p id="section-9.2.3-14">Session termination and revocation for refresh tokens issued under this
-profile are defined in <a href="#session-termination-and-revocation" class="auto internal xref">Section 14</a>.<a href="#section-9.2.3-14" class="pilcrow">¶</a></p>
+OpenID Connect flow that the authorization server supports.<a href="#section-9.2.3-12" class="pilcrow">¶</a></p>
+<p id="section-9.2.3-13">Session termination and revocation for refresh tokens issued under this
+profile are defined in <a href="#session-termination-and-revocation" class="auto internal xref">Section 14</a>.<a href="#section-9.2.3-13" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="token-exchange-id-token">
@@ -3694,14 +3837,42 @@ authorization server.<a href="#section-11-7" class="pilcrow">¶</a></p>
       <h2 id="name-subject-identifier-mapping">
 <a href="#section-12" class="section-number selfRef">12. </a><a href="#name-subject-identifier-mapping" class="section-name selfRef">Subject Identifier Mapping</a>
       </h2>
-<p id="section-12-1">The OpenID Connect <code>sub</code> claim is the primary continuity point for migrated
-relying parties. The authorization server <span class="bcp14">MUST</span> issue a <code>sub</code> value that is
-stable for the client and that preserves the semantics of the corresponding
-SAML deployment.<a href="#section-12-1" class="pilcrow">¶</a></p>
-<p id="section-12-2">Most of this section concerns the rules for deriving <code>sub</code>. The final
+<p id="section-12-1">Subject continuity is the central guarantee of this profile: the same
+end-user <span class="bcp14">MUST</span> be represented to the migrated relying party by a stable
+identifier that does not require account relinking. The OpenID Connect
+<code>sub</code> claim carries that continuity. The authorization server <span class="bcp14">MUST</span>
+issue a <code>sub</code> value that is stable for the client and that preserves
+the semantics of the corresponding SAML deployment.<a href="#section-12-1" class="pilcrow">¶</a></p>
+<p id="section-12-2">The rules in this section achieve subject continuity by:<a href="#section-12-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-12-3.1">
+          <p id="section-12-3.1.1">reusing any persisted <code>sub</code> mapping the authorization server already
+holds for the resolved Local Account under this client's effective
+subject type;<a href="#section-12-3.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-12-3.2">
+          <p id="section-12-3.2.1">otherwise deriving <code>sub</code> from stable SAML subject inputs, in
+preference order: <code>subject-id</code> or <code>pairwise-id</code> attributes
+(<span>[<a href="#SAML2-SUBJ-ID" class="cite xref">SAML2-SUBJ-ID</a>]</span>), persistent <code>NameID</code>, and finally a deterministic
+derivation from the Stable Local Subject Key;<a href="#section-12-3.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-12-3.3">
+          <p id="section-12-3.3.1">preserving any pairwise scoping the SAML SP relationship already
+used, via the bound <code>saml_sp_entity_id</code>;<a href="#section-12-3.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-12-3.4">
+          <p id="section-12-3.4.1">excluding mutable identifiers (email, transient <code>NameID</code>, display
+attributes) as <code>sub</code> sources; and<a href="#section-12-3.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-12-3.5">
+          <p id="section-12-3.5.1">persisting whichever mapping is chosen so the same Local Account
+resolves to the same <code>sub</code> on subsequent invocations.<a href="#section-12-3.5.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-12-4">Most of this section concerns the rules for deriving <code>sub</code>. The final
 subsection (<a href="#saml-subject-identifier-claim" class="auto internal xref">Section 12.6</a>) defines an <span class="bcp14">OPTIONAL</span>
 supplementary claim, <code>sub_id</code>, that carries the original SAML NameID
-context for clients that need it in addition to <code>sub</code>.<a href="#section-12-2" class="pilcrow">¶</a></p>
+context for clients that need it in addition to <code>sub</code>.<a href="#section-12-4" class="pilcrow">¶</a></p>
 <div id="nameid-format-recognition">
 <section id="section-12.1">
         <h3 id="name-nameid-format-recognition">
@@ -4074,6 +4245,102 @@ claim remains the primary continuity point under
 introspection responses under this profile. Values derived from SAML
 subject identifiers or authentication statements take precedence over
 generic attribute mapping.<a href="#section-13-1" class="pilcrow">¶</a></p>
+<p id="section-13-2">The following table summarizes the principal SAML inputs and their
+target OpenID Connect claims under this profile. Detailed rules,
+including precedence and edge cases, are in the subsections that
+follow.<a href="#section-13-2" class="pilcrow">¶</a></p>
+<table class="center" id="table-5">
+        <caption><a href="#table-5" class="selfRef">Table 5</a></caption>
+<thead>
+          <tr>
+            <th class="text-left" rowspan="1" colspan="1">SAML input</th>
+            <th class="text-left" rowspan="1" colspan="1">OpenID Connect target</th>
+            <th class="text-left" rowspan="1" colspan="1">Defined in</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Persistent <code>NameID</code>, <code>subject-id</code>, <code>pairwise-id</code>, or Stable Local Subject Key derivation</td>
+            <td class="text-left" rowspan="1" colspan="1">
+              <code>sub</code>
+</td>
+            <td class="text-left" rowspan="1" colspan="1">
+              <a href="#subject-identifier-mapping" class="auto internal xref">Section 12</a>
+</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">
+              <code>NameID</code> element (provenance preserved)</td>
+            <td class="text-left" rowspan="1" colspan="1">
+              <code>sub_id</code> with <code>saml-nameid</code> format</td>
+            <td class="text-left" rowspan="1" colspan="1">
+              <a href="#saml-subject-identifier-claim" class="auto internal xref">Section 12.6</a>
+</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">
+              <code>AuthnStatement/@AuthnInstant</code>
+</td>
+            <td class="text-left" rowspan="1" colspan="1">
+              <code>auth_time</code>
+</td>
+            <td class="text-left" rowspan="1" colspan="1">
+              <a href="#authentication-event-claims" class="auto internal xref">Section 13.1</a>
+</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">
+              <code>AuthnContext/AuthnContextClassRef</code>
+</td>
+            <td class="text-left" rowspan="1" colspan="1">
+              <code>acr</code>
+</td>
+            <td class="text-left" rowspan="1" colspan="1">
+              <a href="#authentication-event-claims" class="auto internal xref">Section 13.1</a>
+</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Concrete authentication methods derived from local policy or SAML evidence</td>
+            <td class="text-left" rowspan="1" colspan="1">
+              <code>amr</code>
+</td>
+            <td class="text-left" rowspan="1" colspan="1">
+              <a href="#authentication-event-claims" class="auto internal xref">Section 13.1</a>
+</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">
+              <code>AuthnStatement/@SessionIndex</code>
+</td>
+            <td class="text-left" rowspan="1" colspan="1">
+              <code>sid</code>
+</td>
+            <td class="text-left" rowspan="1" colspan="1">
+              <a href="#authentication-event-claims" class="auto internal xref">Section 13.1</a>
+</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">
+              <code>AttributeStatement</code> attributes (e.g., <code>mail</code>, <code>givenName</code>, <code>sn</code>, <code>displayName</code>)</td>
+            <td class="text-left" rowspan="1" colspan="1">Registered OIDC claims (<code>email</code>, <code>given_name</code>, <code>family_name</code>, <code>name</code>, etc.)</td>
+            <td class="text-left" rowspan="1" colspan="1">
+              <a href="#attribute-claims" class="auto internal xref">Section 13.2</a>
+</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Other <code>AttributeStatement</code> attributes</td>
+            <td class="text-left" rowspan="1" colspan="1">Private claims by prior agreement</td>
+            <td class="text-left" rowspan="1" colspan="1">
+              <a href="#attribute-claims" class="auto internal xref">Section 13.2</a>
+</td>
+          </tr>
+        </tbody>
+      </table>
+<p id="section-13-4">This profile maps identity-bearing values for interoperability. It does
+not map SAML data whose purpose is authorization or entitlement
+(<code>AuthzDecisionStatement</code>, scoped affiliation values intended for
+access control, etc.) into OAuth scopes or authorization decisions; see
+<a href="#non-goals" class="auto internal xref">Section 1.1</a>.<a href="#section-13-4" class="pilcrow">¶</a></p>
 <div id="authentication-event-claims">
 <section id="section-13.1">
         <h3 id="name-authentication-event-claims">
@@ -4418,6 +4685,16 @@ termination signals to tokens it has issued, and how token revocation
 under this profile cascades through derived artifacts. It does not
 define a protocol for signaling SAML SLO between the SAML IdP and the
 authorization server; that is out of scope.<a href="#section-14-1" class="pilcrow">¶</a></p>
+<p id="section-14-2">SAML Single Logout (SLO) and OpenID Connect logout are not equivalent
+mechanisms, and this profile does not guarantee parity between them.
+SAML SLO is a multi-party protocol coordinated by the SAML IdP across
+all participating SPs; OIDC logout (front-channel, back-channel, and
+RP-Initiated Logout) targets OIDC clients individually. The operational
+semantics, failure modes, and trust requirements differ. Deployments
+that need coordinated logout across both protocols <span class="bcp14">MUST</span> design that
+coordination outside this profile; this profile defines only the
+authorization server's local obligations once it has learned that a
+SAML-authenticated session has ended (see <a href="#session-termination" class="auto internal xref">Section 14.1</a>).<a href="#section-14-2" class="pilcrow">¶</a></p>
 <div id="session-termination">
 <section id="section-14.1">
         <h3 id="name-session-termination">
@@ -4793,7 +5070,7 @@ Dynamic Client Registration Metadata registry established by <span>[<a href="#RF
 entity bound to the client for migration and subject continuity<a href="#section-17.1-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.1-2.3">
-            <p id="section-17.1-2.3.1">Change Controller: IESG<a href="#section-17.1-2.3.1" class="pilcrow">¶</a></p>
+            <p id="section-17.1-2.3.1">Change Controller: IETF<a href="#section-17.1-2.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.1-2.4">
             <p id="section-17.1-2.4.1">Specification Document(s): This document, <a href="#client-registration-saml-sp-entity-id" class="auto internal xref">Section 6.1</a><a href="#section-17.1-2.4.1" class="pilcrow">¶</a></p>
@@ -4807,7 +5084,7 @@ SAML 2.0 Identity Provider entity expected to issue assertions for this
 client, when the SAML IdP emits per-SP entityIDs<a href="#section-17.1-2.6.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.1-2.7">
-            <p id="section-17.1-2.7.1">Change Controller: IESG<a href="#section-17.1-2.7.1" class="pilcrow">¶</a></p>
+            <p id="section-17.1-2.7.1">Change Controller: IETF<a href="#section-17.1-2.7.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.1-2.8">
             <p id="section-17.1-2.8.1">Specification Document(s): This document, <a href="#client-registration-saml-idp-entity-id" class="auto internal xref">Section 6.2</a><a href="#section-17.1-2.8.1" class="pilcrow">¶</a></p>
@@ -4821,7 +5098,7 @@ SAML metadata document describing the SAML 2.0 Identity Provider entity
 expected to issue assertions for this client<a href="#section-17.1-2.10.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.1-2.11">
-            <p id="section-17.1-2.11.1">Change Controller: IESG<a href="#section-17.1-2.11.1" class="pilcrow">¶</a></p>
+            <p id="section-17.1-2.11.1">Change Controller: IETF<a href="#section-17.1-2.11.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.1-2.12">
             <p id="section-17.1-2.12.1">Specification Document(s): This document, <a href="#client-registration-saml-metadata-uri" class="auto internal xref">Section 6.3</a><a href="#section-17.1-2.12.1" class="pilcrow">¶</a></p>
@@ -4846,7 +5123,7 @@ entity bound to the authorization server issuer; may be overridden per
 client registration<a href="#section-17.2-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.2-2.3">
-            <p id="section-17.2-2.3.1">Change Controller: IESG<a href="#section-17.2-2.3.1" class="pilcrow">¶</a></p>
+            <p id="section-17.2-2.3.1">Change Controller: IETF<a href="#section-17.2-2.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.2-2.4">
             <p id="section-17.2-2.4.1">Specification Document(s): This document, <a href="#metadata-saml-idp-entity-id" class="auto internal xref">Section 7.1</a><a href="#section-17.2-2.4.1" class="pilcrow">¶</a></p>
@@ -4860,7 +5137,7 @@ the SAML Identity Provider entity bound to the authorization server
 issuer; may be overridden per client registration<a href="#section-17.2-2.6.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.2-2.7">
-            <p id="section-17.2-2.7.1">Change Controller: IESG<a href="#section-17.2-2.7.1" class="pilcrow">¶</a></p>
+            <p id="section-17.2-2.7.1">Change Controller: IETF<a href="#section-17.2-2.7.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.2-2.8">
             <p id="section-17.2-2.8.1">Specification Document(s): This document, <a href="#metadata-saml-metadata-uri" class="auto internal xref">Section 7.2</a><a href="#section-17.2-2.8.1" class="pilcrow">¶</a></p>
@@ -4873,7 +5150,7 @@ issuer; may be overridden per client registration<a href="#section-17.2-2.6.1" c
 <code>requested_token_type</code> values for SAML token exchange under this profile<a href="#section-17.2-2.10.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.2-2.11">
-            <p id="section-17.2-2.11.1">Change Controller: IESG<a href="#section-17.2-2.11.1" class="pilcrow">¶</a></p>
+            <p id="section-17.2-2.11.1">Change Controller: IETF<a href="#section-17.2-2.11.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.2-2.12">
             <p id="section-17.2-2.12.1">Specification Document(s): This document, <a href="#metadata-token-exchange-requested-token-types-supported" class="auto internal xref">Section 7.3</a><a href="#section-17.2-2.12.1" class="pilcrow">¶</a></p>
@@ -4887,7 +5164,7 @@ accepted for direct introspection at the authorization server's
 introspection endpoint according to this profile<a href="#section-17.2-2.14.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.2-2.15">
-            <p id="section-17.2-2.15.1">Change Controller: IESG<a href="#section-17.2-2.15.1" class="pilcrow">¶</a></p>
+            <p id="section-17.2-2.15.1">Change Controller: IETF<a href="#section-17.2-2.15.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.2-2.16">
             <p id="section-17.2-2.16.1">Specification Document(s): This document, <a href="#metadata-introspection-token-types-supported" class="auto internal xref">Section 7.4</a><a href="#section-17.2-2.16.1" class="pilcrow">¶</a></p>
@@ -4910,7 +5187,7 @@ endpoints, which use a separate registry.<a href="#section-17.3-1" class="pilcro
             <p id="section-17.3-2.1.1">Hint Value: <code>urn:ietf:params:oauth:token-type:saml2</code><a href="#section-17.3-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.3-2.2">
-            <p id="section-17.3-2.2.1">Change Controller: IESG<a href="#section-17.3-2.2.1" class="pilcrow">¶</a></p>
+            <p id="section-17.3-2.2.1">Change Controller: IETF<a href="#section-17.3-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.3-2.3">
             <p id="section-17.3-2.3.1">Specification Document(s): This document, <a href="#introspection-request" class="auto internal xref">Section 10.1</a><a href="#section-17.3-2.3.1" class="pilcrow">¶</a></p>
@@ -4934,7 +5211,7 @@ Introspection Response registry established by <span>[<a href="#RFC7662" class="
 extracted from the validated SAML input<a href="#section-17.4-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.4-2.3">
-            <p id="section-17.4-2.3.1">Change Controller: IESG<a href="#section-17.4-2.3.1" class="pilcrow">¶</a></p>
+            <p id="section-17.4-2.3.1">Change Controller: IETF<a href="#section-17.4-2.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.4-2.4">
             <p id="section-17.4-2.4.1">Specification Document(s): This document, <a href="#introspection-successful-response" class="auto internal xref">Section 10.2.3</a><a href="#section-17.4-2.4.1" class="pilcrow">¶</a></p>
@@ -4949,12 +5226,82 @@ response in parallel with its placement in ID Tokens and UserInfo
 responses<a href="#section-17.4-2.6.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.4-2.7">
-            <p id="section-17.4-2.7.1">Change Controller: IESG<a href="#section-17.4-2.7.1" class="pilcrow">¶</a></p>
+            <p id="section-17.4-2.7.1">Change Controller: IETF<a href="#section-17.4-2.7.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.4-2.8">
             <p id="section-17.4-2.8.1">Specification Document(s): This document, <a href="#introspection-successful-response" class="auto internal xref">Section 10.2.3</a>, <a href="#saml-subject-identifier-claim" class="auto internal xref">Section 12.6</a><a href="#section-17.4-2.8.1" class="pilcrow">¶</a></p>
 </li>
+          <li class="normal" id="section-17.4-2.9">
+            <p id="section-17.4-2.9.1">Response Name: <code>auth_time</code><a href="#section-17.4-2.9.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-17.4-2.10">
+            <p id="section-17.4-2.10.1">Response Description: Time of end-user authentication, expressed as a
+NumericDate value, with the same semantics as the OpenID Connect
+<code>auth_time</code> claim; returned at the top level of the introspection
+response under this profile<a href="#section-17.4-2.10.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-17.4-2.11">
+            <p id="section-17.4-2.11.1">Change Controller: IETF<a href="#section-17.4-2.11.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-17.4-2.12">
+            <p id="section-17.4-2.12.1">Specification Document(s): This document, <a href="#introspection-successful-response" class="auto internal xref">Section 10.2.3</a>, <a href="#authentication-event-claims" class="auto internal xref">Section 13.1</a><a href="#section-17.4-2.12.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-17.4-2.13">
+            <p id="section-17.4-2.13.1">Response Name: <code>acr</code><a href="#section-17.4-2.13.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-17.4-2.14">
+            <p id="section-17.4-2.14.1">Response Description: Authentication Context Class Reference value
+with the same semantics as the OpenID Connect <code>acr</code> claim; returned
+at the top level of the introspection response under this profile<a href="#section-17.4-2.14.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-17.4-2.15">
+            <p id="section-17.4-2.15.1">Change Controller: IETF<a href="#section-17.4-2.15.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-17.4-2.16">
+            <p id="section-17.4-2.16.1">Specification Document(s): This document, <a href="#introspection-successful-response" class="auto internal xref">Section 10.2.3</a>, <a href="#authentication-event-claims" class="auto internal xref">Section 13.1</a><a href="#section-17.4-2.16.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-17.4-2.17">
+            <p id="section-17.4-2.17.1">Response Name: <code>amr</code><a href="#section-17.4-2.17.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-17.4-2.18">
+            <p id="section-17.4-2.18.1">Response Description: JSON array of Authentication Method Reference
+values with the same semantics as the OpenID Connect <code>amr</code> claim;
+returned at the top level of the introspection response under this
+profile<a href="#section-17.4-2.18.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-17.4-2.19">
+            <p id="section-17.4-2.19.1">Change Controller: IETF<a href="#section-17.4-2.19.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-17.4-2.20">
+            <p id="section-17.4-2.20.1">Specification Document(s): This document, <a href="#introspection-successful-response" class="auto internal xref">Section 10.2.3</a>, <a href="#authentication-event-claims" class="auto internal xref">Section 13.1</a><a href="#section-17.4-2.20.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-17.4-2.21">
+            <p id="section-17.4-2.21.1">Response Name: <code>sid</code><a href="#section-17.4-2.21.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-17.4-2.22">
+            <p id="section-17.4-2.22.1">Response Description: Session identifier with the same semantics as
+the OpenID Connect <code>sid</code> claim (<span>[<a href="#OIDC-FC-LOGOUT" class="cite xref">OIDC-FC-LOGOUT</a>]</span>, <span>[<a href="#OIDC-BC-LOGOUT" class="cite xref">OIDC-BC-LOGOUT</a>]</span>);
+returned at the top level of the introspection response under this
+profile<a href="#section-17.4-2.22.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-17.4-2.23">
+            <p id="section-17.4-2.23.1">Change Controller: IETF<a href="#section-17.4-2.23.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-17.4-2.24">
+            <p id="section-17.4-2.24.1">Specification Document(s): This document, <a href="#introspection-successful-response" class="auto internal xref">Section 10.2.3</a>, <a href="#authentication-event-claims" class="auto internal xref">Section 13.1</a><a href="#section-17.4-2.24.1" class="pilcrow">¶</a></p>
+</li>
         </ul>
+<p id="section-17.4-3">Other OpenID Connect standard claims listed in the IANA "JSON Web Token
+Claims" registry (such as <code>email</code>, <code>email_verified</code>, <code>given_name</code>,
+<code>family_name</code>, <code>name</code>, <code>preferred_username</code>, <code>phone_number</code>, and
+<code>phone_number_verified</code>) <span class="bcp14">MAY</span> also appear as top-level members of the
+introspection response under this profile when the claim mapping rules
+in <a href="#claim-mapping" class="auto internal xref">Section 13</a> produce them. Their semantics in the introspection
+response are the same as in the corresponding ID Token or UserInfo
+response; this document does not redefine those claims and does not
+introduce additional introspection-registry entries for them. A
+deployment that includes such a claim in its introspection response is
+relying on the existing JWT Claims registry definition.<a href="#section-17.4-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="iana-jwt-claims">
@@ -4974,7 +5321,7 @@ about the identifier (such as the original SAML NameID context)
 alongside the primary <code>sub</code> claim<a href="#section-17.5-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.5-2.3">
-            <p id="section-17.5-2.3.1">Change Controller: IESG<a href="#section-17.5-2.3.1" class="pilcrow">¶</a></p>
+            <p id="section-17.5-2.3.1">Change Controller: IETF<a href="#section-17.5-2.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.5-2.4">
             <p id="section-17.5-2.4.1">Reference: This document, <a href="#saml-subject-identifier-claim" class="auto internal xref">Section 12.6</a><a href="#section-17.5-2.4.1" class="pilcrow">¶</a></p>
@@ -5019,7 +5366,7 @@ alongside the primary <code>sub</code> claim<a href="#section-17.5-2.2.1" class=
 with its qualifiers and SAML Issuer<a href="#section-17.7-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.7-2.3">
-            <p id="section-17.7-2.3.1">Change Controller: IESG<a href="#section-17.7-2.3.1" class="pilcrow">¶</a></p>
+            <p id="section-17.7-2.3.1">Change Controller: IETF<a href="#section-17.7-2.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-17.7-2.4">
             <p id="section-17.7-2.4.1">Reference: This document, <a href="#saml-subject-identifier-claim" class="auto internal xref">Section 12.6</a><a href="#section-17.7-2.4.1" class="pilcrow">¶</a></p>
@@ -5610,8 +5957,8 @@ define their own as local policy dictates.<a href="#appendix-C-2" class="pilcrow
         <h3 id="name-common-saml-authncontextcla">
 <a href="#appendix-C.1" class="section-number selfRef">C.1. </a><a href="#name-common-saml-authncontextcla" class="section-name selfRef">Common SAML AuthnContextClassRef URIs</a>
         </h3>
-<table class="center" id="table-5">
-          <caption><a href="#table-5" class="selfRef">Table 5</a></caption>
+<table class="center" id="table-6">
+          <caption><a href="#table-6" class="selfRef">Table 6</a></caption>
 <thead>
             <tr>
               <th class="text-left" rowspan="1" colspan="1">SAML AuthnContextClassRef</th>
