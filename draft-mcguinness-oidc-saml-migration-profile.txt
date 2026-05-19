@@ -2,13 +2,13 @@
 
 
 
-Network Working Group                                      K. McGuinness
+OpenID Connect Working Group                               K. McGuinness
 Internet-Draft                                               Independent
 Intended status: Informational                               19 May 2026
 Expires: 20 November 2026
 
 
-              OpenID Connect to SAML 2.0 Migration Profile
+            OpenID Connect to SAML 2.0 Migration Profile 1.0
           draft-mcguinness-oidc-saml-migration-profile-latest
 
 Abstract
