@@ -2,16 +2,16 @@
 
 # OpenID Connect / SAML 2.0 Interoperability Profiles
 
-This repository is the working area for two complementary individual
+This repository is the working area for three complementary individual
 Internet-Drafts that define how OpenID Connect deployments coexist with
-existing SAML 2.0 Service Providers. The two profiles are inverse
-companions: one moves SAML SPs onto OpenID Connect, the other lets an
-OpenID Provider continue serving SAML SPs that cannot be moved.
+SAML 2.0 federation. The profiles cover three migration surfaces: moving
+SAML SPs onto OpenID Connect, letting an OpenID Provider continue serving
+SAML SPs that cannot be moved, and standing up an OpenID Provider while
+a SAML IdP remains the upstream authentication authority.
 
-Deployments can use either profile alone, or both together with a
-common bridge entity, allowing each SAML SP to be migrated on its own
-timeline while a single OpenID Provider remains the authentication
-authority.
+Deployments can use any profile alone, or combine them so each SAML SP
+can be migrated on its own timeline while authentication authority and
+subject continuity remain consistent across the protocol stacks.
 
 ## OpenID Connect Migration Profile for SAML 2.0 Service Providers
 
@@ -69,22 +69,76 @@ exchanged for a SAML assertion without a browser-based flow.
 
 * [Editor's Copy](https://mcguinness.github.io/draft-connect-saml-migration/#go.draft-connect-saml-bridge-profile.html)
 
-## How the two profiles fit together
+## OpenID Connect Provider Profile for SAML 2.0 Identity Providers
 
-The two profiles are inverse companions, designed to be deployable
-together when an organization needs to maintain SAML SPs on different
-migration timelines:
+**Direction:** SAML 2.0 IdP → OpenID Connect OP
+
+This profile defines an OpenID Provider that delegates end-user
+authentication to an upstream SAML 2.0 Identity Provider. The OP exposes
+a standard OpenID Connect interface to relying parties while acting as a
+SAML Service Provider toward the upstream IdP, translating SAML
+authentication results into ID Tokens, access tokens, and normalized
+claims.
+
+The profile preserves:
+
+* SAML subject continuity when deriving OIDC `sub` values;
+* SAML authentication context and session bounds as OIDC claims;
+* SAML attribute release policy when producing OIDC claims; and
+* the distinction between OP metadata, SAML SP metadata, and upstream
+  SAML IdP metadata.
+
+It addresses scenarios such as: standing up an OpenID Provider before a
+SAML IdP is retired; onboarding OIDC relying parties while SAML remains
+authoritative; and operating a phased SAML deprecation where the OP can
+later be paired with the Bridge and Migration profiles.
+
+* [Editor's Copy](https://mcguinness.github.io/draft-connect-saml-migration/#go.draft-connect-saml-idp-profile.html)
+
+## How the profiles fit together
+
+The profiles are complementary, designed to be deployable together when
+an organization needs to maintain SAML and OpenID Connect deployments on
+different migration timelines:
+
+```text
+                 +-----------------+
+                 | SAML 2.0 IdP    |
+                 +-----------------+
+                          |
+                          | OpenID Connect Provider Profile
+                          | for SAML 2.0 Identity Providers
+                          v
+                 +-----------------+
+                 | OpenID Provider |
+                 +-----------------+
+                   |             |
+                   |             | OpenID Connect Bridge Profile
+                   |             | for SAML 2.0 Service Providers
+                   |             v
+                   |      +-----------------+
+                   |      | SAML 2.0 SP     |
+                   |      +-----------------+
+                   |              |
+                   |              | OpenID Connect Migration Profile
+                   |              | for SAML 2.0 Service Providers
+                   |              v
+                   |      +-----------------+
+                   +----> | OIDC RP         |
+                          +-----------------+
+```
 
 | Profile | Direction | Audience |
 | --- | --- | --- |
 | Migration | SAML 2.0 SP → OpenID Connect RP | SPs that adopt OpenID Connect, preserving SAML federation trust |
 | Bridge | OpenID Provider → SAML 2.0 SP | SPs that cannot migrate; OP serves them via a SAML IdP facade |
+| IdP-backed OP | SAML 2.0 IdP → OpenID Connect OP | OIDC RPs served by an OP whose upstream authentication authority remains SAML |
 
-Both profiles share the same OpenID Provider as the authentication
-authority. A single deployment can use the Migration profile for SPs
-that are moving to OpenID Connect and the Bridge profile for SPs that
-remain on SAML, with both sets of SPs anchored to one OP and consistent
-subject continuity across the two protocol stacks.
+The IdP-backed OP profile is useful early in a migration, while SAML
+remains authoritative. The Migration profile moves individual SAML SPs
+onto OpenID Connect. The Bridge profile lets the OP continue serving SPs
+that remain on SAML after the OP becomes the primary authentication
+authority.
 
 ## Contributing
 
