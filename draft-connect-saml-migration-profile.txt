@@ -4,8 +4,8 @@
 
 OpenID Connect Working Group                               K. McGuinness
 Internet-Draft                                               Independent
-Intended status: Informational                               20 May 2026
-Expires: 21 November 2026
+Intended status: Informational                               22 May 2026
+Expires: 23 November 2026
 
 
     OpenID Connect Migration Profile for SAML 2.0 Service Providers
@@ -61,7 +61,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 21 November 2026.
+   This Internet-Draft will expire on 23 November 2026.
 
 Copyright Notice
 
@@ -3517,9 +3517,9 @@ Table of Contents
               Parecki, A., McGuinness, K., and B. Campbell, "Identity
               Assertion JWT Authorization Grant", Work in Progress,
               Internet-Draft, draft-ietf-oauth-identity-assertion-authz-
-              grant-03, 22 April 2026,
+              grant-04, 21 May 2026,
               <https://datatracker.ietf.org/doc/html/draft-ietf-oauth-
-              identity-assertion-authz-grant-03>.
+              identity-assertion-authz-grant-04>.
 
    [INCOMMON-ATTRS]
               InCommon, "InCommon Federation Attributes",
