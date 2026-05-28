@@ -106,7 +106,7 @@ normative:
     date: false
   SAML-OIDC-MIGRATION:
     title: "OpenID Connect Migration Profile for SAML 2.0 Service Providers"
-    target: "https://datatracker.ietf.org/doc/draft-connect-saml-migration-profile/"
+    target: "https://mcguinness.github.io/connect-saml-profiles/#go.draft-connect-saml-migration-profile.html"
     author:
       - ins: K. McGuinness
     date: false
