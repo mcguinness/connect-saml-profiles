@@ -18,9 +18,7 @@ author:
 
 normative:
   RFC2119:
-  RFC4648:
   RFC6749:
-  RFC7591:
   RFC7636:
   RFC8174:
   RFC8176:
@@ -105,15 +103,15 @@ normative:
       - ins: J. Bradley
     date: false
 
-informative:
-  RFC7009:
-  RFC7522:
   SAML-OIDC-MIGRATION:
     title: "OpenID Connect Migration Profile for SAML 2.0 Service Providers"
     target: "https://datatracker.ietf.org/doc/draft-connect-saml-migration-profile/"
     author:
       - ins: K. McGuinness
     date: false
+
+informative:
+  RFC7009:
   SAML-OIDC-BRIDGE:
     title: "OpenID Connect Bridge Profile for SAML 2.0 Service Providers"
     target: "https://datatracker.ietf.org/doc/draft-connect-saml-bridge-profile/"
@@ -152,12 +150,13 @@ SPs become OIDC clients on their own timeline.
 
 # Introduction {#introduction}
 
-Many organizations have a SAML 2.0 IdP as their authoritative authentication
-source but want to expose OpenID Connect to relying parties — to support
-modern OIDC-based applications, to consolidate identity onto a single OAuth
-2.0 / OpenID Connect surface, or to begin a phased SAML deprecation. The
-practical question in each case is: can an OP be stood up before the SAML
-IdP is retired?
+Many organizations have a SAML 2.0 IdP as their authoritative
+authentication source but want to expose OpenID Connect to relying
+parties. Reasons include supporting modern OIDC applications,
+consolidating identity onto a single OAuth 2.0 / OpenID Connect
+surface, and beginning a phased SAML deprecation. The practical
+question in each case is whether an OP can be stood up before the
+SAML IdP is retired.
 
 This profile answers that question. It defines an OP that acts as a thin
 translation layer: it receives standard OIDC authorization requests from
@@ -195,10 +194,51 @@ This profile:
   resolving them to a Local Account;
 * defines rules for translating SAML NameIDs into OIDC subject identifiers
   preserving SAML SP-equivalent continuity; and
-* defines rules for translating SAML attributes and authentication context
-  into OIDC claims and `acr`.
+* defines rules for translating SAML attributes and authentication
+  context into OIDC claims and `acr`.
 
-What this profile does not define is enumerated in {{non-goals}}.
+## Overview {#overview}
+
+This profile involves three actors:
+
+* **OIDC RP** -- an OpenID Connect Relying Party that uses the OP
+  for authentication.
+* **OP** -- the OpenID Provider defined by this profile. The OP
+  acts as an OIDC AS toward RPs and as a SAML SP toward the
+  upstream SAML IdP.
+* **Upstream SAML IdP** -- the SAML 2.0 Identity Provider that
+  authenticates end-users. Unmodified by this profile.
+
+~~~
+   +-------+               +---------+              +----------+
+   |       |--(A)-authzReq>|         |---(B)------->|          |
+   |       |               |         | AuthnRequest | Upstream |
+   | OIDC  |               |   OP    |              |   SAML   |
+   |   RP  |               |         |<--(C)--------|   IdP    |
+   |       |<--(D)-tokens--|         |   SAML Resp  |          |
+   +-------+               +---------+              +----------+
+~~~
+
+(A) An OIDC RP redirects the end-user to the OP's authorization
+    endpoint with a standard OIDC authorization request.
+
+(B) The OP has no SAML-authenticated session for the user. It
+    selects an IdP-Binding ({{idp-binding-selection}}), constructs
+    a signed SAML `AuthnRequest`
+    ({{authn-request-construction}}), and redirects the browser
+    to the upstream SAML IdP.
+
+(C) The upstream SAML IdP authenticates the end-user and POSTs a
+    signed SAML `Response` to the OP's ACS endpoint. The OP
+    validates the assertion ({{saml-assertion-validation}}),
+    resolves the user to a Local Account
+    ({{local-subject-resolution}}), derives a stable OIDC `sub`
+    ({{subject-identifier-mapping}}), and maps SAML attributes
+    and authentication context to OIDC claims
+    ({{claim-mapping}}).
+
+(D) The OP returns an OIDC authorization response to the RP.
+    Subsequent token and UserInfo requests follow {{OIDC-CORE}}.
 
 ## Non-Goals {#non-goals}
 
@@ -222,9 +262,9 @@ It does NOT define:
   `EncryptedAssertion` addressed to the OP-as-SP role (see
   {{accepted-saml-inputs}}); `EncryptedID` and `EncryptedAttribute` are
   out of scope; or
-* a Token Exchange variant — clients that already hold a SAML assertion
-  and want to exchange it for OIDC tokens use {{SAML-OIDC-MIGRATION}}
-  instead.
+* a Token Exchange variant. Clients that already hold a SAML
+  assertion and want to exchange it for OIDC tokens use
+  {{SAML-OIDC-MIGRATION}} instead.
 
 # Conventions and Terminology
 
@@ -238,7 +278,8 @@ This document uses the terms "authorization server", "client", "client
 identifier", "issuer", and "scope" from OAuth 2.0, OAuth 2.0 Authorization
 Server Metadata, and OpenID Connect. It uses the terms "Identity Provider",
 "Service Provider", "entityID", "Assertion", "Attribute",
-"AttributeStatement", "AuthnStatement", and "AuthnContext" from SAML 2.0.
+"AttributeStatement", "AuthnStatement", "AuthnContext", "Web Browser SSO",
+and "AssertionConsumerService" (the "ACS endpoint") from SAML 2.0.
 
 For the purposes of this document:
 
@@ -273,29 +314,21 @@ Local Account:
 
 # Applicability and Deployment Model {#applicability}
 
-This profile assumes that the OP and the SAML IdP are operated by, or
-under the administrative control of, the same authority. It is not
-intended to establish federation trust between otherwise independent OIDC
-and SAML parties.
+This profile assumes that the OP and the SAML IdP are operated by,
+or under the administrative control of, the same authority. It is
+not intended to establish federation trust between otherwise
+independent OIDC and SAML parties.
 
-The profile establishes three bindings:
-
-* **Issuer binding:** the OP's OAuth `issuer` is bound to one or more
-  upstream SAML IdP entities through IdP-Bindings.
-* **IdP-Binding:** the OP maintains per-IdP configuration scoping subject
-  computation and attribute release (see
-  {{idp-binding-configuration}}).
-* **Subject binding:** the OP derives a stable OIDC `sub` from the SAML
-  NameID per relying-party context (see {{subject-identifier-mapping}}).
-
-When these bindings are present, the OP can issue OIDC tokens that
-preserve the subject identifiers and claim release policy already
-established at the SAML IdP, without requiring any change to the SAML IdP
-or its existing SAML SP relationships.
+The OP can issue OIDC tokens preserving the subject identifiers and
+claim release policy already established at the SAML IdP, without
+requiring changes to the SAML IdP or its existing SAML SP
+relationships. {{binding-and-issuance-model}} defines the binding
+mechanism in detail.
 
 The profile is applicable only when the OP can resolve each
-SAML-authenticated end-user deterministically to exactly one active Local
-Account before issuing OIDC tokens (see {{local-subject-resolution}}).
+SAML-authenticated end-user deterministically to exactly one active
+Local Account before issuing OIDC tokens
+({{local-subject-resolution}}).
 
 # Binding and Issuance Model {#binding-and-issuance-model}
 
@@ -318,13 +351,18 @@ entity and ACS endpoint, by a SAML IdP it has configured. The OP then
 applies the IdP-Binding's subject-mapping and attribute-release policy
 before issuing OIDC tokens.
 
-## Issuance Authorization {#authorization-assertion-model}
+## Authorization Basis and Release Policy {#authorization-assertion-model}
 
-The OP MUST NOT treat a valid SAML assertion as authorization to release
-arbitrary OIDC claims or to grant arbitrary OAuth scopes. The SAML
-assertion proves an authentication event and supplies identity inputs; the
-authorization basis for any OIDC token issuance remains an OP policy
-decision.
+The bindings above are necessary but not sufficient for token
+issuance. This subsection separates authentication evidence (what
+the SAML assertion proves) from authorization decisions (what the
+OP releases).
+
+The OP MUST NOT treat a valid SAML assertion as authorization to
+release arbitrary OIDC claims or to grant arbitrary OAuth scopes.
+The SAML assertion proves an authentication event and supplies
+identity inputs; the authorization basis for any OIDC token
+issuance remains an OP policy decision.
 
 Before issuing an OIDC token or releasing OIDC claims, the OP MUST have
 an authorization basis that is bound to:
@@ -477,13 +515,13 @@ traverse from either side to the other.
 
 ## Federation Metadata Coexistence {#federation-metadata-coexistence}
 
-An OP under this profile operates two protocol stacks in parallel: OAuth
-2.0 / OpenID Connect toward relying parties, and SAML 2.0 toward the
-upstream SAML IdP. The two stacks publish metadata through independent
-mechanisms — `.well-known/oauth-authorization-server` and
-`.well-known/openid-configuration` ({{RFC8414}}, {{OIDC-DISCOVERY}}) and
-`EntityDescriptor` documents ({{SAML2-METADATA}}) — that this profile
-does not unify. Deployments SHOULD observe the following:
+An OP under this profile operates two protocol stacks in parallel.
+OAuth 2.0 and OpenID Connect toward relying parties use
+`.well-known/oauth-authorization-server` and
+`.well-known/openid-configuration` ({{RFC8414}}, {{OIDC-DISCOVERY}}).
+SAML 2.0 toward the upstream SAML IdP uses `EntityDescriptor`
+documents ({{SAML2-METADATA}}). This profile does not unify the two.
+Deployments SHOULD observe the following.
 
 * The OP's OAuth `issuer`, the OP-as-SP SAML Entity ID, and the upstream
   SAML IdP Entity ID are distinct values used in their own protocol
@@ -493,9 +531,9 @@ does not unify. Deployments SHOULD observe the following:
   metadata. Cross-protocol key reuse is permitted, but each set MUST be
   published in the metadata of the protocol that uses it.
 * The bidirectional pointer described in {{op-as-metadata}} (SAML
-  `AdditionalMetadataLocation` ↔ AS `saml_metadata_uri`) is OPTIONAL but
-  RECOMMENDED so that administrators and federation registries can
-  traverse from either side to the other.
+  `AdditionalMetadataLocation` <-> AS `saml_metadata_uri`) is
+  OPTIONAL but RECOMMENDED so that administrators and federation
+  registries can traverse from either side to the other.
 
 # SAML Assertion Validation {#saml-assertion-validation}
 
@@ -505,49 +543,34 @@ Web Browser SSO flow defined in {{op-authentication-flow}}.
 
 ## Accepted SAML Inputs {#accepted-saml-inputs}
 
-The OP MUST only accept SAML assertions issued by SAML IdPs identified by
-a configured IdP-Binding. Assertions whose Issuer is not bound MUST be
+The OP MUST only accept SAML assertions issued by SAML IdPs
+identified by a configured IdP-Binding. Other issuers MUST be
 rejected.
 
-The submitted SAML input MUST be a signed SAML `Response` containing
-exactly one signed bearer `Assertion`. The OP MUST verify the signature
-on both the `Response` element and the enclosed `Assertion` element
-against the SAML IdP's signing key material published in the
-IdP-Binding's SAML metadata.
+The submitted input MUST be a signed SAML `Response` containing
+exactly one signed bearer `Assertion`. The OP MUST validate the
+signatures and the assertion content per {{SAML2-CORE}} and
+{{SAML2-PROFILES}} against the IdP-Binding's metadata. Validation
+MUST be resistant to XML Signature Wrapping ({{xsw-incoming}}).
 
-The OP MUST perform full SAML validation per {{SAML2-CORE}}, including:
+This profile adds the following constraints:
 
-* verifying the `Issuer` of both the `Response` and the `Assertion`
-  matches the IdP-Binding's configured SAML IdP Entity ID;
-* verifying the `Recipient` value in
-  `Subject/SubjectConfirmation/SubjectConfirmationData` equals the OP's
-  ACS URL for this binding;
-* verifying that the assertion's `AudienceRestriction` contains the
-  OP-as-SP Entity ID as an `Audience` value (and MUST NOT accept the
-  assertion if the OP-as-SP Entity ID does not appear in every
-  `AudienceRestriction` element);
-* verifying that `Conditions/@NotBefore` (when present) has been reached
-  and `Conditions/@NotOnOrAfter` has not been reached, subject to
-  reasonable clock skew tolerance;
-* verifying `SubjectConfirmationData/@NotOnOrAfter` has not been reached;
-* verifying `SubjectConfirmationData/@InResponseTo` equals the
-  `AuthnRequest/@ID` previously issued by the OP for this flow;
-* verifying `Response/@Destination` equals the OP's ACS URL; and
-* verifying the assertion signature in a manner resistant to XML
-  Signature Wrapping; see {{xsw-incoming}}.
+* `Response/Issuer` and `Assertion/Issuer` MUST equal the configured
+  SAML IdP Entity ID;
+* `SubjectConfirmationData/@Recipient` and `Response/@Destination`
+  MUST equal the OP's ACS URL;
+* the OP-as-SP Entity ID MUST appear in every `AudienceRestriction`
+  element;
+* `SubjectConfirmationData/@InResponseTo` MUST match the
+  `AuthnRequest/@ID` issued by the OP for this flow;
+* signatures MUST use RSA-SHA-256 or stronger; SHA-1 MUST NOT be
+  accepted (see {{outgoing-signature-algorithms}}).
 
-The OP MUST require SAML signatures to use RSA-SHA-256 or stronger.
-Signature algorithms using SHA-1 MUST NOT be accepted. The same algorithm
-constraints as {{outgoing-signature-algorithms}} apply.
-
-The OP MAY accept assertions delivered as `EncryptedAssertion` if the OP
-publishes encryption key material in its SAML SP metadata; the OP MUST
-decrypt the assertion before applying the validation rules above. The
-inner `Assertion` MUST be signed by the SAML IdP independently of any
-signature on the enclosing `Response`, because a `Response`-level
-signature does not survive decryption of an `EncryptedAssertion` it
-contains. The OP MUST reject assertions containing `EncryptedID` or
-`EncryptedAttribute` elements.
+The OP MAY accept `EncryptedAssertion` when it publishes encryption
+key material in its SAML SP metadata. The OP MUST decrypt before
+validation. The inner `Assertion` MUST be signed independently of
+any `Response`-level signature. `EncryptedID` and
+`EncryptedAttribute` MUST be rejected.
 
 ## Replay and Freshness {#replay-and-freshness}
 
@@ -590,77 +613,42 @@ populating any OIDC claim.
 
 # OIDC Authentication Flow at the OP {#op-authentication-flow}
 
-This section defines the flow in which an OIDC RP initiates authentication
-at the OP, the OP authenticates the end-user via the upstream SAML IdP,
-and the OP returns OIDC tokens to the RP.
-
-## Flow Overview {#flow-overview}
-
-The flow proceeds as follows:
-
-1. The OIDC RP redirects the end-user's browser to the OP's authorization
-   endpoint with a standard OIDC authorization request.
-
-2. The OP processes the OIDC authorization request per
-   {{authorization-request-processing}}.
-
-3. The OP selects the IdP-Binding for this authentication (see
-   {{idp-binding-selection}}) and constructs a SAML `AuthnRequest` per
-   {{authn-request-construction}}.
-
-4. The OP redirects the browser to the upstream SAML IdP's
-   `SingleSignOnService` endpoint via the HTTP-Redirect or HTTP-POST
-   binding.
-
-5. The SAML IdP authenticates the end-user and posts a signed SAML
-   `Response` containing the assertion to the OP's ACS endpoint via the
-   HTTP-POST binding.
-
-6. The OP validates the SAML `Response` and the enclosed assertion per
-   {{saml-assertion-validation}}.
-
-7. The OP resolves the end-user to a Local Account per
-   {{local-subject-resolution}}.
-
-8. The OP derives the OIDC `sub` value per
-   {{subject-identifier-mapping}} and maps SAML attributes and
-   authentication context into OIDC claims per {{claim-mapping}}.
-
-9. The OP completes the OIDC flow by returning an authorization code to
-   the RP's `redirect_uri`. The RP exchanges the code at the OP's token
-   endpoint per {{OIDC-CORE}}.
+This section specifies the flow whose abstract shape is given in
+{{overview}}: an OIDC RP initiates authentication at the OP, the OP
+authenticates the end-user via the upstream SAML IdP, and the OP
+returns OIDC tokens to the RP. The subsections below specify each
+step in detail.
 
 ## Authorization Request Processing {#authorization-request-processing}
 
-Upon receiving an OIDC authorization request, the OP MUST validate it per
-{{OIDC-CORE}} Section 3.1.2.2. In addition, the OP:
+The OP MUST validate the authorization request per {{OIDC-CORE}}
+Section 3.1.2.2 and follow {{RFC9700}}. This profile is defined only
+for the Authorization Code Flow; other `response_type` values MUST
+be rejected.
 
-* MUST support the Authorization Code Flow and MUST reject authentication
-  requests under this profile that use `response_type` values other than
-  `code`;
-* MUST authenticate the RP per its registered client authentication
-  method when the request reaches the token endpoint; the OP MUST use
-  current OAuth security best practice {{RFC9700}} when supporting
-  refresh tokens, sender-constrained tokens, or other extended
-  capabilities;
-* MUST require PKCE {{RFC7636}} with the `S256` code challenge method
-  for public clients, and SHOULD require it for all clients, in
-  accordance with {{RFC9700}};
-* MUST validate that the `redirect_uri` matches a registered value for
-  the RP exactly;
-* MUST consider `prompt`, `max_age`, and `acr_values` parameters when
-  constructing the upstream SAML AuthnRequest per
-  {{authn-request-construction}};
-* MAY consider the RP's `login_hint` as input to IdP-Binding selection
-  ({{idp-binding-selection}}), but MUST NOT allow `login_hint` alone to
-  override administrative routing policy; and
-* MUST maintain protected correlation state that binds the OIDC
-  authorization request context (RP `client_id`, requested scopes, PKCE
-  challenge, nonce, redirect_uri, state) to the SAML AuthnRequest ID the
-  OP will issue, so the eventual SAML assertion can be matched back to
-  the originating OIDC request. This correlation state MAY be maintained
-  server-side or by the stateless correlation mechanism in
-  {{stateless-correlation}}.
+This profile adds the following:
+
+* `prompt`, `max_age`, and `acr_values` MUST be consumed when
+  constructing the upstream SAML AuthnRequest
+  ({{authn-request-construction}});
+* `login_hint` MAY influence IdP-Binding selection
+  ({{idp-binding-selection}}) but MUST NOT override administrative
+  routing. The OP MAY forward a hint value only via an
+  IdP-Binding-configured mechanism. RP-supplied values MUST NOT be
+  placed in `AuthnRequest/Subject/NameID`;
+* `ui_locales` MAY be propagated via a configured SAML extension;
+  otherwise it affects OP-rendered UI only;
+* `claims` ({{OIDC-CORE}} Section 5.5) is a hint. The OP MUST NOT
+  release a claim merely because it appears in `claims`;
+* `request` and `request_uri` SHOULD be rejected unless explicitly
+  configured;
+* `id_token_hint` is a hint. The OP MUST NOT skip upstream SAML
+  authentication on its basis;
+* `display` MAY influence OP-rendered UI and is not propagated;
+* the OP MUST maintain integrity-protected correlation state
+  binding (RP `client_id`, scopes, PKCE challenge, `nonce`,
+  `redirect_uri`, `state`) to the issued `AuthnRequest/@ID`. State
+  MAY be server-side or carried per {{stateless-correlation}}.
 
 ## IdP-Binding Selection {#idp-binding-selection}
 
@@ -682,39 +670,42 @@ selection failed.
 
 ## SAML AuthnRequest Construction {#authn-request-construction}
 
-When initiating the SAML Web Browser SSO flow, the OP:
+The OP constructs `AuthnRequest` per {{SAML2-CORE}} and
+{{SAML2-PROFILES}}. This profile adds:
 
-* MUST construct an `AuthnRequest` per {{SAML2-CORE}} and
-  {{SAML2-PROFILES}};
-* MUST sign the `AuthnRequest`. Unsigned `AuthnRequest` messages MUST NOT
-  be used. The signature MUST use RSA-SHA-256 or stronger;
-* MUST include `Issuer` set to the OP-as-SP Entity ID, with `@Format`
-  absent or `urn:oasis:names:tc:SAML:2.0:nameid-format:entity`;
-* MUST include `@Destination` set to the IdP's
-  `SingleSignOnService` endpoint URL;
-* MUST include `@ID` (a fresh, unpredictable identifier) and
-  `@IssueInstant`;
-* MUST include `AssertionConsumerServiceURL` set to the OP's ACS URL
-  (which MUST be among the URLs published in the OP's SAML SP metadata),
-  or `AssertionConsumerServiceIndex` referencing the same;
-* SHOULD include `NameIDPolicy` constructed from the IdP-Binding's
-  configured policy;
-* SHOULD include `RequestedAuthnContext` translated from the OIDC
-  `acr_values` parameter, when the IdP-Binding defines that translation;
-* MUST set `@ForceAuthn="true"` when the OIDC request contains
+* the `AuthnRequest` MUST be signed. The signature mechanism is
+  binding-specific per {{SAML2-BINDINGS}}: detached query-parameter
+  signature for HTTP-Redirect, enveloped `ds:Signature` for
+  HTTP-POST. The signature MUST use RSA-SHA-256 or stronger;
+  SHA-1 MUST NOT be used;
+* `Issuer/@Format`, when present, MUST be
+  `urn:oasis:names:tc:SAML:2.0:nameid-format:entity`;
+* `AssertionConsumerServiceURL` (or Index) MUST identify an ACS URL
+  published in the OP's SAML SP metadata;
+* `NameIDPolicy` SHOULD be constructed from the IdP-Binding;
+* `RequestedAuthnContext` SHOULD be translated from `acr_values`
+  when configured. `@Comparison` follows IdP-Binding policy with a
+  default SHOULD of `"exact"` (OIDC `acr_values` is unordered);
+* `@ForceAuthn="true"` when the OIDC request contains
   `prompt=login` or `max_age=0`;
-* MUST set `@IsPassive="true"` when the OIDC request contains
-  `prompt=none`; and
-* MUST NOT pass the requesting OIDC RP's `client_id` to the SAML IdP in
-  a way that allows the SAML IdP to alter its authentication behavior
-  based on which RP initiated the request, unless local policy
-  explicitly authorizes such conditioning. See
-  {{privacy-considerations}}.
+* when `max_age > 0`, the OP MUST treat the value as an upper
+  bound on the received assertion's `AuthnInstant`. On violation,
+  the OP MAY re-issue with `@ForceAuthn="true"` or return
+  `login_required` ({{flow-error-handling}});
+* `@IsPassive="true"` when the OIDC request contains `prompt=none`;
+* the OP MUST NOT convey the OIDC RP's `client_id` to the SAML IdP
+  in any form that lets the IdP alter behavior per RP, unless
+  local policy authorizes it (see {{privacy-considerations}}).
 
 The OP MUST track the issued `AuthnRequest/@ID` for `InResponseTo`
 validation and replay protection per {{replay-and-freshness}}.
 
 ## Stateless Correlation with RelayState {#stateless-correlation}
+
+This subsection defines an OPTIONAL implementation mechanism for the
+correlation state required by {{authorization-request-processing}}.
+Deployments MAY ignore this subsection and use server-side
+transaction storage instead.
 
 An OP MAY avoid deployment-wide server-side storage for ordinary
 authentication transaction context by carrying a protected transaction
@@ -856,20 +847,36 @@ from public SAML identifiers alone).
 
 ## NameID Stability and Reassignment {#nameid-stability}
 
-The OP MUST NOT use a SAML NameID with format `transient` as the input
-to `sub` derivation (see {{nameid-policy}}). When local policy or
-out-of-band knowledge of the SAML IdP's behaviour indicates that
-`persistent` NameID values may be reassigned (a property SAML 2.0 does
-not preclude but {{SAML2-SUBJ-ID}} `subject-id` and `pairwise-id`
-attributes specifically disallow), the IdP-Binding MUST configure use
-of a non-reassignable stable identifier — typically `subject-id` or
-`pairwise-id` from {{SAML2-SUBJ-ID}}, `eduPersonUniqueId`, or an opaque
-internal account identifier — as the `sub` derivation input rather than
-the NameID.
+The OP MUST NOT use a SAML NameID with format `transient` as input
+to `sub` derivation ({{nameid-policy}}).
 
-The OP MUST NOT use the `emailAddress` NameID format as the input to
-`sub` derivation when a more stable identifier is available, because
-email addresses are mutable.
+When local policy or knowledge of the SAML IdP's behavior indicates
+that `persistent` NameID values may be reassigned, the IdP-Binding
+MUST configure use of a non-reassignable stable identifier as the
+`sub` derivation input. Suitable identifiers include `subject-id`
+and `pairwise-id` from {{SAML2-SUBJ-ID}}, `eduPersonUniqueId`, or an
+opaque internal account identifier. SAML 2.0 does not preclude
+reassignment of `persistent` NameIDs, but {{SAML2-SUBJ-ID}}
+identifiers specifically disallow it.
+
+The OP MUST NOT use the `emailAddress` NameID format as input to
+`sub` derivation when a more stable identifier is available.
+
+An upstream IdP may re-emit the same identifier for a new principal,
+in error or under deployment change. To detect this:
+
+* the OP MUST persist the (source identifier, Local Account)
+  mapping when first observed and treat it as authoritative;
+* on a mapping-match whose attributes are inconsistent with the
+  bound Local Account, the OP MUST NOT silently replace the mapping.
+  The OP MUST either fail the authentication
+  ({{flow-error-handling}}) or require explicit administrative
+  remapping.
+
+For IdP-guaranteed non-reassignable identifiers (`subject-id`,
+`pairwise-id`, `eduPersonUniqueId`), the mismatch check is an
+integrity assertion that should never fire. For other identifiers,
+the OP MUST apply the failure or remapping rule above.
 
 ## `sub_id` for SAML Provenance {#sub-id-claim}
 
@@ -898,7 +905,12 @@ SAML assertion:
 * `iss`: the OP's OIDC issuer identifier.
 * `sub`: the value derived in {{subject-identifier-mapping}}.
 * `aud`: the OIDC RP's `client_id`.
-* `iat`, `exp`, `nonce`: per {{OIDC-CORE}} Section 2.
+* `iat`, `exp`, `nonce`: per {{OIDC-CORE}} Section 2. `iat` is the
+  ID Token issuance time at the OP, not the SAML `AuthnInstant`.
+  `exp` MUST NOT derive from `Conditions/@NotOnOrAfter`. When the
+  selected `AuthnStatement` carries `SessionNotOnOrAfter` and the ID
+  Token represents the same SAML session, `exp` MUST NOT exceed
+  `SessionNotOnOrAfter`.
 * `auth_time`: the SAML assertion's `AuthnStatement/@AuthnInstant`,
   converted from XML `dateTime` (UTC) to NumericDate (seconds since
   epoch). The OP MUST NOT set `auth_time` to the OP's token issuance
@@ -923,19 +935,31 @@ SAML assertion:
 
 ### ACR Mapping {#acr-mapping}
 
-The OP MUST determine `acr` as follows:
+A SAML `AuthnContext` MAY contain multiple `AuthnContextClassRef`
+elements. The OP selects one as authoritative for `acr` in this
+order:
 
-* if the IdP-Binding defines an explicit
-  `AuthnContextClassRef`-to-`acr` mapping table, the OP MUST apply that
-  mapping and use the mapped value;
-* if no explicit mapping is defined and the IdP-Binding's policy permits
-  it, the OP MAY return the `AuthnContextClassRef` value as `acr`
-  unchanged;
-* if no mapping is defined and passthrough is not permitted, the OP MUST
-  return `urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified` as `acr`
-  (or omit `acr`, per IdP-Binding policy); and
-* the OP MUST NOT produce an `acr` value that asserts higher assurance
-  than the SAML `AuthnContextClassRef` warrants.
+1. an IdP-Binding-configured selection rule (highest assurance,
+   first listed, match `acr_values`, etc.);
+2. otherwise, the value mapping to the highest mapped `acr` under
+   the IdP-Binding's ordering policy;
+3. otherwise, the OP MUST omit `acr`.
+
+Unselected values MUST NOT be exposed as additional `acr` values.
+OIDC `acr` is single-valued.
+
+Given the selected value, the OP determines `acr` as follows:
+
+* if the IdP-Binding defines an `AuthnContextClassRef`-to-`acr`
+  mapping, the OP MUST apply it;
+* otherwise, if the IdP-Binding permits passthrough, the OP MAY
+  return the value unchanged;
+* otherwise the OP MUST omit `acr`. If the IdP-Binding configures a
+  default, that default MUST be
+  `urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified`.
+
+The OP MUST NOT produce an `acr` value asserting higher assurance
+than the selected `AuthnContextClassRef` warrants.
 
 ### AMR Mapping {#amr-mapping}
 
@@ -1009,6 +1033,18 @@ identifier in the correlation record. When `SessionIndex` is absent, the
 OP MUST establish its own session identifier at the time of assertion
 consumption.
 
+The OIDC `sid` claim ({{OIDC-FC-LOGOUT}}, {{OIDC-BC-LOGOUT}}) is the
+OP-minted identifier above. The OP MUST NOT reuse the SAML
+`SessionIndex` directly as `sid`, because `SessionIndex` is scoped to
+the upstream IdP and is not guaranteed unique at the OIDC issuer.
+
+This profile does not define OIDC Session Management 1.0
+(`session_state`, `check_session_iframe`). OPs MAY additionally
+implement it; any binding to upstream SAML session state is
+deployment-defined. RPs needing SAML-aware liveness signals SHOULD
+use {{OIDC-BC-LOGOUT}} or {{OIDC-FC-LOGOUT}} notifications driven by
+SAML SLO events ({{saml-single-logout}}).
+
 ## Session Termination {#session-termination}
 
 The OP MUST treat the earlier of the following as the operative end of
@@ -1049,31 +1085,42 @@ When the OP supports SLO:
   corresponds to an OP-managed session originated from that IdP;
   and MUST terminate the corresponding OP session, propagating to OIDC
   RPs as in {{session-termination}};
-* the OP MUST return a `LogoutResponse` to the upstream IdP even if
-  RP-side propagation fails; and
-* the OP MAY initiate `LogoutRequest` toward the upstream IdP when an
-  OIDC RP-Initiated Logout occurs and the local OP-managed session has
-  no other active RPs.
+* the OP MUST return a signed `LogoutResponse` even if RP-side
+  propagation fails. Signing follows {{outgoing-signature-algorithms}}.
+  The signature mechanism is binding-specific (detached query-string
+  for HTTP-Redirect, enveloped XML for HTTP-POST, SOAP message
+  signature for SOAP);
+* the OP MUST support the HTTP-Redirect binding for `LogoutResponse`
+  and MAY additionally support HTTP-POST or SOAP;
+* the OP MAY initiate `LogoutRequest` toward the upstream IdP on
+  OIDC RP-Initiated Logout when no other RPs share the session.
+  OP-initiated upstream SLO may invalidate the upstream session at
+  every SP in that session, including SPs unrelated to this OP.
+  Deployments SHOULD weigh that federation-wide impact when enabling
+  this behavior.
 
 # Multi-IdP Deployments {#multi-idp-deployments}
 
-Deployments MAY configure multiple IdP-Bindings at a single OP, for
-example to federate to multiple regional or vendor SAML IdPs. In such
-deployments:
+Deployments MAY configure multiple IdP-Bindings at a single OP to
+federate to multiple regional or vendor SAML IdPs. The
+multi-IdP-specific rules are distributed across this document and
+summarized here as a reading aid: AS-metadata omission of
+`saml_idp_entity_id` ({{saml-idp-entity-id-reuse}}); deterministic
+IdP-Binding selection ({{idp-binding-selection}}); per-IdP-Binding
+isolation of validation and Local Account resolution
+({{saml-assertion-validation}}, {{local-subject-resolution}}).
 
-* The OP MUST NOT publish a single `saml_idp_entity_id` value in its AS
-  metadata; the per-flow IdP-Binding is selected at runtime and is not
-  advertised through standard discovery. Deployments that publish OP-
-  side metadata MAY use a custom extension or out-of-band mechanism to
-  list configured IdP-Bindings.
-* IdP-Binding selection ({{idp-binding-selection}}) MUST be
-  deterministic per authentication.
-* The OP MUST NOT allow assertions issued by one IdP-Binding's SAML IdP
-  to be processed under another IdP-Binding's policy.
-* Local Account resolution ({{local-subject-resolution}}) MUST scope
-  the (SAML Issuer, NameID) lookup to the IdP-Binding that produced the
-  assertion; an identical NameID value from a different IdP-Binding is a
-  different Local Account.
+This profile additionally permits per-IdP issuer aliasing:
+
+* the OP MAY operate distinct OIDC `issuer` values per IdP-Binding.
+  Each alias issuer MUST publish its own discovery document and
+  MAY publish a distinct `jwks_uri`. Each alias issuer's
+  `saml_idp_entity_id` MAY identify the single backing
+  IdP-Binding.
+* when per-IdP issuer aliasing is not used, the OP MAY emit a
+  deployment-defined claim carrying the IdP-Binding identifier.
+  This profile does not define such a claim.
+
 
 # Security Considerations {#security-considerations}
 
@@ -1094,24 +1141,24 @@ This profile assumes the following:
 
 In-scope attacker capabilities and the rules that mitigate them:
 
-* an attacker who obtains a SAML assertion in transit (XSS at the
-  upstream IdP, intermediary compromise, log leakage) — the three-way
-  binding ({{binding-and-issuance-model}}), audience/recipient/`InResponseTo`
-  validation ({{accepted-saml-inputs}}), and replay rules
-  ({{replay-and-freshness}}) limit what such an assertion enables;
-* an attacker who forges, replays, or manipulates a SAML `Response`
-  toward the OP — signature, audience, recipient, freshness, and replay
-  rules in {{saml-assertion-validation}};
-* an attacker who attempts XML Signature Wrapping against the SAML
-  `Response` or `Assertion` — {{xsw-incoming}};
-* an attacker who attempts to splice a SAML response into a different
-  OIDC request context — `InResponseTo` and OP-side state binding
-  ({{authorization-request-processing}});
-* an attacker who attempts to bind an OIDC client registration that
-  triggers cross-IdP-Binding subject overlap — multi-IdP isolation
-  rules ({{multi-idp-deployments}}); and
-* an attacker who compromises the OP-as-SP signing key — see
-  {{op-key-compromise}}.
+* obtaining a SAML assertion in transit (XSS at the upstream IdP,
+  intermediary compromise, log leakage). Mitigated by the three-way
+  binding ({{binding-and-issuance-model}}),
+  audience/recipient/`InResponseTo` validation
+  ({{accepted-saml-inputs}}), and replay rules
+  ({{replay-and-freshness}}).
+* forging, replaying, or manipulating a SAML `Response` toward the
+  OP. Mitigated by signature, audience, recipient, freshness, and
+  replay rules in {{saml-assertion-validation}}.
+* XML Signature Wrapping against the SAML `Response` or `Assertion`.
+  See {{xsw-incoming}}.
+* splicing a SAML response into a different OIDC request context.
+  Mitigated by `InResponseTo` and OP-side state binding
+  ({{authorization-request-processing}}).
+* binding an OIDC client registration that triggers cross-IdP-Binding
+  subject overlap. Mitigated by multi-IdP isolation
+  ({{multi-idp-deployments}}).
+* compromising the OP-as-SP signing key. See {{op-key-compromise}}.
 
 Out of scope: compromise of the OP or the SAML IdP themselves;
 infrastructure threats not specific to this profile; end-user account
@@ -1146,17 +1193,19 @@ for further adjustments.
 
 ## SAML Response Splicing {#response-splicing}
 
-A browser-based attacker may attempt to deliver a SAML `Response`
-captured from one OIDC flow to the OP's ACS in the context of a
-different pending OIDC flow. The OP MUST prevent this by:
+A browser-based attacker may deliver a SAML `Response` captured from
+one OIDC flow to the OP's ACS in another pending flow. The OP MUST
+prevent this by:
 
-* binding the SAML `AuthnRequest/@ID` it issues to the OIDC request
-  context (per {{authorization-request-processing}});
-* validating that the returned assertion's
-  `SubjectConfirmationData/@InResponseTo` matches the pending
-  `AuthnRequest/@ID` for the OIDC flow being completed; and
+* binding the issued `AuthnRequest/@ID` to the OIDC request context
+  ({{authorization-request-processing}}). The bound context MUST
+  include the OIDC `state`. Integrity protection of the binding is
+  required (for example, via the authenticated transaction object in
+  {{stateless-correlation}});
+* validating that `SubjectConfirmationData/@InResponseTo` matches
+  the pending `AuthnRequest/@ID`; and
 * tracking outstanding `AuthnRequest/@ID` values and rejecting any
-  `Response` whose `InResponseTo` is already consumed or unknown.
+  `Response` whose `InResponseTo` is consumed or unknown.
 
 ## Metadata Fetching and SSRF {#metadata-ssrf}
 
@@ -1192,8 +1241,13 @@ carry OIDC authorization request context across the SAML round trip:
   unless those values originated from the authenticated object; and
 * when the protected object is stored in a cookie scoped to the OP
   rather than carried in `RelayState`, the cookie MUST be marked
-  `Secure`, `HttpOnly`, and `SameSite=Lax` or stricter, and MUST be
-  cleared on flow completion or expiry.
+  `Secure`, `HttpOnly`, and `SameSite=None`. `SameSite=Lax` and
+  `SameSite=Strict` MUST NOT be used: the SAML Response is delivered
+  to the OP's ACS endpoint as a cross-site POST and Lax/Strict
+  cookies are not sent. The cookie MUST be cleared on flow
+  completion or expiry. Deployments that cannot use cross-site
+  cookies MUST instead carry the object in `RelayState` or keep
+  server-side state keyed by a small `RelayState` token.
 
 Stateless correlation does not remove the replay-protection
 requirements in {{replay-and-freshness}}; the shared replay state for
@@ -1220,17 +1274,14 @@ policy, at least 24 hours is RECOMMENDED.
 
 ## OIDC RP Authorization {#oidc-rp-authorization}
 
-A valid SAML assertion is necessary but not sufficient for OIDC token
-issuance under this profile (see {{authorization-assertion-model}}). In
-particular:
-
-* the OP MUST NOT release SAML attributes as OIDC claims solely because
-  they are present in the assertion;
-* the OP MUST NOT grant `offline_access` (refresh tokens) unless OIDC
-  client policy authorizes it independently; and
-* the OP MUST NOT broaden the set of OIDC RPs that can consume an
-  identity sourced from a given IdP-Binding based on assertion contents
-  alone.
+A valid SAML assertion is necessary but not sufficient for OIDC
+token issuance; the authorization basis is defined normatively in
+{{authorization-assertion-model}}. Common attack patterns that
+attempt to short-circuit that rule include treating the assertion
+as authorization to grant `offline_access`, or broadening the set
+of OIDC RPs that consume an IdP-Binding based on assertion
+contents. The authorization-basis rules in
+{{authorization-assertion-model}} forbid both.
 
 ## Open Redirect {#open-redirect}
 
@@ -1292,6 +1343,15 @@ local policy explicitly permits this and the privacy implications have
 been assessed. Doing so could allow the SAML IdP to profile which OIDC
 RPs each user accesses.
 
+Independently of any RP-identity conveyance, the OP topology exposes
+some user-activity signal to the upstream IdP. Each authorization
+request requiring a fresh SAML authentication produces an
+`AuthnRequest`, so the IdP learns authentication frequency and
+timing even without RP identifiers. Deployments SHOULD weigh this
+when sizing the SAML session reuse window and SHOULD document the
+characteristic in privacy notices when federation boundaries cross
+organizations.
+
 The `sub_id` claim ({{sub-id-claim}}) exposes the original SAML
 `NameID` context, including the SAML IdP entityID and any `NameID`
 qualifiers. Deployments SHOULD release `sub_id` only when the RP
@@ -1315,22 +1375,23 @@ federation requires.
 
 # IANA Considerations {#iana-considerations}
 
-This document does not request any new IANA registrations. It reuses
-existing registrations with consistent semantics:
+This document requests no new IANA registrations. The
+`session_expiry` claim referenced in {{authentication-event-claims}}
+is defined and registered by {{OIDC-ENTERPRISE-EXTENSIONS}}.
 
-* the `saml_idp_entity_id` and `saml_metadata_uri` AS metadata
-  parameters defined by {{SAML-OIDC-MIGRATION}} are used unchanged to
-  declare the OP's upstream SAML IdP binding;
-* the `sub_id` JWT claim, `saml-nameid` Security Event Identifier
-  Format, and `saml_subject` OAuth scope value defined by
-  {{SAML-OIDC-MIGRATION}} are reused unchanged to convey SAML
-  provenance;
-* OAuth and OpenID Connect grant types, scopes, and metadata used by
-  this profile are already registered by their respective
-  specifications; this document does not modify those registrations;
-  and
-* SAML 2.0 protocol values used by this profile are already defined by
-  the OASIS SAML 2.0 specifications.
+This document reuses existing registrations with consistent
+semantics:
+
+
+* `saml_idp_entity_id` and `saml_metadata_uri` (AS metadata) from
+  {{SAML-OIDC-MIGRATION}} are used unchanged for the upstream SAML
+  IdP binding;
+* the `sub_id` JWT claim from {{RFC9493}}, the `saml-nameid` Subject
+  Identifier Format value from {{SAML-OIDC-MIGRATION}}, and the
+  `saml_subject` OAuth scope value from {{SAML-OIDC-MIGRATION}} are
+  reused unchanged for SAML provenance;
+* OAuth, OpenID Connect, and SAML 2.0 protocol values are governed
+  by their respective specifications and not modified here.
 
 --- back
 
