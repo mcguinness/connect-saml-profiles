@@ -4,8 +4,8 @@
 
 OpenID Connect Working Group                               K. McGuinness
 Internet-Draft                                               Independent
-Intended status: Informational                               22 May 2026
-Expires: 23 November 2026
+Intended status: Informational                               28 May 2026
+Expires: 29 November 2026
 
 
     OpenID Connect Migration Profile for SAML 2.0 Service Providers
@@ -13,31 +13,21 @@ Expires: 23 November 2026
 
 Abstract
 
-   This document defines an interoperability profile for SAML 2.0
-   Service Provider deployments that adopt OpenID Connect and OAuth 2.0
-   while preserving the existing SAML federation trust relationship.
-   The profile extends that relationship rather than replacing it:
-   client metadata binds an OAuth client to an existing SAML SP entity
-   identifier, authorization server metadata binds an OAuth issuer to an
-   existing SAML IdP entity identifier, and mapping rules translate SAML
-   subject identifiers, authentication context, and attributes into
-   OpenID Connect claims so that the same end-user is represented by the
-   same subject after the transition.
+   This document defines an interoperability profile that lets an
+   existing SAML 2.0 Service Provider deployment adopt OpenID Connect
+   and OAuth 2.0 while preserving its SAML federation trust
+   relationship.  Client metadata binds an OAuth client to an existing
+   SAML SP entity identifier.  Authorization server metadata binds an
+   OAuth issuer to an existing SAML IdP entity identifier.  Mapping
+   rules translate SAML subject identifiers, authentication context, and
+   attributes into OpenID Connect claims so that the same end-user is
+   represented by the same subject after the transition.
 
-   Two operational patterns are defined.  Token Exchange allows a client
-   to present a SAML assertion and receive an access token, refresh
-   token, or ID Token.  A SAML assertion introspection extension allows
-   a client to validate a SAML assertion and receive normalized JSON
-   claims without issuing any OAuth token.  Both patterns accept either
-   a signed SAML assertion or a signed SAML Response wrapper conveying
-   exactly one bearer assertion.
-
-   The intent is to let relying parties adopt OAuth 2.0 and OpenID
-   Connect without changing the underlying SSO trust model, without
-   breaking subject continuity, and without relinking existing user
-   accounts.  The profile is scoped to federation interoperability and
-   identity continuity; it does not define authorization architectures,
-   provisioning, governance models, or generalized SAML feature parity.
+   Two operational patterns are defined.  Token Exchange exchanges a
+   SAML assertion for an access token, refresh token, or ID Token.  An
+   introspection extension validates a SAML assertion and returns
+   normalized JSON claims without issuing any OAuth token.  Both accept
+   a signed SAML assertion or a signed SAML Response wrapper.
 
 Discussion Venues
 
@@ -61,7 +51,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 23 November 2026.
+   This Internet-Draft will expire on 29 November 2026.
 
 Copyright Notice
 
@@ -77,91 +67,91 @@ Copyright Notice
 Table of Contents
 
    1.  Introduction
-     1.1.  Non-Goals
+     1.1.  Overview
+     1.2.  Non-Goals
    2.  Conventions and Terminology
      2.1.  Requirements Notation
      2.2.  Terminology
    3.  Applicability and Deployment Model
-   4.  Migration Binding Rationale
-   5.  Authorization and Consent Model
-   6.  Client Registration
-     6.1.  saml_sp_entity_id
-       6.1.1.  Authorizing the saml_sp_entity_id Binding
-     6.2.  saml_idp_entity_id
-     6.3.  saml_metadata_uri
-   7.  Authorization Server Metadata
-     7.1.  saml_idp_entity_id
-     7.2.  saml_metadata_uri
-     7.3.  token_exchange_requested_token_types_supported
-     7.4.  introspection_token_types_supported
-     7.5.  Capability and Metadata Matrix
-     7.6.  SAML Key Material
-     7.7.  Federation Metadata Coexistence
-   8.  SAML Input Validation and Binding
-     8.1.  Accepted SAML Inputs
-     8.2.  Response Wrapper Processing
-     8.3.  Encrypted Content
-     8.4.  SAML and OAuth Issuer Boundary
-     8.5.  Signature, SAML Issuer, and Audience Binding
-     8.6.  Bearer Subject Confirmation Data Validation
-     8.7.  Replay and Freshness
-   9.  Token Exchange Using a SAML Assertion
+   4.  Binding and Issuance Model
+     4.1.  Authorization and Consent Model
+   5.  Client Registration
+     5.1.  saml_sp_entity_id
+       5.1.1.  Authorizing the saml_sp_entity_id Binding
+     5.2.  saml_idp_entity_id
+     5.3.  saml_metadata_uri
+   6.  Authorization Server Metadata
+     6.1.  saml_idp_entity_id
+     6.2.  saml_metadata_uri
+     6.3.  token_exchange_requested_token_types_supported
+     6.4.  introspection_token_types_supported
+     6.5.  Capability and Metadata Matrix
+     6.6.  Federation Metadata Coexistence
+   7.  SAML Input Validation and Binding
+     7.1.  Accepted SAML Inputs
+     7.2.  Response Wrapper Processing
+     7.3.  Encrypted Content
+     7.4.  SAML and OAuth Issuer Boundary
+     7.5.  Signature, SAML Issuer, and Audience Binding
+     7.6.  Bearer Subject Confirmation Data Validation
+     7.7.  Replay and Freshness
+   8.  Token Exchange Using a SAML Assertion
+     8.1.  Request
+     8.2.  Authorization Server Processing
+       8.2.1.  Common Processing Rules
+       8.2.2.  Successful Response
+       8.2.3.  Refresh Token
+       8.2.4.  ID Token
+       8.2.5.  Access Token
+     8.3.  Error Response
+   9.  SAML Assertion Introspection
      9.1.  Request
      9.2.  Authorization Server Processing
        9.2.1.  Common Processing Rules
-       9.2.2.  Successful Response
-       9.2.3.  Refresh Token
-       9.2.4.  ID Token
-       9.2.5.  Access Token
+       9.2.2.  Inactive Response
+       9.2.3.  Successful Response
      9.3.  Error Response
-   10. SAML Assertion Introspection
-     10.1.  Request
-     10.2.  Authorization Server Processing
-       10.2.1.  Common Processing Rules
-       10.2.2.  Inactive Response
-       10.2.3.  Successful Response
-     10.3.  Error Response
-   11. Local Subject Resolution
-   12. Subject Identifier Mapping
-     12.1.  NameID Format Recognition
-     12.2.  Subject Type Determination
-     12.3.  Pairwise Subject Identifier Mapping
-     12.4.  Public Subject Identifier Mapping
-     12.5.  Common Rules
-     12.6.  SAML Subject Identifier Claim
-       12.6.1.  Eligible NameID Formats
-       12.6.2.  Release Rules
-   13. Claim Mapping
-     13.1.  Authentication Event Claims
-       13.1.1.  ACR Mapping
-     13.2.  Attribute Claims
-     13.3.  UserInfo Responses
-   14. Session Termination and Revocation
-     14.1.  Session Termination
-     14.2.  Token Revocation
-   15. Security Considerations
-     15.1.  Threat Model
-     15.2.  SAML Assertion and Signature Risks
-       15.2.1.  IdP-Initiated SSO and Missing InResponseTo
-       15.2.2.  XML Signature Wrapping
-       15.2.3.  Deprecated Cryptographic Algorithms
-     15.3.  Metadata Fetching and SSRF
-     15.4.  Replay and Bearer Assertion Risks
-     15.5.  Binding Security
-     15.6.  Token and Claim Security
-     15.7.  Protocol Confusion and Transport Security
-   16. Privacy Considerations
-   17. IANA Considerations
-     17.1.  OAuth Dynamic Client Registration Metadata
-     17.2.  OAuth Authorization Server Metadata
-     17.3.  OAuth Token Type Hints
-     17.4.  OAuth Token Introspection Response Registry
-     17.5.  JSON Web Token Claims
-     17.6.  OAuth Scope Values
-     17.7.  Security Event Identifier Formats
-   18. References
-     18.1.  Normative References
-     18.2.  Informative References
+   10. Local Subject Resolution
+   11. Subject Identifier Mapping
+     11.1.  NameID Format Recognition
+     11.2.  Subject Type Determination
+     11.3.  Pairwise Subject Identifier Mapping
+     11.4.  Public Subject Identifier Mapping
+     11.5.  Common Rules
+     11.6.  SAML Subject Identifier Claim
+       11.6.1.  Eligible NameID Formats
+       11.6.2.  Release Rules
+   12. Claim Mapping
+     12.1.  Authentication Event Claims
+       12.1.1.  ACR Mapping
+     12.2.  Attribute Claims
+     12.3.  UserInfo Responses
+   13. Session Termination and Revocation
+     13.1.  Session Termination
+     13.2.  Token Revocation
+   14. Security Considerations
+     14.1.  Threat Model
+     14.2.  SAML Assertion and Signature Risks
+       14.2.1.  IdP-Initiated SSO and Missing InResponseTo
+       14.2.2.  XML Signature Wrapping
+       14.2.3.  Deprecated Cryptographic Algorithms
+     14.3.  Metadata Fetching and SSRF
+     14.4.  Replay and Bearer Assertion Risks
+     14.5.  Binding Security
+     14.6.  Token and Claim Security
+     14.7.  Protocol Confusion and Transport Security
+   15. Privacy Considerations
+   16. IANA Considerations
+     16.1.  OAuth Dynamic Client Registration Metadata
+     16.2.  OAuth Authorization Server Metadata
+     16.3.  OAuth Token Type Hints
+     16.4.  OAuth Token Introspection Response Registry
+     16.5.  JSON Web Token Claims
+     16.6.  Subject Identifier Formats
+     16.7.  OAuth Scope Values
+   17. References
+     17.1.  Normative References
+     17.2.  Informative References
    Appendix A.  Examples
      A.1.  Convert SAML to an ID Token
      A.2.  Delegate SAML Validation with Introspection
@@ -236,14 +226,60 @@ Table of Contents
 
    *  preserves subject and claim continuity across the migration.
 
-   What this profile does not define is enumerated in Section 1.1.
+   What this profile does not define is enumerated in Section 1.2.
 
    This profile extracts the migration-specific aspects of the approach
    defined in the Identity Assertion JWT Authorization Grant
    [I-D.ietf-oauth-identity-assertion-authz-grant] and defines them as a
    standalone, reusable OAuth and OpenID Connect profile.
 
-1.1.  Non-Goals
+1.1.  Overview
+
+   This profile involves three actors:
+
+   *  *Migration Client* -- an OAuth 2.0 / OpenID Connect client that is
+      also the existing SAML SP, registered with saml_sp_entity_id
+      (Section 5.1).
+
+   *  *Authorization Server* -- the OAuth 2.0 authorization server,
+      optionally an OpenID Provider, that consumes the SAML assertion
+      and issues tokens or claims.
+
+   *  *SAML IdP* -- the existing SAML 2.0 Identity Provider that issued
+      the assertion.  The SAML IdP is not modified by this profile; only
+      its assertions are consumed.
+
+   Before invoking this profile, the Migration Client has completed SAML
+   SSO at the SAML IdP and holds a signed SAML assertion.  The abstract
+   flow has two steps:
+
+      +-------------+                              +------------+
+      |             |---(A)-- SAML assertion ----->|            |
+      |  Migration  |         (token-exchange      |   Auth.    |
+      |   Client    |          or introspection)   |   Server   |
+      |             |<--(B)-- tokens or claims ----|            |
+      +-------------+                              +------------+
+
+   (A) The Migration Client submits a base64url-encoded SAML
+   <Assertion>, or a signed <Response> wrapper conveying one bearer
+   assertion, to the authorization server.  Two patterns are defined:
+
+   * Token Exchange ({{token-exchange-using-a-saml-assertion}}):
+     the SAML input is the `subject_token` of an {{RFC8693}}
+     Token Exchange request; the response carries a refresh
+     token, ID Token, or access token.
+   * Introspection ({{saml-assertion-introspection}}): the SAML
+     input is the `token` parameter of an {{RFC7662}}
+     introspection request; the response carries normalized
+     identity claims and no OAuth token is issued.
+
+   (B) The authorization server validates the SAML input (Section 7),
+   resolves the end-user to a Local Account (Section 10), and returns
+   the requested output.  In both patterns the authorization server
+   preserves the SAML relying-party's subject identifier (Section 11)
+   and claim release policy (Section 12).
+
+1.2.  Non-Goals
 
    The profile is scoped to federation interoperability and identity
    continuity.  It does NOT define:
@@ -265,8 +301,9 @@ Table of Contents
    *  migration methodology (rollout patterns, cutover sequencing); or
 
    *  generalized SAML feature parity: SAML SLO, AuthzDecisionStatement,
-      AttributeQuery, SP-specific extensions, and Holder-of-Key
-      SubjectConfirmation are out of scope.
+      AttributeQuery, SP-specific extensions, and the Holder-of-Key
+      subject confirmation method
+      (urn:oasis:names:tc:SAML:2.0:cm:holder-of-key) are out of scope.
 
 2.  Conventions and Terminology
 
@@ -290,11 +327,18 @@ Table of Contents
    For the purposes of this document:
 
    SAML IdP Entity ID:  The SAML entityID of the asserting party that
-      issues SAML assertions for the deployment.
+      issues SAML assertions for the deployment.  Also referred to as
+      the "Trusted SAML IdP Entity ID" in contexts that emphasize the
+      authorization server's trust binding to that IdP.
 
    SAML SP Entity ID:  The SAML entityID of the relying party deployment
       that receives SAML assertions.  In common SAML deployments, this
       is also the audience value used for that relying party.
+
+   Effective saml_idp_entity_id:  The saml_idp_entity_id value
+      applicable to a given request.  It is the client-level value when
+      registered for the authenticated client, otherwise the AS-level
+      value.
 
    Migration Client:  An OAuth 2.0 or OpenID Connect client that has a
       saml_sp_entity_id registered and represents an existing SAML SP
@@ -340,14 +384,14 @@ Table of Contents
    The profile establishes three bindings:
 
    *  *Issuer binding:* the OAuth issuer is bound to the SAML IdP Entity
-      ID.  See Section 7.
+      ID.  See Section 6.
 
    *  *Client binding:* the OAuth client is bound to the SAML SP Entity
-      ID.  See Section 6.
+      ID.  See Section 5.
 
    *  *Subject and claim binding:* OpenID Connect subject and claim
       values are bound to the identifiers and statements already used
-      for the SAML SP.  See Section 12 and Section 13.
+      for the SAML SP.  See Section 11 and Section 12.
 
    With these bindings in place, the authorization server preserves
    subject format, claim release policy, and assurance semantics from
@@ -357,7 +401,7 @@ Table of Contents
    The profile is applicable only when the authorization server can
    resolve each assertion deterministically to exactly one active Local
    Account before issuing tokens or returning an active introspection
-   response; detailed rules are in Section 11.
+   response; detailed rules are in Section 10.
 
    This profile is defined only for confidential clients; public clients
    MUST NOT use the Token Exchange or introspection patterns defined
@@ -367,7 +411,7 @@ Table of Contents
    deployment.  Deployments bridging multiple SAML IdP deployments
    require separate OAuth issuer instances.
 
-4.  Migration Binding Rationale
+4.  Binding and Issuance Model
 
    This profile uses the SAML SP Entity ID as the primary migration key
    because SAML pairwise subject identifiers, attribute release policy,
@@ -396,15 +440,14 @@ Table of Contents
 
    An authorization server MAY support both this profile and [RFC7522]
    at the same token endpoint.  The grant_type parameter disambiguates
-   them: this profile uses urn:ietf:params:oauth:grant-type:token-
-   exchange with the assertion in subject_token; RFC 7522 uses
+   them.  This profile uses urn:ietf:params:oauth:grant-type:token-
+   exchange with the assertion in subject_token.  RFC 7522 uses
    urn:ietf:params:oauth:grant-type:saml2-bearer with the assertion in
-   assertion.  The two grant types have incompatible audience semantics
-   (this profile binds to saml_sp_entity_id; RFC 7522 binds to the AS),
+   assertion.  The two grant types have incompatible audience semantics,
    so routing is determined entirely by grant_type.  A single client
    registration MAY enable both grant types.
 
-5.  Authorization and Consent Model
+4.1.  Authorization and Consent Model
 
    The authorization server MUST NOT treat a valid SAML assertion as
    end-user consent to issue OAuth tokens, release OpenID Connect
@@ -414,18 +457,18 @@ Table of Contents
 
    Before issuing a token or returning an active introspection response,
    the authorization server MUST have an explicit authorization basis.
-   That basis:
+   The basis is evaluated incrementally as inputs become known (see
+   Section 8.2.1 and Section 9.2.1) and MUST be bound to:
 
-   *  MUST be bound to the authenticated client, the saml_sp_entity_id,
-      and the resolved Local Account;
+   *  the authenticated client and the saml_sp_entity_id;
 
-   *  for Token Exchange, MUST be bound to the requested token type,
-      requested scope, and, for access tokens, the resolved target
-      service set; and
+   *  the resolved Local Account (Section 10);
 
-   *  for introspection, MUST authorize the authenticated client to
-      validate the presented SAML input and receive any returned claims
-      for the bound relying-party relationship.
+   *  for Token Exchange, the requested token type and scope, and for
+      access tokens the resolved target service set; and
+
+   *  for introspection, authorization for the client to validate the
+      presented SAML input and receive any returned claims.
 
    The authorization basis MAY come from static configuration,
    administrative consent, a previously recorded authorization grant at
@@ -433,48 +476,35 @@ Table of Contents
    established before the SAML input is processed.
 
    The authorization server MUST NOT create, expand, or infer an
-   authorization grant solely from the presence, validity, or contents
-   of the SAML assertion.  SAML attributes MAY be used as inputs to an
-   already-established authorization policy rule, but the policy rule
-   itself MUST exist independently of the assertion presented in the
-   current request.
+   authorization grant from the SAML assertion's presence, validity, or
+   contents.  SAML attributes MAY feed into an established policy rule;
+   the rule itself MUST exist independently of the current assertion.
 
-   For requests involving refresh tokens, ID Tokens, OpenID Connect
-   scopes, target services, or claim release, the authorization server
-   MUST apply the following additional rules:
-
-   *  if the requested scope includes offline_access, policy MUST
-      authorize refresh token issuance to the authenticated client for
-      the resolved Local Account and bound saml_sp_entity_id;
+   For requests involving refresh tokens, ID Tokens, OIDC scopes, target
+   services, or claim release:
 
    *  a prior SAML SSO event by itself MUST NOT authorize refresh token
-      issuance;
-
-   *  if the requested token type is urn:ietf:params:oauth:token-
-      type:id_token, or if an access token request includes openid,
-      policy MUST authorize release of the resulting OpenID Connect
-      subject and claims to the authenticated client under the bound
+      issuance.  When offline_access is requested, policy MUST authorize
+      the issuance for the client, Local Account, and bound
       saml_sp_entity_id;
 
-   *  the authorization server MUST NOT release claims solely because
-      corresponding SAML attributes are present in the assertion; and
+   *  when the token type is ...token-type:id_token, or an access token
+      request includes openid, policy MUST authorize release of the
+      subject and claims for the bound saml_sp_entity_id;
 
-   *  if the requested OAuth scope, OpenID Connect scope, target
-      service, or claim set exceeds what the prior SAML relying-party
-      relationship and current authorization server policy permit, the
-      authorization server MUST either narrow the granted scope and
-      returned claims to the permitted set or reject the request with
-      invalid_scope, invalid_target, or unauthorized_client, as
-      appropriate.
+   *  the authorization server MUST NOT release claims solely from
+      attribute presence;
 
-   If end-user consent is required by local policy and no valid consent
-   or equivalent policy exists, the authorization server MUST reject the
-   request with invalid_scope or unauthorized_client according to local
-   policy.
+   *  requests exceeding the permitted scope, target, or claim set MUST
+      be narrowed or rejected with invalid_scope, invalid_target, or
+      unauthorized_client.
 
-6.  Client Registration
+   When local policy requires end-user consent and none exists, the
+   authorization server MUST reject the request.
 
-6.1.  saml_sp_entity_id
+5.  Client Registration
+
+5.1.  saml_sp_entity_id
 
    This document defines the saml_sp_entity_id client metadata
    parameter.
@@ -513,7 +543,7 @@ Table of Contents
    authorization server MUST NOT enable this profile for a public client
    registration.
 
-6.1.1.  Authorizing the saml_sp_entity_id Binding
+5.1.1.  Authorizing the saml_sp_entity_id Binding
 
    The saml_sp_entity_id binding is security-critical.  It determines
    which SAML assertions the client may exchange and which subject
@@ -544,15 +574,19 @@ Table of Contents
       registration request.
 
    The authorization server MUST NOT accept a dynamic registration
-   request that sets saml_sp_entity_id solely on the basis of the
-   request's own contents.  Anonymous or open dynamic client
-   registration MUST NOT be enabled for clients that bind a
-   saml_sp_entity_id under this profile.
+   request that sets saml_sp_entity_id solely on the request's own
+   contents.  Anonymous or open dynamic client registration MUST NOT be
+   enabled for such clients.  A registration rejected on this basis MUST
+   return an error per [RFC7591] Section 3.2.2 (typically
+   invalid_client_metadata).
 
-   The same authorization rules apply to subsequent client configuration
-   updates: a request that adds, removes, or changes saml_sp_entity_id
-   MUST satisfy the same authorization requirements as the original
-   registration.
+   The same rules apply to updates that add, remove, or change
+   saml_sp_entity_id.
+
+   At runtime, if the authenticated client is not authorized for the
+   required saml_sp_entity_id, the authorization server MUST reject the
+   request with unauthorized_client at the token endpoint (Section 8.3)
+   or as an unauthorized introspection request (Section 9.3).
 
    When multiple OAuth clients share the same saml_sp_entity_id, the
    authorization server MUST treat them as the same relying-party
@@ -582,12 +616,12 @@ Table of Contents
    historical relying-party context as the bound saml_sp_entity_id or
    reject the registration or request as inconsistent.
 
-6.2.  saml_idp_entity_id
+5.2.  saml_idp_entity_id
 
    This document also defines saml_idp_entity_id as an OPTIONAL client
    metadata parameter.  It carries the same syntax and semantics as the
    authorization server metadata parameter of the same name
-   (Section 7.1), applied to a single client registration.  It exists
+   (Section 6.1), applied to a single client registration.  It exists
    for SAML deployments in which the IdP issues per-SP entityIDs rather
    than a single global entityID (multi-tenant SaaS IdPs, federation
    hubs, per-SP audit or compliance isolation).
@@ -600,7 +634,7 @@ Table of Contents
    authenticated client.
 
    This binding is security-critical for the same reasons as
-   saml_sp_entity_id: the authorization rules in Section 6.1.1 apply
+   saml_sp_entity_id: the authorization rules in Section 5.1.1 apply
    equally to per-client saml_idp_entity_id.  Anonymous or open dynamic
    registration MUST NOT be permitted to set or change this value.
 
@@ -610,27 +644,27 @@ Table of Contents
    At runtime, the client observes the IdP's effective entityID directly
    from the SAML Response or Assertion Issuer element; mismatch with the
    registered value produces an invalid_request rejection (see
-   Section 9.3).  This profile does not expose per-client values through
+   Section 8.3).  This profile does not expose per-client values through
    authorization server metadata.
 
-6.3.  saml_metadata_uri
+5.3.  saml_metadata_uri
 
    This document also defines saml_metadata_uri as an OPTIONAL client
    metadata parameter, with the same syntax and semantics as the
    authorization server metadata parameter of the same name
-   (Section 7.2), applied to a single client registration.  It is
+   (Section 6.2), applied to a single client registration.  It is
    intended for deployments that use per-client saml_idp_entity_id and
    exchange SAML metadata on a per-relationship basis.
 
    When registered, the URI MUST resolve to a SAML metadata document
    whose EntityDescriptor entityID exactly matches the client's
-   effective saml_idp_entity_id.  The validation rules in Section 7.2
+   effective saml_idp_entity_id.  The validation rules in Section 6.2
    (HTTPS, EntityDescriptor verification, signature handling) apply
    unchanged.  When present, the client-level value overrides the
    authorization server metadata default for SAML key material and other
    IdP metadata used to validate assertions submitted by this client.
 
-7.  Authorization Server Metadata
+6.  Authorization Server Metadata
 
    The metadata parameters defined in this section are registered in the
    IANA "OAuth Authorization Server Metadata" registry established by
@@ -651,26 +685,27 @@ Table of Contents
    its clients consume.  Their semantics and processing are identical in
    either context.
 
-7.1.  saml_idp_entity_id
+6.1.  saml_idp_entity_id
 
    This document defines the saml_idp_entity_id authorization server
-   metadata parameter.
-
-   The saml_idp_entity_id value is a string that identifies the SAML 2.0
-   IdP Entity ID bound to the OAuth issuer.
+   metadata parameter.  The value identifies a SAML 2.0 Identity
+   Provider entity administratively bound to this authorization server.
+   The role of that binding is defined by the profile document
+   specifying the parameter's use (for example, an upstream IdP consumed
+   by the AS, the AS's own SAML IdP facade, or an IdP the AS delegates
+   to).
 
    When saml_idp_entity_id is present:
 
    *  it MUST equal a SAML IdP Entity ID used by the corresponding SAML
       IdP;
 
-   *  it MUST identify a SAML IdP that is operated by or under the
-      administrative control of the same entity that operates the OAuth
-      authorization server identified by this OAuth issuer;
+   *  the SAML IdP MUST be operated by or under the administrative
+      control of the entity operating this authorization server;
 
-   *  it is the default value against which incoming SAML assertion
-      issuers are validated when no per-client saml_idp_entity_id
-      (Section 6.2) is registered for the authenticated client.
+   *  under this profile, the value is the default against which
+      incoming SAML assertion issuers are validated when no per-client
+      saml_idp_entity_id is registered (Section 5.2).
 
    In deployments where every Migration Client registers a per-client
    saml_idp_entity_id override, the authorization server metadata value
@@ -686,7 +721,7 @@ Table of Contents
    because OAuth issuer values are HTTPS URLs with OAuth-specific
    discovery semantics.
 
-7.2.  saml_metadata_uri
+6.2.  saml_metadata_uri
 
    This document defines the saml_metadata_uri authorization server
    metadata parameter.
@@ -695,7 +730,7 @@ Table of Contents
    metadata document describing the default SAML IdP entity bound to the
    OAuth issuer.  When per-client saml_idp_entity_id overrides are in
    use, this authorization server metadata value is the default; clients
-   MAY register a per-client saml_metadata_uri override (Section 6.3)
+   MAY register a per-client saml_metadata_uri override (Section 5.3)
    for SAML metadata describing their specific SP-IdP relationship.
 
    When saml_metadata_uri is present:
@@ -732,7 +767,7 @@ Table of Contents
    the SAML IdP entity and the OAuth issuer, both of which can be
    verified through their respective protocol metadata.
 
-7.3.  token_exchange_requested_token_types_supported
+6.3.  token_exchange_requested_token_types_supported
 
    This document defines the
    token_exchange_requested_token_types_supported authorization server
@@ -765,7 +800,7 @@ Table of Contents
    urn:ietf:params:oauth:token-type:jwt, are outside the scope of this
    profile.
 
-7.4.  introspection_token_types_supported
+6.4.  introspection_token_types_supported
 
    This document defines the introspection_token_types_supported
    authorization server metadata parameter.
@@ -773,7 +808,7 @@ Table of Contents
    The introspection_token_types_supported value is a JSON array of
    strings.  Each string is a token type URI identifying a token format
    that the authorization server accepts for direct introspection at its
-   introspection endpoint according to Section 10.
+   introspection endpoint according to Section 9.
 
    When introspection_token_types_supported includes
    urn:ietf:params:oauth:token-type:saml2:
@@ -782,12 +817,12 @@ Table of Contents
       present;
 
    *  the introspection endpoint MUST accept the request pattern defined
-      in Section 10;
+      in Section 9;
 
    *  the authorization server SHOULD accept
       token_type_hint=urn:ietf:params:oauth:token-type:saml2.
 
-7.5.  Capability and Metadata Matrix
+6.5.  Capability and Metadata Matrix
 
    The following table summarizes the authorization server metadata used
    to signal capabilities defined by this profile.
@@ -803,8 +838,8 @@ Table of Contents
    +-------------+----------------------------------------------+----------------------------------------------+----------------------------------------------+
    |SAML issuer  |Client-level saml_idp_entity_id for           |Client-level saml_metadata_uri                |Per-client overrides allow each Migration     |
    |binding (per-|deployments where the IdP emits per-SP        |                                              |Client to bind a distinct SAML IdP entityID   |
-   |client       |entityIDs                                     |                                              |and metadata document; see Section 6.2 and    |
-   |override)    |                                              |                                              |Section 6.3.                                  |
+   |client       |entityIDs                                     |                                              |and metadata document; see Section 5.2 and    |
+   |override)    |                                              |                                              |Section 5.3.                                  |
    +-------------+----------------------------------------------+----------------------------------------------+----------------------------------------------+
    |Token        |grant_types_supported containing              |token_exchange_requested_token_types_supported|token_exchange_requested_token_types_supported|
    |Exchange with|urn:ietf:params:oauth:grant-type:token-       |                                              |SHOULD be published when Token Exchange is    |
@@ -822,12 +857,12 @@ Table of Contents
    |access tokens|                                              |                                              |                                              |
    +-------------+----------------------------------------------+----------------------------------------------+----------------------------------------------+
    |Direct SAML  |introspection_endpoint;                       |None                                          |The introspection endpoint MUST accept the    |
-   |assertion    |introspection_token_types_supported containing|                                              |request pattern defined by Section 10.        |
+   |assertion    |introspection_token_types_supported containing|                                              |request pattern defined by Section 9.         |
    |introspection|urn:ietf:params:oauth:token-type:saml2        |                                              |                                              |
    +-------------+----------------------------------------------+----------------------------------------------+----------------------------------------------+
    |SAML Response|No separate metadata parameter                |Capability is implied only for protocol       |Support for a signed SAML Response wrapper is |
    |wrapper input|                                              |patterns where the authorization server       |optional.  If supported, the rules in         |
-   |             |                                              |accepts such input                            |Section 8.2 apply.                            |
+   |             |                                              |accepts such input                            |Section 7.2 apply.                            |
    +-------------+----------------------------------------------+----------------------------------------------+----------------------------------------------+
 
                                   Table 1
@@ -839,20 +874,14 @@ Table of Contents
    assertion introspection unless the relevant metadata or an equivalent
    administrative configuration indicates that support.
 
-7.6.  SAML Key Material
+6.6.  Federation Metadata Coexistence
 
-   This document does not define an authorization server metadata
-   parameter for SAML signing keys or encryption keys.  That omission is
-   intentional.
-
-   SAML keys are published and processed through SAML metadata and
-   KeyDescriptor elements, while OAuth and OpenID Connect signing keys
-   are published and processed through jwks_uri or jwks.  Even when the
-   same underlying key material is reused, it MUST be published and
-   validated using the metadata and encoding rules of each protocol
-   separately.
-
-7.7.  Federation Metadata Coexistence
+   This document defines no authorization server metadata parameter for
+   SAML signing or encryption keys.  SAML keys are published through
+   SAML KeyDescriptor elements; OAuth and OpenID Connect keys are
+   published through jwks_uri or jwks.  Even when the same key material
+   is reused, it MUST be published and validated under each protocol's
+   own metadata rules.
 
    A deployment migrating from SAML 2.0 to this profile typically
    operates both protocols in parallel for some period.  The two
@@ -867,7 +896,7 @@ Table of Contents
 
    *  The SAML IdP entityID and the OAuth issuer identify the same
       administrative authority but remain distinct values used in their
-      own protocol contexts; see Section 8.4 for the validation rule,
+      own protocol contexts; see Section 7.4 for the validation rule,
       including incidental string equality.
 
    *  SAML signing keys (published via KeyDescriptor) and OAuth/OIDC
@@ -878,7 +907,7 @@ Table of Contents
       rollover windows to avoid cross-protocol confusion in operational
       tooling.
 
-   *  The bidirectional metadata pointer described in Section 7.2 (SAML
+   *  The bidirectional metadata pointer described in Section 6.2 (SAML
       metadata AdditionalMetadataLocation referencing the OAuth/OIDC
       metadata document, and AS metadata saml_metadata_uri referencing
       the SAML metadata document) is OPTIONAL but RECOMMENDED for
@@ -891,12 +920,12 @@ Table of Contents
    deployment or archiving SAML metadata after migration completes.
    Those operational decisions are outside the profile.
 
-8.  SAML Input Validation and Binding
+7.  SAML Input Validation and Binding
 
    This section applies whenever the authorization server directly
    consumes SAML input under this profile.
 
-8.1.  Accepted SAML Inputs
+7.1.  Accepted SAML Inputs
 
    This profile uses an assertion-centric processing model: the
    effective security token is always one SAML Assertion.  The submitted
@@ -920,7 +949,7 @@ Table of Contents
    SAML SP exchange; it carries no independent authorization semantics
    under this profile.
 
-8.2.  Response Wrapper Processing
+7.2.  Response Wrapper Processing
 
    If a signed SAML Response is submitted, the authorization server:
 
@@ -954,7 +983,7 @@ Table of Contents
    corresponds to a previously issued <AuthnRequest> ID, and
    confirmation that the Response/@ID value has not been replayed.
 
-8.3.  Encrypted Content
+7.3.  Encrypted Content
 
    This profile does not define processing of encrypted SAML content.
    The authorization server MUST reject any submitted SAML input that is
@@ -966,7 +995,7 @@ Table of Contents
    decrypting the SAML input using the SP's decryption key before
    submitting it under this profile.  The plaintext SAML input the
    Migration Client submits MUST satisfy the signature requirements in
-   Section 8.  In practice, this means the IdP MUST sign the inner
+   Section 7.  In practice, this means the IdP MUST sign the inner
    Assertion independently, since a signature on the enclosing Response
    element does not survive decryption of an EncryptedAssertion it
    contains.
@@ -975,7 +1004,7 @@ Table of Contents
    decryption key in encryption-required deployments, because that key
    is held by the SAML SP and not by the authorization server.
 
-8.4.  SAML and OAuth Issuer Boundary
+7.4.  SAML and OAuth Issuer Boundary
 
    This profile uses distinct issuer identifiers from different protocol
    contexts:
@@ -988,8 +1017,8 @@ Table of Contents
 
    *  Trusted SAML IdP Entity ID: the effective saml_idp_entity_id for
       the authenticated client, which is the client-level
-      saml_idp_entity_id (Section 6.2) when registered, otherwise the
-      authorization server metadata value (Section 7.1); and
+      saml_idp_entity_id (Section 5.2) when registered, otherwise the
+      authorization server metadata value (Section 6.1); and
 
    *  OAuth issuer identifier: the authorization server issuer value
       used in OAuth authorization server metadata and as the OpenID
@@ -1014,7 +1043,7 @@ Table of Contents
    each value is still used in its own protocol context, and validation
    still uses each value through its own metadata and signature path.
 
-8.5.  Signature, SAML Issuer, and Audience Binding
+7.5.  Signature, SAML Issuer, and Audience Binding
 
    The authorization server MUST:
 
@@ -1034,7 +1063,7 @@ Table of Contents
    3.  if the submitted SAML input is a Response, verify that:
 
        *  the SAML Response/Issuer value matches the Trusted SAML IdP
-          Entity ID defined in Section 8.4;
+          Entity ID defined in Section 7.4;
 
        *  the top-level Response/Status/StatusCode/@Value is
           urn:oasis:names:tc:SAML:2.0:status:Success; and
@@ -1050,7 +1079,7 @@ Table of Contents
        and Conditions/@NotOnOrAfter;
 
    5.  verify that the effective SAML Assertion/Issuer value matches the
-       Trusted SAML IdP Entity ID defined in Section 8.4;
+       Trusted SAML IdP Entity ID defined in Section 7.4;
 
    6.  verify that the effective Assertion contains at least one
        AudienceRestriction element;
@@ -1072,10 +1101,10 @@ Table of Contents
    reject any encrypted assertion, any submitted SAML input that is
    neither an Assertion nor a Response as defined by this profile, or
    any assertion using a subject confirmation method outside this
-   profile.  Endpoint-specific error behavior is defined by Section 9.3
-   and Section 10.3.
+   profile.  Endpoint-specific error behavior is defined by Section 8.3
+   and Section 9.3.
 
-8.6.  Bearer Subject Confirmation Data Validation
+7.6.  Bearer Subject Confirmation Data Validation
 
    The authorization server MUST identify at least one usable
    SubjectConfirmation element with the bearer method URI
@@ -1099,9 +1128,10 @@ Table of Contents
       component that handled the front-channel SAML exchange or by
       equivalent state known to the authorization server;
 
-   *  if InResponseTo is absent, the assertion MAY still be accepted,
-      except that deployments requiring SP-initiated request correlation
-      for the bound SAML relationship MUST reject such assertions;
+   *  if InResponseTo is absent, the authorization server SHOULD reject
+      the assertion.  The authorization server MAY accept it only when
+      the deployment threat model has explicitly assessed the risks of
+      IdP-initiated SSO (Section 14.2.1);
 
    *  Address, if present, MUST be validated either by the component
       that handled the front-channel SAML exchange or by deployment-
@@ -1114,7 +1144,7 @@ Table of Contents
    The primary forwarding-prevention guarantee in this profile is the
    three-way binding defined in Section 4, not Recipient validation.
 
-8.7.  Replay and Freshness
+7.7.  Replay and Freshness
 
    The authorization server MUST enforce any applicable SAML one-time-
    use, replay-prevention, assertion freshness, and proxying
@@ -1174,7 +1204,7 @@ Table of Contents
    valid client cannot cause an invalid or misbound SAML assertion to
    become acceptable.
 
-9.  Token Exchange Using a SAML Assertion
+8.  Token Exchange Using a SAML Assertion
 
    This section defines how a client can use OAuth 2.0 Token Exchange to
    obtain OAuth 2.0 or OpenID Connect tokens from a SAML 2.0 assertion
@@ -1199,13 +1229,15 @@ Table of Contents
    authorization server policy.  This profile defines issuance of
    refresh tokens, access tokens, and ID Tokens.
 
-9.1.  Request
+8.1.  Request
 
    The client makes a Token Exchange request to the token endpoint using
    the parameters described below.
 
    The following non-normative example requests an ID Token from a SAML
-   assertion:
+   <Response> wrapper that conveys exactly one bearer assertion (the
+   PHNhbWxwOlJlc3BvbnNlLi4u value decodes to a leading
+   <samlp:Response...):
 
    POST /token HTTP/1.1
    Host: as.example.edu
@@ -1218,6 +1250,11 @@ Table of Contents
    &scope=openid%20profile%20email
    &client_assertion_type=urn%3Aietf%3Aparams%3Aoauth%3Aclient-assertion-type%3Ajwt-bearer
    &client_assertion=eyJhbGciOiJSUzI1NiIs...
+
+   A request that supplies a bare <saml:Assertion> element (without a
+   <Response> wrapper) uses the same subject_token_type and the same
+   form parameters, with subject_token base64url-encoded from the
+   <saml:Assertion> XML.
 
    The request parameters are summarized below:
 
@@ -1279,13 +1316,12 @@ Table of Contents
    *  a signed SAML 2.0 <Response> containing exactly one bearer
       <Assertion> for that relationship.
 
-   The encoded value MUST NOT be line wrapped and SHOULD NOT include
-   padding characters (=) (following [RFC7522]).  Clients using
-   libraries that emit padding by default SHOULD strip trailing = before
-   sending; authorization servers SHOULD accept padded values for
-   interoperability.  When a SAML <Response> is supplied, it is a signed
-   wrapper from which the effective assertion is extracted per
-   Section 8.
+   The encoded value MUST NOT be line wrapped and MUST NOT include
+   padding characters (=), per [RFC7522] Section 2.1.  Authorization
+   servers SHOULD accept padded values from deployed clients for
+   interoperability.  New implementations MUST emit unpadded values.
+   When a SAML <Response> is supplied, it is a signed wrapper from which
+   the effective assertion is extracted per Section 7.
 
    subject_token_type:
 
@@ -1299,14 +1335,14 @@ Table of Contents
    REQUIRED.  This profile permits only the values shown in the
    following table.
 
-   [RFC8693] marks requested_token_type as OPTIONAL at the Token
-   Exchange protocol level.  This profile narrows that rule: an omitted
-   requested_token_type MUST be rejected with invalid_request.  The
-   three output types defined here have incompatible processing paths --
-   refresh tokens establish persistent sessions, ID Tokens are short-
-   lived identity assertions, and access tokens require target service
-   resolution -- so no default value is safe.  Explicit client intent is
-   required to avoid this ambiguity.
+   [RFC8693] Section 2.1 marks requested_token_type as OPTIONAL at the
+   Token Exchange protocol level.  This profile narrows that rule: an
+   omitted requested_token_type MUST be rejected with invalid_request.
+   The three output types defined here have incompatible processing
+   paths -- refresh tokens establish persistent sessions, ID Tokens are
+   short-lived identity assertions, and access tokens require target
+   service resolution -- so no default value is safe.  Explicit client
+   intent is required to avoid this ambiguity.
 
    +============================+=========+================+=============+
    |requested_token_type value  |Requested|scope           |Target-      |
@@ -1355,7 +1391,7 @@ Table of Contents
                                   Table 3
 
    Target-selection processing for access token requests is defined in
-   Section 9.2.1.
+   Section 8.2.1.
 
    scope:
 
@@ -1366,7 +1402,7 @@ Table of Contents
    This profile does not define a token-endpoint parameter for fine-
    grained claim selection.  Claims included in a directly issued ID
    Token, and claims later made available through UserInfo, are
-   determined by the granted scope, the rules in Section 13, and the
+   determined by the granted scope, the rules in Section 12, and the
    claim release policy for the relying-party relationship represented
    by the bound saml_sp_entity_id.
 
@@ -1386,66 +1422,54 @@ Table of Contents
    requested_token_type, as defined above.
 
    This profile does not define the use of actor_token,
-   actor_token_type, or authorization_details.  The authorization server
-   MUST reject any Token Exchange request that includes any of these
-   parameters with invalid_request.  Actor-based delegation is outside
-   the migration use case and would establish a delegation chain that
-   the SAML assertion does not authorize. authorization_details
-   processing is not defined by this profile.
+   actor_token_type, or authorization_details ([RFC9396]).  The
+   authorization server MUST reject any Token Exchange request that
+   includes any of these parameters with invalid_request.  Actor-based
+   delegation is outside the migration use case and would establish a
+   delegation chain that the SAML assertion does not authorize.
+   authorization_details processing is not defined by this profile.
 
    Client authentication at the token endpoint uses the client's
-   registered OAuth 2.0 client authentication method (see Section 6).
+   registered OAuth 2.0 client authentication method (see Section 5).
    The authenticated client MUST be authorized for the saml_sp_entity_id
    that matches the SAML assertion audience.
 
-9.2.  Authorization Server Processing
+8.2.  Authorization Server Processing
 
-9.2.1.  Common Processing Rules
+8.2.1.  Common Processing Rules
 
    Upon receiving the request, the authorization server MUST:
 
-   1.  authenticate the client in accordance with its registered client
-       authentication method;
+   1.  authenticate the client per its registered method;
 
-   2.  validate the SAML input as described in Section 8;
+   2.  validate the SAML input (Section 7);
 
-   3.  verify that the authenticated client is authorized for the
-       saml_sp_entity_id that matches the SAML assertion audience;
+   3.  verify the client is authorized for the saml_sp_entity_id
+       matching the SAML assertion audience;
 
-   4.  verify that the requested token type is defined by this profile
-       and is permitted for the authenticated client;
+   4.  verify the requested token type is permitted for the client;
 
-   5.  resolve the SAML assertion to exactly one active Local Account as
-       described in Section 11;
+   5.  resolve the assertion to exactly one active Local Account
+       (Section 10);
 
-   6.  for access token requests, resolve the requested target service
-       set from the resource and audience parameters, the implicit
-       UserInfo target when openid is requested, or a preconfigured
-       default target service set for the authenticated client when
-       neither resource nor audience is provided and local policy
-       permits;
+   6.  for access token requests, resolve the target service set from
+       resource, audience, the implicit UserInfo target when openid is
+       requested, or a configured default;
 
-   7.  evaluate the requested scope against the policy applicable to the
-       same relying-party relationship represented by the existing SAML
-       SP and the resolved target service set, if any;
+   7.  evaluate the requested scope against policy applicable to the
+       SAML SP relationship and any resolved target;
 
-   8.  derive the end-user subject according to Section 12 and any
-       claims needed for the issued token according to Section 13; and
+   8.  derive the subject (Section 11) and claims (Section 12);
 
-   9.  issue the requested token type, bound to the authenticated client
-       and the end-user where applicable, if the request is approved.
+   9.  issue the requested token bound to the client and end-user.
 
-   Steps 1 through 3 are mutually dependent: client authentication
-   determines which saml_sp_entity_id bindings are applicable, and
-   assertion audience validation requires knowing those bindings.
-   Implementations SHOULD evaluate these steps as an integrated unit.
-   The authorization server MUST reject the request if the SAML
-   assertion was issued for a SAML SP other than the one bound to the
-   authenticated client; subject resolution failures are governed by
-   Section 11.
+   Steps 1 through 3 are mutually dependent and MUST be evaluated as an
+   integrated unit so the audience check cannot be bypassed.  The
+   authorization server MUST reject the request when the SAML assertion
+   was issued for an SP other than the one bound to the client.
 
    The authorization server MUST enforce the token-type-specific scope
-   and target selection requirements defined in Section 9.1.  If no
+   and target selection requirements defined in Section 8.1.  If no
    acceptable target service set can be determined for an access token
    request, or the request asks for multiple target services that policy
    does not permit to share a single token, the authorization server
@@ -1484,11 +1508,11 @@ Table of Contents
    invalid_target.
 
    For any request that includes scope, the authorization server MUST
-   apply the authorization and consent rules in Section 5.  If no
+   apply the authorization and consent rules in Section 4.1.  If no
    applicable grant policy exists for a requested scope, the
    authorization server MUST reject the request with invalid_scope.
 
-9.2.2.  Successful Response
+8.2.2.  Successful Response
 
    For any successful request, the authorization server MUST return a
    Token Exchange response as defined by [RFC8693].  The response:
@@ -1514,14 +1538,14 @@ Table of Contents
    token types.  Clients MUST interpret the access_token value according
    to issued_token_type, as specified in [RFC8693] Section 2.2.
 
-9.2.3.  Refresh Token
+8.2.3.  Refresh Token
 
    When issuing a refresh token, the authorization server MUST ensure
    that the issued refresh token preserves the subject continuity
    established by the SAML assertion.  In particular, later use of the
    refresh token for the same client MUST result in the same sub value
    that would have been derived directly from the SAML assertion under
-   Section 11, Section 12, and Section 13.
+   Section 10, Section 11, and Section 12.
 
    If Token Exchange under this profile issues a refresh token, the
    client can use the standard OAuth 2.0 refresh_token grant at the same
@@ -1530,78 +1554,65 @@ Table of Contents
    When the authorization server issues a replacement refresh token as
    part of refresh token rotation, the replacement token MUST be bound
    to the same Local Account as the original refresh token, MUST produce
-   the same sub value under Section 12 when used by the same migrated
+   the same sub value under Section 11 when used by the same migrated
    client, and MUST NOT extend the SAML session bound established by the
-   originating assertion (see Section 13.1).
+   originating assertion (see Section 12.1).
 
    When the granted scope includes openid, the authorization server
    SHOULD return an ID Token in the first successful refresh token
-   response for that refresh token.  Returning such an ID Token gives
-   the client the migrated subject and authentication claims in a
-   signed, verifiable format.  Any returned ID Token:
+   response.  This narrows [OIDC-CORE] Section 12.1 to ensure subject
+   continuity for the migrated client.  Any returned ID Token:
 
-   *  MUST use the iss value of the authorization server;
+   *  MUST use the authorization server's iss value;
 
-   *  MUST use the sub value defined by Section 12;
+   *  MUST use the sub value defined by Section 11;
 
-   *  MUST apply the claim mapping rules in Section 13;
+   *  MUST apply the claim mapping rules in Section 12;
 
-   *  MUST preserve the original authentication time from the SAML
-      AuthnStatement, if known, in the auth_time claim; and
+   *  MUST preserve the SAML AuthnInstant in auth_time when known; and
 
-   *  MAY include the sub_id claim defined in Section 12.6 when the
-      granted scope includes saml_subject and policy permits release; if
-      included, its members MUST be derived from the SAML NameID context
-      that established the refresh token, which the authorization server
-      therefore persists alongside the refresh token state.
+   *  MAY include sub_id per Section 11.6.2.  When included, its members
+      MUST derive from the SAML NameID context that established the
+      refresh token; the authorization server therefore persists the
+      originating context alongside the refresh token state.
 
-   Subsequent refresh token responses are governed by [OIDC-CORE].  If
-   an ID Token is returned in a later refresh response, it MUST continue
-   to preserve the same sub and authentication continuity unless a later
-   authentication event changes those values under [OIDC-CORE].  The
-   same continuity rule applies to sub_id when it was included in
-   earlier ID Tokens for the same migrated authorization context.
+   Later refresh responses follow [OIDC-CORE].  Any ID Token they return
+   MUST preserve the same sub and authentication continuity unless a
+   later authentication event changes them.  The same rule applies to
+   sub_id once it has been included.
 
-   The refresh token issued under this profile MAY also be used as an
-   input to other specifications that accept
-   urn:ietf:params:oauth:token-type:refresh_token as a Token Exchange
-   subject_token_type, but those subsequent exchanges are defined by the
-   respective specifications, not by this document.
+   The authorization server MUST honor the client-requested scope on the
+   initial Token Exchange request and MUST NOT silently grant scope
+   values the client did not request ([RFC6749] Section 3.3).  The
+   response MUST include scope when granted scope differs from
+   requested.
 
-   A refresh token issued under this profile is a regular OAuth 2.0
-   refresh token once issued.  [RFC6749] Section 6 requires that the
-   scope of a subsequent refresh token request not exceed the scope
-   originally granted to the refresh token.  To make the migrated-
-   session model interoperate cleanly with that rule, the authorization
-   server MUST set the refresh token's granted scope, at issuance time,
-   to the full envelope of scopes authorized by the authorization basis
-   (Section 5) for the authenticated client and the resolved Local
-   Account, even when the initial Token Exchange request asked for a
-   narrower scope.  The Token Exchange response MUST include this
-   granted scope in its scope member when it differs from the requested
-   scope, per [RFC6749] Section 3.3 and [RFC8693] Section 2.2.
+   A client that needs the refresh token to cover a broader envelope
+   MUST request that broader scope explicitly on the initial exchange.
+   The authorization server MUST apply Section 4.1 to each requested
+   scope value and MUST reject with invalid_scope any value outside the
+   authorized envelope.
 
-   Subsequent refresh token requests (per [RFC6749] Section 6) MAY
-   therefore request any scope, resource, or audience value within the
-   granted envelope, including values not present in the initial Token
-   Exchange request.  The authorization server MUST apply Section 5 to
-   each such request and MUST reject a request whose scope, resource, or
-   audience falls outside the granted envelope with invalid_scope or
-   invalid_target as appropriate.  Resource indicator semantics in
-   refresh token requests follow [RFC8707] and [RFC8693] and are not
-   modified by this profile.
+   Subsequent refresh token requests MUST NOT exceed the scope granted
+   at issuance ([RFC6749] Section 6).  The authorization server MUST
+   apply Section 4.1 to each refresh request and rejects out-of-envelope
+   scope, resource, or audience with invalid_scope or invalid_target as
+   appropriate.  Resource indicator semantics follow [RFC8707] and
+   [RFC8693].
 
-   The SAML SP relationship determines whether the Migration Client may
-   bootstrap a session under this profile; it does not by itself impose
-   a ceiling on later use of the resulting refresh token.
+   The authorization server MAY advertise the broader authorized
+   envelope through mechanisms outside the granted-scope value (for
+   example, an introspection response or a separate claim).  Such
+   mechanisms are out of scope for this document.
 
-   Subsequent refresh token grants are not re-validated against the
-   original SAML assertion.  The assertion may have expired, may have
-   been issued for a different purpose, or may no longer satisfy this
-   profile's input-validation rules; none of that affects the validity
-   of refresh token use, which is governed solely by authorization
-   server policy and the SessionNotOnOrAfter cap (when one was
-   established).
+   The SAML SP relationship determines whether a Migration Client may
+   bootstrap a session under this profile.  It does not cap later
+   refresh token use.
+
+   The authorization server does not re-validate the original SAML
+   assertion on subsequent refresh requests.  Refresh token validity is
+   governed by authorization server policy and the SessionNotOnOrAfter
+   cap when one was established.
 
    When a refresh token issued under this profile expires or is revoked,
    the client MAY obtain a new SAML assertion through the SAML 2.0
@@ -1610,9 +1621,9 @@ Table of Contents
    authorization server supports.
 
    Session termination and revocation for refresh tokens issued under
-   this profile are defined in Section 14.
+   this profile are defined in Section 13.
 
-9.2.4.  ID Token
+8.2.4.  ID Token
 
    When issuing an ID Token directly from Token Exchange, that ID Token:
 
@@ -1624,9 +1635,9 @@ Table of Contents
       Exchange request MUST be ignored for purposes of ID Token audience
       construction;
 
-   *  MUST use the sub value defined by Section 12;
+   *  MUST use the sub value defined by Section 11;
 
-   *  MUST apply the claim mapping rules in Section 13;
+   *  MUST apply the claim mapping rules in Section 12;
 
    *  MUST preserve the original authentication time from the SAML
       AuthnStatement, if known, in the auth_time claim;
@@ -1642,15 +1653,15 @@ Table of Contents
       SessionNotOnOrAfter; this cap is a session bound, not a
       translation of the SAML assertion lifetime;
 
-   *  MUST NOT include nonce, at_hash, or c_hash, because no preceding
-      OpenID Connect authentication request or authorization code exists
-      from which these values could be derived;
+   *  MUST NOT include nonce, at_hash, or c_hash.  These claims bind an
+      ID Token to a front-channel exchange that does not exist for Token
+      Exchange.  Back-channel replay defense relies on client
+      authentication and on jti for subsequent uses;
 
    *  SHOULD NOT include azp.  If azp is included, it MUST equal the
       authenticated client identifier; and
 
-   *  MAY include the sub_id claim defined in Section 12.6 when the
-      granted scope includes saml_subject and policy permits release.
+   *  MAY include sub_id per Section 11.6.2.
 
    An ID Token issued under this profile MAY be encrypted as a Nested
    JWT per [OIDC-CORE] when the client has registered an
@@ -1658,7 +1669,7 @@ Table of Contents
    that encryption.  Encryption is independent of the rules above and
    does not change which claims the ID Token carries.
 
-9.2.5.  Access Token
+8.2.5.  Access Token
 
    This document does not define the syntax of an access token issued by
    this exchange.  However, when issuing an access token, the
@@ -1669,7 +1680,7 @@ Table of Contents
 
    *  MUST bind any end-user authorization carried by the token to the
       resolved Local Account and to a subject representation consistent
-      with Section 12;
+      with Section 11;
 
    *  MUST audience-restrict the token to the resolved target service
       set; and
@@ -1688,13 +1699,13 @@ Table of Contents
 
    If an access token issued under this profile is presented to the
    UserInfo endpoint, the UserInfo response MUST conform to
-   Section 13.3.  If the access token was issued without openid, the
+   Section 12.3.  If the access token was issued without openid, the
    OpenID Provider MUST reject its use at the UserInfo endpoint
    according to [OIDC-CORE].
 
    Any representation of the end-user subject produced from an access
    token issued under this profile by the same authorization server for
-   the same client MUST be consistent with Section 12.
+   the same client MUST be consistent with Section 11.
 
    This document does not define additional introspection semantics for
    access tokens issued under this profile.  If the authorization server
@@ -1702,38 +1713,38 @@ Table of Contents
    by [RFC7662], the authorization server's access token profile, and
    local policy.
 
-9.3.  Error Response
+8.3.  Error Response
 
-   If the request is malformed, the authorization server MUST return an
-   error response as defined by [RFC6749] and [RFC8693].
+   Error responses follow [RFC6749] Section 5.2 and [RFC8693]
+   Section 2.4.  Error code selection follows [RFC7522] Section 2.1.1:
+   defects in the subject_token are reported as invalid_grant, defects
+   in request structure as invalid_request.
 
-   The authorization server MUST use invalid_request for malformed or
-   internally inconsistent Token Exchange parameters, including SAML
-   input that is invalid, expired, audience-mismatched, encrypted,
-   supplied in an unsupported wrapper form, wrapped in a SAML Response
-   whose Status is not acceptable under this profile, or otherwise
-   unusable under this profile.
+   The authorization server MUST use:
+
+   *  invalid_request for malformed or inconsistent Token Exchange
+      parameters.  Examples: missing subject_token_type, unsupported
+      requested_token_type, unparseable subject_token, or presence of
+      actor_token, actor_token_type, or authorization_details;
+
+   *  invalid_grant when the SAML input is parseable but unacceptable.
+      This covers signature verification failure, unauthorized SAML
+      Issuer, audience mismatch, expired or not-yet-valid assertion,
+      unacceptable encrypted content, unacceptable Response/Status,
+      replay, failure to resolve exactly one active Local Account, and
+      subject-identifier remapping conflicts.
 
    The authorization server SHOULD use:
 
-   *  unauthorized_client when the authenticated client is not permitted
-      to use the bound saml_sp_entity_id relationship or the requested
-      token type;
+   *  unauthorized_client when the client is not permitted to use the
+      bound saml_sp_entity_id or the requested token type;
 
-   *  invalid_target when the resource and audience parameters are
-      missing, malformed, inconsistent, unknown, or unacceptable for the
-      requested access token; and
+   *  invalid_target when resource or audience is missing, malformed,
+      inconsistent, or unacceptable; and
 
    *  invalid_scope when the requested scope cannot be granted.
 
-   The authorization server SHOULD also use invalid_request when: the
-   assertion cannot be resolved to exactly one active Local Account; the
-   assertion is rejected as replay or otherwise exhausted under
-   Section 8; or a currently asserted stable subject identifier
-   conflicts with an existing persisted mapping and no explicitly
-   authorized administrative remapping exists.
-
-10.  SAML Assertion Introspection
+9.  SAML Assertion Introspection
 
    This section defines an introspection extension for cases in which
    the client does not need OAuth tokens and only needs a SAML assertion
@@ -1763,7 +1774,7 @@ Table of Contents
    containing a JSON claims object.  No OAuth access token, refresh
    token, or ID Token is issued.
 
-10.1.  Request
+9.1.  Request
 
    The client makes an introspection request to the introspection
    endpoint using the parameters described below.
@@ -1808,13 +1819,12 @@ Table of Contents
    *  a signed SAML 2.0 <Response> containing exactly one bearer
       <Assertion> for that relationship.
 
-   The encoded value MUST NOT be line wrapped and SHOULD NOT include
-   padding characters (=) (following [RFC7522]).  Clients using
-   libraries that emit padding by default SHOULD strip trailing = before
-   sending; authorization servers SHOULD accept padded values for
-   interoperability.  When a SAML <Response> is supplied, it is a signed
-   wrapper from which the effective assertion is extracted per
-   Section 8.
+   The encoded value MUST NOT be line wrapped and MUST NOT include
+   padding characters (=), per [RFC7522] Section 2.1.  Authorization
+   servers SHOULD accept padded values from deployed clients for
+   interoperability.  New implementations MUST emit unpadded values.
+   When a SAML <Response> is supplied, it is a signed wrapper from which
+   the effective assertion is extracted per Section 7.
 
    token_type_hint:
 
@@ -1833,30 +1843,30 @@ Table of Contents
    MUST be authorized for the saml_sp_entity_id that matches the SAML
    assertion audience.
 
-10.2.  Authorization Server Processing
+9.2.  Authorization Server Processing
 
-10.2.1.  Common Processing Rules
+9.2.1.  Common Processing Rules
 
    Upon receiving the request, the authorization server MUST:
 
    1.  authenticate the client and authorize it to use the introspection
        endpoint;
 
-   2.  validate the SAML input as described in Section 8;
+   2.  validate the SAML input as described in Section 7;
 
    3.  verify that the authenticated client is authorized for the
        saml_sp_entity_id that matches the SAML assertion audience;
 
    4.  resolve the SAML assertion to exactly one active Local Account as
-       described in Section 11;
+       described in Section 10;
 
-   5.  derive the end-user subject according to Section 12 and any
-       claims needed for the response according to Section 13; and
+   5.  derive the end-user subject according to Section 11 and any
+       claims needed for the response according to Section 12; and
 
    6.  apply the claim release policy for that same relying-party
        relationship before returning any claims.
 
-10.2.2.  Inactive Response
+9.2.2.  Inactive Response
 
    If the SAML assertion is invalid, expired, audience-mismatched,
    otherwise not usable for the client, wrapped in a SAML Response whose
@@ -1867,19 +1877,19 @@ Table of Contents
    introspection response with "active": false and SHOULD NOT include
    additional members.
 
-10.2.3.  Successful Response
+9.2.3.  Successful Response
 
    For an active SAML assertion, the authorization server MUST return an
    introspection response as defined by [RFC7662] with:
 
    *  active set to true;
 
-   *  sub set to the mapped value defined by Section 12;
+   *  sub set to the mapped value defined by Section 11;
 
    *  optionally, auth_time, acr, amr, sid, session_expiry, and
-      attribute-derived claims defined by Section 13;
+      attribute-derived claims defined by Section 12;
 
-   *  optionally, sub_id defined in Section 12.6 when the introspection-
+   *  optionally, sub_id defined in Section 11.6 when the introspection-
       endpoint policy permits release; and
 
    *  optionally, saml, a JSON object containing normalized SAML
@@ -1888,8 +1898,8 @@ Table of Contents
    The identity claims (sub, sub_id, auth_time, acr, amr, sid,
    session_expiry, and attribute-derived claims) appear at the top level
    of the response, in parallel with their placement in ID Tokens and
-   UserInfo.  Their values are processed under Section 11, Section 12,
-   and Section 13 (including subject resolution and claim release
+   UserInfo.  Their values are processed under Section 10, Section 11,
+   and Section 12 (including subject resolution and claim release
    policy); they are not a literal mirror of assertion content.  The
    protocol mirror is the saml object.
 
@@ -1898,27 +1908,16 @@ Table of Contents
    return only the minimum normalized claims necessary for the
    authorized client and applicable relying-party policy.
 
-   The saml object contains SAML protocol metadata, not end-user
-   identity claims.  The authorization server MUST NOT duplicate end-
-   user identity claims inside the saml object.
+   The saml object carries SAML protocol metadata, not end-user identity
+   claims.  The authorization server MUST NOT duplicate identity claims
+   inside it.
 
-   When the saml object is returned:
-
-   *  every member value MUST be derived from SAML input that was
-      successfully validated under Section 8;
-
-   *  values from a SAML Response wrapper MUST be included only when a
-      signed SAML Response wrapper was submitted and accepted under
-      Section 8.2;
-
-   *  response-level values that this profile does not validate, such as
-      Destination or Response/@InResponseTo, MAY be returned as
-      extracted values, but their presence in the response MUST NOT be
-      interpreted as a statement that the authorization server validated
-      them unless a separate deployment agreement says so; and
-
-   *  the authorization server MUST omit any member for which it has no
-      validated or extracted value.
+   Member values MUST come from SAML input validated under Section 7.
+   Members sourced from a SAML Response wrapper MUST appear only when a
+   wrapper was submitted and accepted (Section 7.2).  Members for which
+   no extracted value exists MUST be omitted.  Presence of an
+   unvalidated response-level field (for example, Destination) does not
+   assert that the authorization server validated it.
 
    The saml object is intended for clients that need the authorization
    server to perform XML parsing and XML signature validation, but still
@@ -1936,11 +1935,11 @@ Table of Contents
       Assertion.
 
    attributes:  Array of JSON objects mirroring the assertion's logical
-      SAML attributes after the combining rules in Section 13.2.  Each
+      SAML attributes after the combining rules in Section 12.2.  Each
       object MUST include name (SAML Name) and values (JSON array of
       AttributeValue contents), and MAY include name_format and
       friendly_name.  Values inside values follow the typing rules in
-      Section 13.2.  The attributes member is intended for clients that
+      Section 12.2.  The attributes member is intended for clients that
       require the wire-form SAML attribute names (for example, urn:oid:
       identifiers) in addition to the normalized top-level identity
       claims.
@@ -1964,10 +1963,10 @@ Table of Contents
    The Response Issuer and status-code values are not exposed in the
    response object: an active introspection response implies the
    authorization server has already verified the Response Issuer against
-   the effective saml_idp_entity_id (per Section 8.4) and
+   the effective saml_idp_entity_id (per Section 7.4) and
    Response/Status/StatusCode/@Value is
    urn:oasis:names:tc:SAML:2.0:status:Success with no nested status code
-   per Section 8.2.
+   per Section 7.2.
 
    When present, the assertion object MAY contain these members:
 
@@ -1991,16 +1990,16 @@ Table of Contents
        | subject_confirmation | JSON    | fields from the bearer   |
        |                      | object  | SubjectConfirmation      |
        |                      |         | treated as usable under  |
-       |                      |         | Section 8.6; see below   |
+       |                      |         | Section 7.6; see below   |
        +----------------------+---------+--------------------------+
 
                                   Table 6
 
    The Assertion Issuer is not exposed in the assertion object for the
-   same reason as in response: validation under Section 8.5 guarantees
+   same reason as in response: validation under Section 7.5 guarantees
    it equals the effective saml_idp_entity_id.  Clients that need the
    issuer value as a durable reference can use the sub_id.issuer member
-   defined in Section 12.6.
+   defined in Section 11.6.
 
    The subject_confirmation object MAY contain these members:
 
@@ -2024,7 +2023,7 @@ Table of Contents
 
    The confirmation method is not exposed: an active introspection
    response implies the authorization server has identified a usable
-   bearer SubjectConfirmation per Section 8.6.  The authorization server
+   bearer SubjectConfirmation per Section 7.6.  The authorization server
    MUST omit any member for which it has no extracted value.
 
    Date and time values in the saml object SHOULD be represented as
@@ -2039,7 +2038,7 @@ Table of Contents
    because no OAuth token is being issued by the introspection
    operation.
 
-10.3.  Error Response
+9.3.  Error Response
 
    If the introspection request is malformed, for example because the
    token parameter is absent or its value cannot be decoded as valid
@@ -2060,7 +2059,7 @@ Table of Contents
    false.  The authorization server SHOULD NOT include additional
    members in such a response.
 
-11.  Local Subject Resolution
+10.  Local Subject Resolution
 
    Before deriving sub or other end-user claims under this profile, the
    authorization server MUST resolve the SAML assertion to exactly one
@@ -2107,214 +2106,146 @@ Table of Contents
    Account and MUST remain the same across all invocations of this
    profile at the same authorization server.
 
-12.  Subject Identifier Mapping
+11.  Subject Identifier Mapping
 
-   Subject continuity is the central guarantee of this profile: the same
-   end-user MUST be represented to the migrated relying party by a
-   stable identifier that does not require account relinking.  The
-   OpenID Connect sub claim carries that continuity.  The authorization
-   server MUST issue a sub value that is stable for the client and that
-   preserves the semantics of the corresponding SAML deployment.
+   Subject continuity is the central guarantee of this profile.  The
+   authorization server MUST issue a sub value that is stable for the
+   client and preserves the semantics of the corresponding SAML
+   deployment.
 
-   The rules in this section achieve subject continuity by:
+   The rules below achieve continuity by:
 
-   *  reusing any persisted sub mapping the authorization server already
-      holds for the resolved Local Account under this client's effective
-      subject type;
+   *  reusing any persisted sub mapping for the resolved Local Account
+      under the client's effective subject type;
 
-   *  otherwise deriving sub from stable SAML subject inputs, in
+   *  otherwise deriving sub from stable SAML subject inputs in
       preference order: subject-id or pairwise-id attributes
-      ([SAML2-SUBJ-ID]), persistent NameID, and finally a deterministic
+      ([SAML2-SUBJ-ID]), persistent NameID, then a deterministic
       derivation from the Stable Local Subject Key;
 
-   *  preserving any pairwise scoping the SAML SP relationship already
-      used, via the bound saml_sp_entity_id;
+   *  preserving any pairwise scoping via the bound saml_sp_entity_id;
 
    *  excluding mutable identifiers (email, transient NameID, display
-      attributes) as sub sources; and
+      attributes) as sub sources;
 
-   *  persisting whichever mapping is chosen so the same Local Account
-      resolves to the same sub on subsequent invocations.
+   *  persisting the chosen mapping for subsequent invocations.
 
-   Most of this section concerns the rules for deriving sub.  The final
-   subsection (Section 12.6) defines an OPTIONAL supplementary claim,
-   sub_id, that carries the original SAML NameID context for clients
-   that need it in addition to sub.
+   Section 11.6 defines an OPTIONAL supplementary claim sub_id carrying
+   the original SAML NameID context.
 
-12.1.  NameID Format Recognition
+11.1.  NameID Format Recognition
 
-   The following NameID formats are recognized for subject mapping
-   purposes under this profile:
+   NameID format handling for subject mapping:
 
-   *  urn:oasis:names:tc:SAML:2.0:nameid-format:persistent: A
-      persistent, SP-specific or globally non-reassignable identifier.
-      MAY be used as input to the subject mapping rules in this section.
+   *  ...persistent: MAY be used as a subject mapping input.
 
-   *  urn:oasis:names:tc:SAML:2.0:nameid-format:transient: A session-
-      scoped, non-persistent identifier.  MUST NOT be used as input to
-      subject mapping under this profile and MUST NOT be used as the
-      OpenID Connect sub.
+   *  ...transient: MUST NOT be used as input or as sub.
 
-   *  urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress: A mutable
-      account attribute.  Treated as defined in Section 11.  MUST NOT be
-      used as sub.
+   *  ...emailAddress: MUST NOT be used as sub.  Handled per Section 10.
 
-   *  urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified: Deployment-
-      defined semantics.  MUST NOT be used as a subject mapping input
-      unless local policy has explicitly established the identifier as
-      stable and non-reassignable for the trusted SAML issuer.
+   *  ...unspecified: MUST NOT be used unless local policy has
+      established the identifier as stable and non-reassignable for the
+      trusted SAML issuer.
 
-   *  urn:oasis:names:tc:SAML:2.0:nameid-format:entity: Identifies a
-      system entity, not an end-user.  MUST NOT be used as a subject
-      mapping input.
+   *  ...entity: identifies a system entity.  MUST NOT be used.
 
-   Any other NameID format MUST NOT be used as a subject mapping input
-   under this profile unless local policy explicitly establishes its
-   semantics as persistent and non-reassignable.
+   Any other format MUST NOT be used unless local policy establishes it
+   as persistent and non-reassignable.
 
-12.2.  Subject Type Determination
+11.2.  Subject Type Determination
 
-   The authorization server MUST determine whether the migrated client
-   is using a public subject or a pairwise subject.  The registered
-   subject_type, if present, MUST be used for this determination.  If no
-   subject_type is registered, the authorization server MUST apply
-   public as the effective subject type, in accordance with Section 6.1.
+   The authorization server MUST determine whether the client uses
+   public or pairwise subjects.  The registered subject_type is
+   authoritative when present.  When absent, the effective type is
+   public per Section 5.1.
 
-   If multiple clients sharing the same saml_sp_entity_id have
-   registered conflicting subject_type values and no single effective
-   subject type can be determined per Section 6.1, the authorization
-   server MUST fail the profile operation.
+   When multiple clients share the same saml_sp_entity_id with
+   conflicting subject_type values and no single effective type can be
+   determined, the authorization server MUST fail the operation.
 
-   When the authorization server uses, or would otherwise use, the
-   urn:oasis:names:tc:SAML:attribute:subject-id or
-   urn:oasis:names:tc:SAML:attribute:pairwise-id attribute as a subject
-   mapping input, it MUST validate that attribute according to the SAML
-   V2.0 Subject Identifier Attributes Profile.  In particular, the
-   attribute MUST use NameFormat urn:oasis:names:tc:SAML:2.0:attrname-
-   format:uri and contain exactly one non-empty AttributeValue that
-   conforms to that profile's syntax and semantics.  If no persisted
-   mapping exists and the attribute corresponding to the client's
-   effective subject type is present but fails these requirements, the
-   authorization server MUST reject the profile operation rather than
-   derive a different sub from fallback rules.
+   When using the subject-id or pairwise-id attribute as a subject
+   mapping input, the authorization server MUST validate it per
+   [SAML2-SUBJ-ID]: NameFormat of urn:oasis:names:tc:SAML:2.0:attrname-
+   format:uri, and exactly one non-empty AttributeValue.  If no
+   persisted mapping exists and the attribute matching the effective
+   subject type is present but invalid, the authorization server MUST
+   reject the operation.
 
-   If a persisted mapping already exists and the current assertion also
-   contains a valid subject identifier input matching the client's
-   effective subject type, or a persistent NameID that would otherwise
-   be eligible as a subject mapping input, the authorization server MUST
-   compare the current asserted identifier context to the persisted
-   source identifier context.  If they differ, the authorization server
-   MUST NOT silently replace the persisted mapping based only on the
-   current assertion.  The authorization server MAY continue only when
-   an explicitly authorized administrative remapping has bound the new
-   identifier context to the same Local Account; otherwise it MUST fail
-   the profile operation.
+   If a persisted mapping exists and the current assertion contains a
+   valid subject identifier input (attribute or eligible persistent
+   NameID) whose context differs from the persisted source, the
+   authorization server MUST NOT silently replace the mapping.  It MUST
+   either fail the operation or rely on an explicitly authorized
+   administrative remapping.
 
    When multiple clients share the same saml_sp_entity_id, the
-   authorization server MUST apply the same effective subject mapping
-   rules to all such clients.  In particular, it MUST produce the same
-   sub value for the same resolved Local Account when those clients are
-   operating under the same subject type semantics.
+   authorization server MUST produce the same sub for the same Local
+   Account under the same subject type.
 
-12.3.  Pairwise Subject Identifier Mapping
+11.3.  Pairwise Subject Identifier Mapping
 
-   For clients using pairwise subject identifiers, the authorization
-   server MUST determine sub using the first applicable rule:
+   For pairwise subject identifiers, the authorization server MUST
+   determine sub using the first applicable rule.  In all cases the
+   chosen value MUST be persisted.
 
-   1.  If the authorization server already has a persisted pairwise
-       mapping for the same resolved Local Account and the same
-       saml_sp_entity_id, it MUST reuse that mapping, subject to the
-       mismatch handling rules above.
+   1.  Reuse the persisted pairwise mapping for the same Local Account
+       and saml_sp_entity_id, subject to the mismatch rules above.
 
-   2.  If no persisted mapping exists and the SAML assertion contains a
-       valid urn:oasis:names:tc:SAML:attribute:pairwise-id attribute (as
-       validated by the rules in Section 12.2), the authorization server
-       MUST use that attribute value as sub and MUST persist the
-       resulting mapping.
+   2.  Use a validated pairwise-id attribute (Section 11.2).
 
-   3.  If no persisted mapping exists and the assertion contains a
-       persistent NameID (urn:oasis:names:tc:SAML:2.0:nameid-
-       format:persistent) whose semantics are SP-specific, stable, and
-       non-reassignable for that same SAML SP relationship, the
-       authorization server MAY use that value as sub, and it MUST
-       persist the resulting mapping.
+   3.  Use a persistent NameID whose semantics are SP-specific, stable,
+       and non-reassignable for the SAML SP relationship (MAY).
 
-   4.  Otherwise, the authorization server MUST derive a deterministic,
-       non-reassignable pairwise identifier by combining the Stable
-       Local Subject Key and the bound saml_sp_entity_id using a
-       collision-resistant method.  The pairwise subject computation
-       defined in Section 8 of [OIDC-CORE] is a suitable derivation
-       method, using saml_sp_entity_id as the sector identifier input to
-       that computation.  The authorization server MUST persist the
-       resulting mapping.
+   4.  Derive deterministically from the Stable Local Subject Key and
+       the bound saml_sp_entity_id.  [OIDC-CORE] Section 8 pairwise
+       derivation, with saml_sp_entity_id as the sector identifier, is
+       suitable.
 
-   The pairwise-id attribute value has the format localpart@scope as
-   defined by [SAML2-SUBJ-ID].  When a pairwise-id value is used as sub,
-   the resulting value carries this scoped format.  Clients MUST NOT
-   treat a sub value derived from pairwise-id as an email address or
-   interpret the scope portion as an email domain.
+   The pairwise-id value uses the localpart@scope format from
+   [SAML2-SUBJ-ID].  Clients MUST NOT treat a sub derived from pairwise-
+   id as an email address.
 
-12.4.  Public Subject Identifier Mapping
+11.4.  Public Subject Identifier Mapping
 
-   For clients using public subject identifiers, the authorization
-   server MUST determine sub using the first applicable rule:
+   For public subject identifiers, the authorization server MUST
+   determine sub using the first applicable rule.  In all cases the
+   chosen value MUST be persisted.
 
-   1.  If the authorization server already has a persisted public
-       subject mapping for the same resolved Local Account under the
-       same OAuth issuer, it MUST reuse that mapping, subject to the
-       mismatch handling rules above.
+   1.  Reuse the persisted public mapping for the same Local Account
+       under the same OAuth issuer, subject to the mismatch rules above.
 
-   2.  If no persisted mapping exists and the SAML assertion contains a
-       valid urn:oasis:names:tc:SAML:attribute:subject-id attribute (as
-       validated by the rules in Section 12.2), the authorization server
-       MUST use that attribute value as sub and MUST persist the
-       resulting mapping.
+   2.  Use a validated subject-id attribute (Section 11.2).
 
-   3.  If no persisted mapping exists and the assertion contains a
-       persistent NameID (urn:oasis:names:tc:SAML:2.0:nameid-
-       format:persistent) whose semantics are stable, non-reassignable,
-       and not SP-specific, the authorization server MAY use that value
-       as sub, and it MUST persist the resulting mapping.
+   3.  Use a persistent NameID whose semantics are stable, non-
+       reassignable, and not SP-specific (MAY).
 
-   4.  Otherwise, the authorization server MUST derive a deterministic,
-       non-reassignable public identifier from the Stable Local Subject
-       Key alone, without client-specific input, using a collision-
-       resistant method.  The authorization server MUST persist the
-       resulting mapping.
+   4.  Derive deterministically from the Stable Local Subject Key alone,
+       without client-specific input, using a collision-resistant
+       method.
 
-12.5.  Common Rules
+11.5.  Common Rules
 
    For all subject types:
 
-   *  before issuing any chosen or derived value as sub, the
-      authorization server MUST ensure that it satisfies the [OIDC-CORE]
-      sub requirements, including that it be a case-sensitive string no
-      longer than 255 ASCII characters;
-
-   *  if the chosen source identifier would exceed that limit or contain
-      non-ASCII characters, the authorization server MUST derive a
-      deterministic, collision-resistant ASCII sub value from the chosen
-      source identifier and required context, and it MUST persist the
-      resulting mapping;
+   *  the issued sub MUST satisfy [OIDC-CORE] (case-sensitive string, at
+      most 255 ASCII characters).  If the chosen source exceeds that
+      limit or contains non-ASCII characters, the authorization server
+      MUST derive a deterministic ASCII sub from the source and persist
+      the mapping;
 
    *  if both subject-id and pairwise-id are available, the
-      authorization server MUST select the one whose semantics match the
-      client's effective subject type;
+      authorization server MUST select the one matching the effective
+      subject type;
 
-   *  the authorization server MUST NOT expose a pairwise-id value to a
-      client other than a client bound to the corresponding
-      saml_sp_entity_id;
+   *  the authorization server MUST NOT expose a pairwise-id to a client
+      not bound to the corresponding saml_sp_entity_id;
 
-   *  the authorization server MUST NOT use a transient identifier as
-      the OpenID Connect sub;
-
-   *  the authorization server MUST NOT directly use mutable identifiers
-      such as an email address, a NameID in the SAML emailAddress
-      format, or a non-persistent NameID format as the OpenID Connect
-      sub.
+   *  the authorization server MUST NOT use a transient identifier, an
+      email address, an emailAddress-format NameID, or any non-
+      persistent format as sub.
 
    When the only usable SAML subject input is a NameID whose semantics
-   are those of an email address, and Section 11 succeeds under the
+   are those of an email address, and Section 10 succeeds under the
    rules above, the authorization server MUST derive sub from the
    resolved Stable Local Subject Key using the applicable fallback rule
    in this section rather than using the asserted email value itself.
@@ -2338,20 +2269,16 @@ Table of Contents
       be treated as distinct unless local policy can prove them
       equivalent.
 
-12.6.  SAML Subject Identifier Claim
+11.6.  SAML Subject Identifier Claim
 
-   This document defines the sub_id claim, which carries the original
-   SAML NameID context alongside sub.  It exists for migrated clients
-   that need that context -- for example, to correlate sessions against
-   legacy SAML-keyed audit logs or account databases.
+   This document defines the saml-nameid format value for the sub_id
+   claim registered by [RFC9493].  It carries the original SAML NameID
+   context alongside sub, for migrated clients that need it (for
+   example, to correlate against legacy SAML-keyed audit logs).
 
-   sub_id is a JSON object following the subject identifier pattern of
-   [RFC9493].  The format member discriminates among possible identifier
-   shapes; future profiles may register additional formats in the IANA
-   "Security Event Identifier Formats" registry.  This document defines
-   one format, saml-nameid, for SAML NameID values.  When sub_id is
-   present in an ID Token, UserInfo response, or introspection response
-   under this profile, it MUST include a format member.
+   sub_id is a JSON object per [RFC9493].  When present in an ID Token,
+   UserInfo response, or introspection response under this profile, it
+   MUST include a format member.
 
    When format is saml-nameid, the sub_id object MAY contain the
    following members:
@@ -2380,9 +2307,9 @@ Table of Contents
 
    The authorization server MUST omit any member for which it has no
    validated value.  Encrypted NameID forms (EncryptedID) are rejected
-   under Section 8.3 and MUST NOT appear in sub_id.
+   under Section 7.3 and MUST NOT appear in sub_id.
 
-12.6.1.  Eligible NameID Formats
+11.6.1.  Eligible NameID Formats
 
    A sub_id with saml-nameid format is a stable subject identifier
    reference; consumers persist its members and use them for legacy
@@ -2395,7 +2322,7 @@ Table of Contents
    *  urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified -- MAY
       appear in sub_id only when local policy has established the NameID
       as stable and non-reassignable for the trusted SAML issuer (the
-      same condition imposed in Section 12.1).
+      same condition imposed in Section 11.1).
 
    *  urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress -- SHOULD
       NOT appear in sub_id.  Email-format NameIDs are mutable account
@@ -2418,24 +2345,24 @@ Table of Contents
    through subject-id or pairwise-id attributes), the authorization
    server MUST NOT emit sub_id with the saml-nameid format.
 
-12.6.2.  Release Rules
+11.6.2.  Release Rules
 
    The authorization server MUST release sub_id only when authorized by
    the claim release policy for the relying-party relationship
    represented by the bound saml_sp_entity_id, and MUST NOT release it
    solely because the SAML assertion contains a NameID.
 
-   In contexts that carry an OAuth scope -- Token Exchange issuing an ID
-   Token or refresh token, and UserInfo requests -- release SHOULD be
-   gated on the saml_subject scope.  In contexts without OAuth scope,
-   such as introspection requests, scope gating does not apply; the
-   authorization server's policy for that endpoint authorizes release in
-   addition to the claim release policy above.
+   In contexts that carry an OAuth scope (Token Exchange issuing an ID
+   Token or refresh token, and UserInfo requests), release MUST be gated
+   on the granted scope including saml_subject.  In contexts without
+   OAuth scope (introspection requests), scope gating does not apply;
+   the authorization server's policy for that endpoint authorizes
+   release in addition to the claim release policy above.
 
    The sub_id claim supplements sub; it does not replace it.  The sub
-   claim remains the primary continuity point under Section 12.
+   claim remains the primary continuity point under Section 11.
 
-13.  Claim Mapping
+12.  Claim Mapping
 
    The mappings in this section apply to ID Tokens, UserInfo responses,
    and introspection responses under this profile.  Values derived from
@@ -2452,37 +2379,37 @@ Table of Contents
     |                                     | target          | in      |
     +=====================================+=================+=========+
     | Persistent NameID, subject-id,      | sub             | Section |
-    | pairwise-id, or Stable Local        |                 | 12      |
+    | pairwise-id, or Stable Local        |                 | 11      |
     | Subject Key derivation              |                 |         |
     +-------------------------------------+-----------------+---------+
     | NameID element (provenance          | sub_id with     | Section |
-    | preserved)                          | saml-nameid     | 12.6    |
+    | preserved)                          | saml-nameid     | 11.6    |
     |                                     | format          |         |
     +-------------------------------------+-----------------+---------+
     | AuthnStatement/@AuthnInstant        | auth_time       | Section |
-    |                                     |                 | 13.1    |
+    |                                     |                 | 12.1    |
     +-------------------------------------+-----------------+---------+
     | AuthnContext/AuthnContextClassRef   | acr             | Section |
-    |                                     |                 | 13.1    |
+    |                                     |                 | 12.1    |
     +-------------------------------------+-----------------+---------+
     | Concrete authentication methods     | amr             | Section |
-    | derived from local policy or SAML   |                 | 13.1    |
+    | derived from local policy or SAML   |                 | 12.1    |
     | evidence                            |                 |         |
     +-------------------------------------+-----------------+---------+
     | AuthnStatement/@SessionIndex        | sid             | Section |
-    |                                     |                 | 13.1    |
+    |                                     |                 | 12.1    |
     +-------------------------------------+-----------------+---------+
     | AuthnStatement/@SessionNotOnOrAfter | session_expiry  | Section |
-    |                                     |                 | 13.1    |
+    |                                     |                 | 12.1    |
     +-------------------------------------+-----------------+---------+
     | AttributeStatement attributes       | Registered OIDC | Section |
-    | (e.g., mail, givenName, sn,         | claims (email,  | 13.2    |
+    | (e.g., mail, givenName, sn,         | claims (email,  | 12.2    |
     | displayName)                        | given_name,     |         |
     |                                     | family_name,    |         |
     |                                     | name, etc.)     |         |
     +-------------------------------------+-----------------+---------+
     | Other AttributeStatement attributes | Private claims  | Section |
-    |                                     | by prior        | 13.2    |
+    |                                     | by prior        | 12.2    |
     |                                     | agreement       |         |
     +-------------------------------------+-----------------+---------+
 
@@ -2492,93 +2419,52 @@ Table of Contents
    does not map SAML data whose purpose is authorization or entitlement
    (AuthzDecisionStatement, scoped affiliation values intended for
    access control, etc.) into OAuth scopes or authorization decisions;
-   see Section 1.1.
+   see Section 1.2.
 
-13.1.  Authentication Event Claims
+12.1.  Authentication Event Claims
 
    When a SAML assertion contains an AuthnStatement, the authorization
    server SHOULD map its contents as follows:
 
-   *  AuthnStatement/@AuthnInstant, when mapped, MUST be emitted as the
-      OpenID Connect auth_time claim as a NumericDate value.
-      Implementations MUST convert the XML dateTime value to the number
-      of seconds elapsed since 1970-01-01T00:00:00Z when producing this
-      NumericDate value.
+   *  AuthnInstant to auth_time (NumericDate per [OIDC-CORE]).
 
-   *  AuthnContext/AuthnContextClassRef maps to the OpenID Connect acr
-      claim.  Mapping rules are in Section 13.1.1.
+   *  AuthnContext/AuthnContextClassRef to acr per Section 12.1.1.
 
-   *  AuthnStatement/@SessionIndex MAY be used as authoritative input to
-      the OpenID Connect sid claim, as defined by [OIDC-FC-LOGOUT] and
-      [OIDC-BC-LOGOUT], when the deployment supports session continuity
-      or logout semantics.
+   *  SessionIndex to sid ([OIDC-FC-LOGOUT], [OIDC-BC-LOGOUT]).  The sid
+      value MUST be unique within the OAuth issuer and bound to the
+      SAML-authenticated session.  The authorization server MAY reuse
+      the raw SessionIndex only when local policy guarantees it meets
+      these properties; otherwise it derives a session identifier of its
+      own.  When SessionIndex is absent and no equivalent identifier is
+      available, sid MUST NOT be emitted.
 
-      When sid is emitted, it MUST identify the OpenID Provider session
-      corresponding to the SAML-authenticated session and MUST be unique
-      within the OAuth issuer.  The authorization server MUST NOT assume
-      that the raw SAML SessionIndex is already a valid sid; it MUST
-      either reuse the raw value only when local policy guarantees it is
-      issuer-scoped and collision-resistant for this purpose, or derive
-      and persist an OpenID Provider-scoped sid bound to that SAML-
-      authenticated session.  If SessionIndex is absent from the
-      selected AuthnStatement, sid MUST NOT be emitted unless the
-      authorization server has another authoritative session identifier
-      for that SAML-authenticated session.
+   *  SessionNotOnOrAfter to the session_expiry claim
+      ([OIDC-ENTERPRISE-EXTENSIONS]) when an ID Token represents the
+      same session. session_expiry MUST NOT be later than the source
+      SessionNotOnOrAfter and MUST NOT be derived from
+      Conditions/@NotOnOrAfter.
 
-   *  AuthnStatement/@SessionNotOnOrAfter MAY be emitted as the OpenID
-      Connect Enterprise Extensions session_expiry claim
-      ([OIDC-ENTERPRISE-EXTENSIONS]) when an ID Token is issued for the
-      same SAML-authenticated session.  When emitted, session_expiry
-      MUST be a JSON integer containing the number of seconds elapsed
-      since 1970-01-01T00:00:00Z, and its value MUST NOT be later than
-      the selected AuthnStatement/@SessionNotOnOrAfter.  The
-      authorization server MUST NOT derive session_expiry from the SAML
-      assertion's Conditions/@NotOnOrAfter, because that value limits
-      assertion validity, not the underlying authenticated session.
+   The amr claim [RFC8176] identifies authentication methods, not
+   context classes.  The authorization server MUST NOT copy
+   AuthnContextClassRef into amr.  It MAY emit amr only from concrete
+   authentication evidence in the assertion or from local policy.
 
-   The OpenID Connect amr claim identifies authentication methods, not
-   an authentication context class.  Therefore:
+   When multiple AuthnStatement elements are present, the authorization
+   server MUST select an authoritative one by local policy.  Without
+   such a policy the authorization server MUST omit auth_time, acr, amr,
+   and sid.  Selecting by AuthnInstant alone is unsafe under SAML
+   proxying.
 
-   *  the authorization server MUST NOT copy the SAML
-      AuthnContextClassRef directly into amr;
-
-   *  the authorization server MAY populate amr only when it can derive
-      concrete authentication methods from local policy or explicit SAML
-      authentication evidence; and
-
-   *  when amr is populated, the authorization server SHOULD use values
-      from the Authentication Method Reference Values registry
-      [RFC8176], and it MUST represent amr as a JSON array of strings.
-
-   If multiple AuthnStatement elements are present, the authorization
-   server MUST select the statement local policy designates as
-   authoritative.  Absent such a policy, the authorization server MUST
-   omit auth_time, acr, amr, and sid rather than emit values from an
-   arbitrarily selected statement.  Selecting by AuthnInstant alone is
-   not safe, because the most recent statement may reflect SAML identity
-   proxying re-issuance rather than original end-user authentication;
-   deployments using proxied assertions MUST configure which
-   AuthnStatement is authoritative.
-
-   If the selected AuthnStatement contains SessionNotOnOrAfter, the
+   When the selected AuthnStatement contains SessionNotOnOrAfter, the
    authorization server MUST treat that instant as an upper bound on
-   operations that preserve the SAML-authenticated session under this
-   profile.  In particular:
-
-   *  the authorization server MUST NOT issue a refresh token whose
-      validity extends beyond SessionNotOnOrAfter;
-
-   *  if it issues an access token or ID Token directly from the
-      assertion and that token is intended to represent the same
-      authenticated session, the token expiration time MUST NOT extend
-      beyond SessionNotOnOrAfter; and
-
-   *  once SessionNotOnOrAfter has passed, the authorization server MUST
-      reject further session-preserving use of the assertion or derived
-      refresh token.
+   operations preserving the SAML-authenticated session.  Refresh
+   tokens, access tokens, and ID Tokens representing the same session
+   MUST NOT extend beyond it.  After it passes, further session-
+   preserving use of the assertion or derived refresh token MUST be
+   rejected.
 
    Earlier session-end signals and revocation cascade are defined in
-   Section 14.
+   Section 13.
 
    The following SAML data has no direct standard OpenID Connect claim
    mapping:
@@ -2601,23 +2487,28 @@ Table of Contents
    between the authorization server and client.  Deployments using such
    claims SHOULD use collision-resistant claim names.
 
-13.1.1.  ACR Mapping
+12.1.1.  ACR Mapping
 
-   The acr claim derived from AuthnContext/AuthnContextClassRef MUST be
-   produced as follows:
+   The acr claim derived from AuthnContext/AuthnContextClassRef is
+   produced as follows.
 
-   *  if local policy maps SAML context class references to a registered
-      Level-of-Assurance scheme, that mapping MUST be applied;
+   *  If local policy maps SAML context class references to a registered
+      Level-of-Assurance scheme, the authorization server MUST apply
+      that mapping.
 
-   *  otherwise, the authorization server SHOULD copy the SAML URI
-      without transformation;
+   *  Otherwise the authorization server SHOULD copy the SAML URI
+      without transformation.  The SAML IdP is the authoritative
+      authentication source under this profile.
 
-   *  the authorization server MUST NOT advertise an acr value in
-      acr_values_supported that it cannot emit.  If acr_values_supported
-      enumerates only the mapped Level-of-Assurance values, the
-      authorization server MAY still emit pass-through SAML
-      AuthnContextClassRef URIs that are not enumerated, provided the
-      asserted URI satisfies the pass-through rule above.
+   For acr_values_supported:
+
+   *  the authorization server MUST NOT advertise a mapped value it
+      cannot emit;
+
+   *  the authorization server MAY emit a passthrough SAML URI as acr
+      even when that URI is absent from acr_values_supported.  Clients
+      MUST NOT treat absence from acr_values_supported as a guarantee
+      that no passthrough URI can appear.
 
    Clients receiving raw SAML authentication context class URIs as acr
    values (for example,
@@ -2628,7 +2519,7 @@ Table of Contents
    Non-normative example mappings from common SAML AuthnContextClassRef
    URIs to OIDC acr/amr values appear in Appendix C.
 
-13.2.  Attribute Claims
+12.2.  Attribute Claims
 
    A NameID in emailAddress format is not by itself an attribute mapping
    input.  However, if the assertion contains a NameID whose format is
@@ -2662,141 +2553,70 @@ Table of Contents
    Non-normative example mappings for common SAML attributes and for
    InCommon and eduPerson deployments are provided in Appendix B.
 
-   All AttributeStatement elements in the assertion MUST be processed as
-   a single logical attribute set.  Attributes having the same Name and
-   the same NameFormat are part of the same logical attribute and their
-   values MUST be combined in document order.  Attributes that differ by
-   Name or NameFormat MUST be treated as distinct inputs even if their
-   FriendlyName values are the same.
+   All AttributeStatement elements MUST be processed as a single logical
+   set.  Attributes with identical Name and NameFormat are the same
+   logical attribute; their values MUST be combined in document order.
+   Attributes differing in Name or NameFormat are distinct even when
+   FriendlyName agrees.  An omitted NameFormat is treated as
+   ...attrname-format:unspecified.
 
-   An omitted NameFormat MUST be treated as
-   urn:oasis:names:tc:SAML:2.0:attrname-format:unspecified for purposes
-   of attribute grouping and mapping under this profile.
+   Mapping decisions MUST be based on Name and NameFormat.  FriendlyName
+   is a secondary hint only.
 
-   Mapping decisions MUST be based primarily on the SAML attribute Name
-   and NameFormat.  FriendlyName MAY be used only as a secondary hint
-   when no deterministic Name-based mapping exists.  If Name,
-   NameFormat, and FriendlyName would imply conflicting claim mappings,
-   the authorization server MUST use the Name and NameFormat
-   interpretation.
+   Attribute processing rules:
 
-   Standard registered OpenID Connect identity claims (email,
-   given_name, family_name, name, preferred_username, phone_number,
-   etc.) are single-valued strings. auth_time is a single numeric value.
-   amr is an array of strings.
+   *  a single AttributeValue maps to a single JSON value;
 
-   Attribute processing MUST follow these rules:
+   *  multiple AttributeValue elements MAY map to a JSON array only for
+      array-typed claims;
 
-   *  a single SAML AttributeValue maps to a single JSON value;
+   *  boolean-valued attributes SHOULD map to JSON booleans when the XML
+      type is unambiguous;
 
-   *  multiple SAML AttributeValue elements MAY map to a JSON array only
-      for claims whose syntax permits arrays or for private claims
-      defined by prior agreement;
+   *  when multiple sources could populate a single-valued registered
+      claim, the authorization server MUST apply a deterministic
+      precedence rule or omit the claim;
 
-   *  boolean-valued SAML attributes SHOULD map to JSON booleans when
-      the XML type is unambiguous;
+   *  when multiple same-set attributes differ only by NameFormat for
+      the same target claim, prefer ...attrname-format:uri over :basic
+      or :unspecified;
 
-   *  if multiple source values are available for a registered single-
-      valued claim, the authorization server MUST either apply a
-      deterministic, claim-specific precedence rule or omit that claim;
+   *  generic mapping MUST NOT overwrite sub, auth_time, acr, amr, or
+      sid derived elsewhere in this document.
 
-   *  if multiple distinct SAML attributes could map to the same
-      registered claim, the authorization server MUST apply a
-      deterministic precedence rule based on SAML attribute identifiers
-      or omit that claim;
+   The authorization server MUST NOT infer email_verified or
+   phone_number_verified from the presence of the corresponding
+   attribute alone.  These claims MUST come from an explicit
+   verification signal.
 
-   *  when multiple SAML attributes from the same logical attribute set
-      could map to the same registered OpenID Connect claim and they
-      differ only by NameFormat, the authorization server SHOULD prefer
-      the attribute whose NameFormat is
-      urn:oasis:names:tc:SAML:2.0:attrname-format:uri (the canonical
-      federation form) over :basic or :unspecified forms;
+   Attributes without a standard OIDC claim mapping MAY be returned as
+   private claims by prior agreement.
 
-   *  the authorization server MUST NOT emit a JSON array for a
-      registered single-valued claim; and
-
-   *  generic attribute mapping MUST NOT overwrite sub, auth_time, acr,
-      amr, or sid values that were derived by the rules in this
-      document.
-
-   The authorization server MUST NOT infer email_verified from the mere
-   presence of an email attribute.  The authorization server MUST NOT
-   infer phone_number_verified from the mere presence of a phone_number
-   attribute.  These verified status claims MUST be populated only when
-   an explicit verification assertion is available from the SAML
-   deployment or from a local policy determination.
-
-   Attributes that do not correspond to standard OpenID Connect claims
-   MAY be returned as private claims when both parties have a prior
-   agreement on syntax and semantics.
-
-13.3.  UserInfo Responses
+12.3.  UserInfo Responses
 
    If an access token issued under this profile is presented to the
    OpenID Provider's UserInfo endpoint, the OpenID Provider MUST process
    that request in accordance with [OIDC-CORE] and the additional rules
    in this section.
 
-   The UserInfo response:
+   UserInfo responses follow [OIDC-CORE], with the additional
+   requirement that sub MUST be consistent with Section 11 and all
+   returned claims MUST follow Section 12.1 and Section 12.2.  The
+   authorization server MAY include sub_id when saml_subject is granted
+   (Section 11.6.2).
 
-   *  MUST include the sub claim;
+   When an ID Token and a UserInfo response are both issued for the same
+   migrated authorization context, the authorization server MUST ensure
+   that sub, auth_time, acr, amr, sid, and sub_id are consistent between
+   them.  To do so, the authorization server SHOULD cache these values
+   at ID Token issuance and return them for the lifetime of the access
+   token, even after the originating SAML assertion expires.
 
-   *  MUST use a sub value consistent with Section 12;
+   Released claims MUST satisfy the claim release policy at the time of
+   the UserInfo request.  The authorization server MUST NOT use a prior
+   policy snapshot to return claims disallowed by current policy.
 
-   *  MUST apply the claim mapping rules in Section 13.1 and
-      Section 13.2 to any returned claims;
-
-   *  MAY include the sub_id claim defined in Section 12.6 when the
-      granted scope includes saml_subject and policy permits release;
-      and
-
-   *  MUST NOT include claims that would not be releasable to the same
-      relying party under this profile.
-
-   The OpenID Provider MUST determine which claims to return based on
-   the granted scope, any other OpenID Connect claim-selection mechanism
-   it supports, and the claim release policy applicable to the relying-
-   party relationship represented by the bound saml_sp_entity_id.
-
-   If an ID Token and a UserInfo response are both issued under the same
-   migrated authorization context, the sub value in the UserInfo
-   response MUST exactly match the sub value in the corresponding ID
-   Token.
-
-   If the UserInfo response includes auth_time, acr, amr, or sid, those
-   values MUST be derived according to Section 13.1.  The same
-   consistency rule applies to sub_id when it was emitted in the
-   corresponding ID Token under Section 12.6.  When an ID Token has been
-   issued for the same migrated authorization context, the authorization
-   server MUST:
-
-   *  cache the values of auth_time, acr, amr, sid, and sub_id at the
-      time of ID Token issuance;
-
-   *  return those cached values in any UserInfo response for the
-      duration of the access token's validity, even if the originating
-      SAML assertion has since expired; and
-
-   *  ensure the UserInfo values for these claims match the
-      corresponding claims in the most recently issued ID Token for that
-      migrated authorization context.
-
-   This profile does not require the UserInfo response to repeat every
-   claim available in an ID Token, nor does it require claims omitted
-   from the ID Token to be present in UserInfo.  Any claim returned from
-   UserInfo under this profile MUST reflect the same Local Account
-   resolution, subject continuity, and claim release policy used for the
-   access token.
-
-   Any claim returned from UserInfo MUST be permitted by the claim
-   release policy in effect at the time of access token issuance and by
-   the claim release policy in effect at the time of the UserInfo
-   request.  The authorization server MAY retain the issuance-time
-   policy snapshot for continuity, but MUST NOT use that snapshot to
-   return claims disallowed by current policy or by the current Local
-   Account or session state.
-
-14.  Session Termination and Revocation
+13.  Session Termination and Revocation
 
    A token issued under this profile is anchored to a SAML-authenticated
    session that may end before the token itself would otherwise expire.
@@ -2815,16 +2635,16 @@ Table of Contents
    Deployments that need coordinated logout across both protocols MUST
    design that coordination outside this profile; this profile defines
    only the authorization server's local obligations once it has learned
-   that a SAML-authenticated session has ended (see Section 14.1).
+   that a SAML-authenticated session has ended (see Section 13.1).
 
-14.1.  Session Termination
+13.1.  Session Termination
 
    The authorization server MUST treat the earlier of the following as
    the operative end of the migrated session for a given originating
    SAML assertion:
 
    *  the assertion's SessionNotOnOrAfter value, when present in the
-      authoritative AuthnStatement (Section 13.1);
+      authoritative AuthnStatement (Section 12.1);
 
    *  any authoritative signal that the underlying SAML-authenticated
       session ended earlier (for example, a SAML SLO event observed at
@@ -2844,7 +2664,7 @@ Table of Contents
 
    *  MAY propagate the termination to OpenID Connect clients through
       [OIDC-BC-LOGOUT] when the deployment supports back-channel logout
-      signaling, using the sid claim (Section 13.1) to identify the
+      signaling, using the sid claim (Section 12.1) to identify the
       affected session.
 
    This document does not define how the authorization server discovers
@@ -2852,7 +2672,7 @@ Table of Contents
    logout MUST establish that discovery through deployment-specific
    means outside this profile.
 
-14.2.  Token Revocation
+13.2.  Token Revocation
 
    OAuth 2.0 Token Revocation [RFC7009] applies to tokens issued under
    this profile without modification.  Beyond the generic RFC 7009
@@ -2876,19 +2696,19 @@ Table of Contents
    Account (for example, tokens issued for other devices) unless
    deployment policy explicitly cascades.  To end all sessions for a
    Local Account, the authorization server MUST take the account-level
-   action described in Section 14.1.
+   action described in Section 13.1.
 
    If the authorization server learns that the resolved Local Account
    has been disabled, deprovisioned, or suspended, it MUST end the
-   migrated session as described in Section 14.1.
+   migrated session as described in Section 13.1.
 
    A subsequent submission of a new SAML assertion through this profile
-   (Section 9) establishes a new migrated session that is not affected
+   (Section 8) establishes a new migrated session that is not affected
    by the prior revocation.
 
-15.  Security Considerations
+14.  Security Considerations
 
-15.1.  Threat Model
+14.1.  Threat Model
 
    This profile assumes the following:
 
@@ -2899,29 +2719,29 @@ Table of Contents
       protocols.
 
    *  Migration Clients are confidential clients (public clients are
-      excluded; see Section 6.1).  Their client authentication
+      excluded; see Section 5.1).  Their client authentication
       credentials are not directly disclosed to end-users.
 
    *  The Migration Client's saml_sp_entity_id (and per-client
       saml_idp_entity_id if used) binding is established under the
-      authorization rules in Section 6.1.1; self-asserted dynamic
+      authorization rules in Section 5.1.1; self-asserted dynamic
       registration of these values is disallowed.
 
    The following attacker capabilities are in scope:
 
    *  An attacker who obtains a SAML assertion in transit (through XSS
       in the SP, intermediary compromise, log leakage, or similar).  The
-      three-way binding (Section 4) and replay detection (Section 8.7)
+      three-way binding (Section 4) and replay detection (Section 7.7)
       limit what such an assertion enables.
 
    *  An attacker who attempts to dynamically register a client with a
       saml_sp_entity_id or saml_idp_entity_id they are not authorized to
-      bind.  The registration authorization rules (Section 6.1.1)
+      bind.  The registration authorization rules (Section 5.1.1)
       require out-of-band authorization for these values.
 
    *  An attacker who attempts XML Signature Wrapping, replay, or
       algorithm-downgrade attacks against a submitted SAML assertion.
-      The signature, replay, and algorithm rules in Section 8 and the
+      The signature, replay, and algorithm rules in Section 7 and the
       considerations below address these.
 
    *  An attacker who attempts to induce SSRF through a maliciously
@@ -2940,13 +2760,13 @@ Table of Contents
    *  SAML SLO discovery: the mechanism by which the authorization
       server learns of a SAML session ending.  Propagation from the
       authorization server to OpenID Connect clients via
-      [OIDC-BC-LOGOUT] is OPTIONAL and addressed in Section 14.
+      [OIDC-BC-LOGOUT] is OPTIONAL and addressed in Section 13.
 
    *  End-user account compromise upstream of the SAML IdP.
 
-15.2.  SAML Assertion and Signature Risks
+14.2.  SAML Assertion and Signature Risks
 
-15.2.1.  IdP-Initiated SSO and Missing InResponseTo
+14.2.1.  IdP-Initiated SSO and Missing InResponseTo
 
    When a SAML assertion is submitted without an InResponseTo element in
    its SubjectConfirmationData, the authorization server cannot confirm
@@ -2957,7 +2777,7 @@ Table of Contents
    has explicitly assessed and accepted the associated risks, including
    session fixation and assertion injection.
 
-15.2.2.  XML Signature Wrapping
+14.2.2.  XML Signature Wrapping
 
    XML Signature Wrapping (XSW) attacks allow an adversary to manipulate
    a SAML document by inserting a malicious element while retaining a
@@ -2973,7 +2793,7 @@ Table of Contents
       wrapper, it MUST verify that the element referenced by the
       signature's Reference/@URI is the same Response element being
       processed, and that the effective enclosed assertion selected
-      under Section 8 is the unique assertion bound to that validated
+      under Section 7 is the unique assertion bound to that validated
       wrapper.
 
    The authorization server MUST reject any document structure where
@@ -2981,7 +2801,7 @@ Table of Contents
    SHOULD use established SAML processing libraries that have been
    tested against known XSW attack patterns.
 
-15.2.3.  Deprecated Cryptographic Algorithms
+14.2.3.  Deprecated Cryptographic Algorithms
 
    Implementations MUST NOT accept SAML assertions signed using
    deprecated cryptographic algorithms.  Any signature algorithm using
@@ -3001,7 +2821,7 @@ Table of Contents
    policy accordingly.  SHA-1 is named above because of its prevalence
    in legacy SAML deployments.
 
-15.3.  Metadata Fetching and SSRF
+14.3.  Metadata Fetching and SSRF
 
    When an authorization server or migration tooling fetches a
    saml_metadata_uri at either the authorization server metadata level
@@ -3015,17 +2835,17 @@ Table of Contents
    constrain permitted fetch targets to a pre-approved allowlist of
    hosts, in order to prevent Server-Side Request Forgery (SSRF) attacks
    against internal services.  The registration authorization rules in
-   Section 6.1.1 apply to per-client saml_metadata_uri values, so an
+   Section 5.1.1 apply to per-client saml_metadata_uri values, so an
    attacker using dynamic client registration cannot freely set this
    value.
 
-15.4.  Replay and Bearer Assertion Risks
+14.4.  Replay and Bearer Assertion Risks
 
    SAML assertions used with Token Exchange or introspection are bearer
    artifacts.  Authorization servers MUST detect and prevent replay of
    the same assertion according to the security properties of the
    underlying SAML deployment, any SAML OneTimeUse condition, and the
-   replay rules in Section 8.  Client authentication alone is not
+   replay rules in Section 7.  Client authentication alone is not
    sufficient protection against replay of a stolen assertion.
 
    Authorization servers deployed across multiple nodes MUST share
@@ -3043,7 +2863,7 @@ Table of Contents
    MUST ensure they are performed outside this profile before the
    enclosed assertion is used to issue tokens or return claims.
 
-15.5.  Binding Security
+14.5.  Binding Security
 
    The bindings defined by saml_sp_entity_id and saml_idp_entity_id are
    security-critical, both at the authorization server metadata level
@@ -3053,7 +2873,7 @@ Table of Contents
    OAuth tokens or claims under the bound relying-party relationship,
    collapsing the three-way binding defined in Section 4.  Authorization
    servers MUST therefore protect registration and administrative
-   mapping of both values according to Section 6.1.1.  In particular,
+   mapping of both values according to Section 5.1.1.  In particular,
    anonymous or open dynamic client registration MUST NOT be permitted
    to set either value.
 
@@ -3064,24 +2884,24 @@ Table of Contents
    expose the same pairwise sub values and claims to clients that should
    have been isolated from one another.
 
-15.6.  Token and Claim Security
+14.6.  Token and Claim Security
 
    Mutable, transient, or reassignable NameID formats used as sub can
    cause account takeover or misbinding after identifier reuse; the
-   stability rules in Section 12.5 exclude them for that reason.
+   stability rules in Section 11.5 exclude them for that reason.
 
    Incorrect amr translation can overstate the assurance of an
-   authentication; see Section 13.1 for the rule that amr is populated
+   authentication; see Section 12.1 for the rule that amr is populated
    only from concrete authentication evidence.
 
    The introspection pattern can expose normalized claims without
-   minting OAuth tokens; see Section 10 for the requirement that
+   minting OAuth tokens; see Section 9 for the requirement that
    introspection clients be authenticated and authorized for the bound
    relying-party context.
 
    An ID Token issued directly from Token Exchange MUST meet the same
    signing, audience, issuer, and claim integrity requirements as one
-   issued through an ordinary OpenID Connect flow (see Section 9.2.4).
+   issued through an ordinary OpenID Connect flow (see Section 8.2.4).
 
    Access tokens issued under this profile are bearer tokens by default.
    They are therefore subject to the usual risks associated with bearer
@@ -3089,15 +2909,16 @@ Table of Contents
    value through interception, log leakage, or compromise of an
    intermediary.  Deployments protecting sensitive resources SHOULD
    consider sender-constrained access tokens, such as DPoP-bound tokens
-   or mTLS client-certificate-bound tokens, in accordance with the
-   underlying OAuth sender-constraint specifications.  This profile does
-   not preclude their use: a Migration Client MAY present a DPoP proof
-   or use mTLS client authentication at the token endpoint, and the
-   authorization server MAY issue sender-constrained access tokens in
-   the Token Exchange response when its policy and the client's
-   registration support that mechanism.
+   ([RFC9449]) or mTLS client-certificate-bound tokens ([RFC8705]), in
+   accordance with the underlying OAuth sender-constraint
+   specifications.  This profile does not preclude their use: a
+   Migration Client MAY present a DPoP proof or use mTLS client
+   authentication at the token endpoint, and the authorization server
+   MAY issue sender-constrained access tokens in the Token Exchange
+   response when its policy and the client's registration support that
+   mechanism.
 
-15.7.  Protocol Confusion and Transport Security
+14.7.  Protocol Confusion and Transport Security
 
    Mixing SAML trust inputs and OAuth trust inputs creates a risk of
    protocol confusion.  Implementations MUST validate SAML assertions
@@ -3111,7 +2932,7 @@ Table of Contents
    endpoint used by this profile in the same manner as the underlying
    OAuth, OpenID Connect, and SAML specifications that they extend.
 
-16.  Privacy Considerations
+15.  Privacy Considerations
 
    This profile exists in part to preserve privacy properties during
    migration.  Deployments that previously relied on SAML pairwise
@@ -3146,7 +2967,7 @@ Table of Contents
    client, because introspection can reveal identity data without the
    normal indirection of token issuance.
 
-   Releasing the sub_id claim (Section 12.6) exposes the original SAML
+   Releasing the sub_id claim (Section 11.6) exposes the original SAML
    subject identifier context, including the SAML IdP entityID and any
    NameID qualifiers.  This information is not normally exposed through
    the sub claim, which carries the authorization server's mapped value
@@ -3164,9 +2985,9 @@ Table of Contents
    but deployments SHOULD ensure that this sharing is an intentional
    policy decision.
 
-17.  IANA Considerations
+16.  IANA Considerations
 
-17.1.  OAuth Dynamic Client Registration Metadata
+16.1.  OAuth Dynamic Client Registration Metadata
 
    This document requests registration of the following values in the
    OAuth Dynamic Client Registration Metadata registry established by
@@ -3180,7 +3001,7 @@ Table of Contents
 
    *  Change Controller: IETF
 
-   *  Specification Document(s): This document, Section 6.1
+   *  Specification Document(s): This document, Section 5.1
 
    *  Client Metadata Name: saml_idp_entity_id
 
@@ -3191,7 +3012,7 @@ Table of Contents
 
    *  Change Controller: IETF
 
-   *  Specification Document(s): This document, Section 6.2
+   *  Specification Document(s): This document, Section 5.2
 
    *  Client Metadata Name: saml_metadata_uri
 
@@ -3201,9 +3022,9 @@ Table of Contents
 
    *  Change Controller: IETF
 
-   *  Specification Document(s): This document, Section 6.3
+   *  Specification Document(s): This document, Section 5.3
 
-17.2.  OAuth Authorization Server Metadata
+16.2.  OAuth Authorization Server Metadata
 
    This document requests registration of the following values in the
    OAuth Authorization Server Metadata registry established by
@@ -3211,13 +3032,15 @@ Table of Contents
 
    *  Metadata Name: saml_idp_entity_id
 
-   *  Metadata Description: Default identifier of the SAML 2.0 Identity
-      Provider entity bound to the authorization server issuer; may be
-      overridden per client registration
+   *  Metadata Description: Identifier of a SAML 2.0 Identity Provider
+      entity administratively bound to this authorization server.  The
+      profile document specifying use of the parameter defines the role
+      of the binding.  Under this document, the value may be overridden
+      per client registration.
 
    *  Change Controller: IETF
 
-   *  Specification Document(s): This document, Section 7.1
+   *  Specification Document(s): This document, Section 6.1
 
    *  Metadata Name: saml_metadata_uri
 
@@ -3228,7 +3051,7 @@ Table of Contents
 
    *  Change Controller: IETF
 
-   *  Specification Document(s): This document, Section 7.2
+   *  Specification Document(s): This document, Section 6.2
 
    *  Metadata Name: token_exchange_requested_token_types_supported
 
@@ -3238,7 +3061,7 @@ Table of Contents
 
    *  Change Controller: IETF
 
-   *  Specification Document(s): This document, Section 7.3
+   *  Specification Document(s): This document, Section 6.3
 
    *  Metadata Name: introspection_token_types_supported
 
@@ -3248,24 +3071,20 @@ Table of Contents
 
    *  Change Controller: IETF
 
-   *  Specification Document(s): This document, Section 7.4
+   *  Specification Document(s): This document, Section 6.4
 
-17.3.  OAuth Token Type Hints
+16.3.  OAuth Token Type Hints
 
-   This document requests registration of the following value in the
-   OAuth Token Type Hints registry established by [RFC7009].  The token
-   type URI below is defined by [RFC8693] as a token type identifier;
-   this registration makes it available as a token_type_hint value at
-   introspection and revocation endpoints, which use a separate
-   registry.
+   This document uses urn:ietf:params:oauth:token-type:saml2 (registered
+   by [RFC8693]) as a token_type_hint value at the introspection and
+   revocation endpoints (Section 9.1).  No new registration is
+   performed.
 
-   *  Hint Value: urn:ietf:params:oauth:token-type:saml2
+   [[NOTE TO RFC EDITOR / WG: [RFC7009] establishes no separate
+   token_type_hint registry, and stream-level publication choice may
+   affect whether and how to register profile-specific hint values.]]
 
-   *  Change Controller: IETF
-
-   *  Specification Document(s): This document, Section 10.1
-
-17.4.  OAuth Token Introspection Response Registry
+16.4.  OAuth Token Introspection Response Registry
 
    This document requests registration of the following values in the
    OAuth Token Introspection Response registry established by [RFC7662]:
@@ -3277,7 +3096,7 @@ Table of Contents
 
    *  Change Controller: IETF
 
-   *  Specification Document(s): This document, Section 10.2.3
+   *  Specification Document(s): This document, Section 9.2.3
 
    *  Response Name: sub_id
 
@@ -3288,8 +3107,8 @@ Table of Contents
 
    *  Change Controller: IETF
 
-   *  Specification Document(s): This document, Section 10.2.3,
-      Section 12.6
+   *  Specification Document(s): This document, Section 9.2.3,
+      Section 11.6
 
    *  Response Name: auth_time
 
@@ -3300,8 +3119,8 @@ Table of Contents
 
    *  Change Controller: IETF
 
-   *  Specification Document(s): This document, Section 10.2.3,
-      Section 13.1
+   *  Specification Document(s): This document, Section 9.2.3,
+      Section 12.1
 
    *  Response Name: acr
 
@@ -3311,8 +3130,8 @@ Table of Contents
 
    *  Change Controller: IETF
 
-   *  Specification Document(s): This document, Section 10.2.3,
-      Section 13.1
+   *  Specification Document(s): This document, Section 9.2.3,
+      Section 12.1
 
    *  Response Name: amr
 
@@ -3323,8 +3142,8 @@ Table of Contents
 
    *  Change Controller: IETF
 
-   *  Specification Document(s): This document, Section 10.2.3,
-      Section 13.1
+   *  Specification Document(s): This document, Section 9.2.3,
+      Section 12.1
 
    *  Response Name: sid
 
@@ -3335,8 +3154,8 @@ Table of Contents
 
    *  Change Controller: IETF
 
-   *  Specification Document(s): This document, Section 10.2.3,
-      Section 13.1
+   *  Specification Document(s): This document, Section 9.2.3,
+      Section 12.1
 
    *  Response Name: session_expiry
 
@@ -3347,53 +3166,33 @@ Table of Contents
 
    *  Change Controller: IETF
 
-   *  Specification Document(s): This document, Section 10.2.3,
-      Section 13.1
+   *  Specification Document(s): This document, Section 9.2.3,
+      Section 12.1
 
    Other OpenID Connect standard claims listed in the IANA "JSON Web
    Token Claims" registry (such as email, email_verified, given_name,
    family_name, name, preferred_username, phone_number, and
    phone_number_verified) MAY also appear as top-level members of the
    introspection response under this profile when the claim mapping
-   rules in Section 13 produce them.  Their semantics in the
+   rules in Section 12 produce them.  Their semantics in the
    introspection response are the same as in the corresponding ID Token
    or UserInfo response; this document does not redefine those claims
    and does not introduce additional introspection-registry entries for
    them.  A deployment that includes such a claim in its introspection
    response is relying on the existing JWT Claims registry definition.
 
-17.5.  JSON Web Token Claims
+16.5.  JSON Web Token Claims
 
-   This document requests registration of the following claim in the
-   IANA "JSON Web Token Claims" registry established by RFC 7519:
+   This document does not register a new sub_id JWT claim.  The sub_id
+   claim used by this profile is the claim already registered by
+   [RFC9493] Section 4.1.  This profile defines a new format value for
+   that claim, saml-nameid, registered in Section 16.6.
 
-   *  Claim Name: sub_id
-
-   *  Claim Description: Structured subject identifier carrying
-      provenance about the identifier (such as the original SAML NameID
-      context) alongside the primary sub claim
-
-   *  Change Controller: IETF
-
-   *  Reference: This document, Section 12.6
-
-17.6.  OAuth Scope Values
-
-   This document defines the following OAuth scope value:
-
-   *  Scope Value: saml_subject
-
-   *  Description: Requests release of the sub_id claim defined in
-      Section 12.6, carrying the original SAML NameID context for the
-      migrated relying-party relationship
-
-   *  Reference: This document, Section 12.6
-
-17.7.  Security Event Identifier Formats
+16.6.  Subject Identifier Formats
 
    This document requests registration of the following value in the
-   IANA "Security Event Identifier Formats" registry established by
-   [RFC9493]:
+   IANA "Subject Identifier Formats" registry established by [RFC9493]
+   Section 8.1:
 
    *  Format Name: saml-nameid
 
@@ -3402,11 +3201,20 @@ Table of Contents
 
    *  Change Controller: IETF
 
-   *  Reference: This document, Section 12.6
+   *  Reference: This document, Section 11.6
 
-18.  References
+16.7.  OAuth Scope Values
 
-18.1.  Normative References
+   This document defines the OAuth scope value saml_subject.  It
+   requests release of the sub_id claim defined in Section 11.6.
+
+   [[NOTE TO RFC EDITOR / WG: IANA maintains no general OAuth Scope
+   Values registry.  Stream-level publication choice will determine the
+   final registry path for this value, if any.]]
+
+17.  References
+
+17.1.  Normative References
 
    [OIDC-BC-LOGOUT]
               Jones, M. B. and J. Bradley, "OpenID Connect Back-Channel
@@ -3507,7 +3315,7 @@ Table of Contents
               Version 1.0", 2019, <https://docs.oasis-open.org/security/
               saml-subject-id-attr/v1.0/saml-subject-id-attr-v1.0.html>.
 
-18.2.  Informative References
+17.2.  Informative References
 
    [EDUPERSON]
               REFEDS, "eduPerson Object Class Specification",
@@ -3544,6 +3352,22 @@ Table of Contents
               DOI 10.17487/RFC7522, May 2015,
               <https://www.rfc-editor.org/rfc/rfc7522>.
 
+   [RFC8705]  Campbell, B., Bradley, J., Sakimura, N., and T.
+              Lodderstedt, "OAuth 2.0 Mutual-TLS Client Authentication
+              and Certificate-Bound Access Tokens", RFC 8705,
+              DOI 10.17487/RFC8705, February 2020,
+              <https://www.rfc-editor.org/rfc/rfc8705>.
+
+   [RFC9396]  Lodderstedt, T., Richer, J., and B. Campbell, "OAuth 2.0
+              Rich Authorization Requests", RFC 9396,
+              DOI 10.17487/RFC9396, May 2023,
+              <https://www.rfc-editor.org/rfc/rfc9396>.
+
+   [RFC9449]  Fett, D., Campbell, B., Bradley, J., Lodderstedt, T.,
+              Jones, M., and D. Waite, "OAuth 2.0 Demonstrating Proof of
+              Possession (DPoP)", RFC 9449, DOI 10.17487/RFC9449,
+              September 2023, <https://www.rfc-editor.org/rfc/rfc9449>.
+
    [SAML2-IOP]
               OASIS, "SAML V2.0 Metadata Interoperability Profile
               Version 1.0", 2009, <https://docs.oasis-
@@ -3566,6 +3390,7 @@ Appendix A.  Examples
    registration:
 
    {
+     "client_id": "s6BhdRkqt3",
      "client_name": "Calendar Example",
      "redirect_uris": [
        "https://calendar.example.com/callback"
@@ -3884,7 +3709,7 @@ B.1.  Common SAML Attribute Mappings
 
                                  Table 9
 
-   The rules in Section 13.2 (in particular, the NameFormat preference
+   The rules in Section 12.2 (in particular, the NameFormat preference
    rule preferring urn:oasis:names:tc:SAML:2.0:attrname-format:uri over
    :basic/:unspecified) govern how these are resolved when the assertion
    uses urn:oid: Name values alongside friendly names.
@@ -3894,9 +3719,9 @@ B.2.  InCommon and eduPerson Deployments
    Many InCommon deployments use eduPerson attributes, including the
    REFEDS Research and Scholarship attribute bundle.  InCommon
    deployments commonly use urn:oid: Name values in addition to friendly
-   names; the mapping rules in Section 13.2 govern how such OID-based
+   names; the mapping rules in Section 12.2 govern how such OID-based
    names are resolved to OpenID Connect claims.  The core rules in
-   Section 13 still govern claim typing, precedence, and subject
+   Section 12 still govern claim typing, precedence, and subject
    handling.  Within that framework, deployments commonly use the
    following mappings and constraints:
 
@@ -3953,7 +3778,7 @@ Appendix C.  Authentication Context Mapping Examples
 
    This appendix is non-normative.
 
-   The acr and amr mapping rules in Section 13.1 defer to local policy
+   The acr and amr mapping rules in Section 12.1 defer to local policy
    for the choice of registered Level-of-Assurance scheme.  This
    appendix provides example mappings from common SAML
    AuthnContextClassRef URIs to OpenID Connect acr values and to amr
@@ -3968,13 +3793,13 @@ C.1.  Common SAML AuthnContextClassRef URIs
    |                                                                  |amr        |acr (NIST|                                 |
    |                                                                  |           |800-63)  |                                 |
    +==================================================================+===========+=========+=================================+
-   |urn:oasis:names:tc:SAML:2.0:ac:classes:Password                   |["pwd"]    |aal1     |https://refeds.org/assurance/IAP/|
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:Password                   |["pwd"]    |AAL1     |https://refeds.org/assurance/IAP/|
    |                                                                  |           |         |low                              |
    +------------------------------------------------------------------+-----------+---------+---------------------------------+
-   |urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport |["pwd"]    |aal1     |https://refeds.org/assurance/IAP/|
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport |["pwd"]    |AAL1     |https://refeds.org/assurance/IAP/|
    |                                                                  |           |         |low                              |
    +------------------------------------------------------------------+-----------+---------+---------------------------------+
-   |urn:oasis:names:tc:SAML:2.0:ac:classes:TLSClient                  |["mfa",    |aal2     |https://refeds.org/assurance/IAP/|
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:TLSClient                  |["mfa",    |AAL2     |https://refeds.org/assurance/IAP/|
    |                                                                  |"swk"]     |         |medium                           |
    |                                                                  |(when      |         |                                 |
    |                                                                  |client cert|         |                                 |
@@ -3990,22 +3815,22 @@ C.1.  Common SAML AuthnContextClassRef URIs
    +------------------------------------------------------------------+-----------+---------+---------------------------------+
    |urn:oasis:names:tc:SAML:2.0:ac:classes:Smartcard                  |["sc"]     |varies   |varies                           |
    +------------------------------------------------------------------+-----------+---------+---------------------------------+
-   |urn:oasis:names:tc:SAML:2.0:ac:classes:SmartcardPKI               |["sc",     |aal2 or  |https://refeds.org/assurance/IAP/|
-   |                                                                  |"hwk"]     |aal3     |medium or higher                 |
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:SmartcardPKI               |["sc",     |AAL2 or  |https://refeds.org/assurance/IAP/|
+   |                                                                  |"hwk"]     |AAL3     |medium or higher                 |
    +------------------------------------------------------------------+-----------+---------+---------------------------------+
-   |urn:oasis:names:tc:SAML:2.0:ac:classes:Kerberos                   |["pwd"]    |aal1     |https://refeds.org/assurance/IAP/|
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:Kerberos                   |["pwd"]    |AAL1     |https://refeds.org/assurance/IAP/|
    |                                                                  |(typically |         |low                              |
    |                                                                  |Kerberos   |         |                                 |
    |                                                                  |backed by  |         |                                 |
    |                                                                  |password)  |         |                                 |
    +------------------------------------------------------------------+-----------+---------+---------------------------------+
-   |urn:oasis:names:tc:SAML:2.0:ac:classes:TimeSyncToken              |["otp"]    |aal2     |https://refeds.org/assurance/IAP/|
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:TimeSyncToken              |["otp"]    |AAL2     |https://refeds.org/assurance/IAP/|
    |                                                                  |           |         |medium                           |
    +------------------------------------------------------------------+-----------+---------+---------------------------------+
-   |urn:oasis:names:tc:SAML:2.0:ac:classes:MultiFactorContract        |["mfa"]    |aal2     |https://refeds.org/assurance/IAP/|
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:MultiFactorContract        |["mfa"]    |AAL2     |https://refeds.org/assurance/IAP/|
    |                                                                  |           |         |medium                           |
    +------------------------------------------------------------------+-----------+---------+---------------------------------+
-   |urn:oasis:names:tc:SAML:2.0:ac:classes:MultiFactorPhysicalContract|["mfa",    |aal3     |https://refeds.org/assurance/IAP/|
+   |urn:oasis:names:tc:SAML:2.0:ac:classes:MultiFactorPhysicalContract|["mfa",    |AAL3     |https://refeds.org/assurance/IAP/|
    |                                                                  |"hwk"]     |         |high                             |
    +------------------------------------------------------------------+-----------+---------+---------------------------------+
    |urn:oasis:names:tc:SAML:2.0:ac:classes:PreviousSession            |(none; SAML|(none)   |(none)                           |
@@ -4022,9 +3847,10 @@ C.2.  Notes on these mappings
    *  amr is a JSON array; multi-factor SAML classes naturally produce
       multiple values (typically including mfa).
 
-   *  acr values shown for NIST 800-63 are strings of the form "aal1",
-      "aal2", "aal3".  Deployments MAY use URI forms such as those
-      defined by REFEDS for federated higher-education contexts.
+   *  acr values shown for NIST SP 800-63-3 use the canonical uppercase
+      forms "AAL1", "AAL2", "AAL3".  Deployments MAY use URI forms such
+      as those defined by REFEDS for federated higher-education
+      contexts.
 
    *  The Smartcard / SmartcardPKI / X509 rows depend heavily on key
       storage (software vs. hardware-bound) and whether a second factor
@@ -4044,14 +3870,14 @@ C.2.  Notes on these mappings
    *  When the SAML deployment uses non-standard AuthnContextClassRef
       URIs (vendor-specific, IdP-specific, or federation-defined), the
       authorization server MAY pass the URI through to acr per
-      Section 13.1, with amr populated only when the local mapping
+      Section 12.1, with amr populated only when the local mapping
       explicitly authorizes specific values.
 
 C.3.  Pass-through and absence
 
    When local policy does not provide a mapping for an asserted
    AuthnContextClassRef, the authorization server SHOULD copy the SAML
-   URI to acr without transformation per Section 13.1.  The
+   URI to acr without transformation per Section 12.1.  The
    authorization server MUST NOT populate amr in this case, since
    deriving amr from an unmapped class URI would overstate the
    assurance.

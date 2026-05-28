@@ -309,16 +309,19 @@ h1, h2, h3, h4, h5, h6 {
   font-size-adjust: 0.5;
   color: var(--title-color);
 }
-h1#title {
-  font-size: 32px;
-  line-height: 40px;
-  clear: both;
-}
-h1#title, h1#rfcnum {
-  margin: 1.5em 0 0.2em;
-}
-h1#rfcnum + h1#title {
-  margin: 0.2em 0;
+h1 {
+  &#title {
+    font-size: 32px;
+    line-height: 40px;
+    clear: both;
+    margin: 1.5em 0 0.2em;
+  }
+  &#rfcnum {
+    margin: 1.5em 0 0.2em;
+    & + h1#title {
+      margin: 0.2em 0;
+    }
+  }
 }
 
 h1, h2, h3 {
@@ -338,10 +341,10 @@ h4, h5, h6 {
 #abstract+p {
   font-size: 18px;
   line-height: 24px;
-}
-#abstract+p code, #abstract+p samp, #abstract+p tt {
-  font-size: 16px;
-  line-height: 0;
+  & code, & samp, & tt {
+    font-size: 16px;
+    line-height: 0;
+  }
 }
 
 p {
@@ -352,59 +355,59 @@ p {
 div {
   margin: 0;
 }
-.alignRight.art-text {
-  background-color: var(--highlight-color);
-  border: 1px solid var(--line-color);
-  border-radius: 3px;
-  padding: 0.5em 1em 0;
-  margin-bottom: 0.5em;
-}
-.alignRight.art-text pre {
-  padding: 0;
-  width: auto;
-}
 .alignRight {
   margin: 1em 0;
-}
-.alignRight > *:first-child {
-  border: none;
-  margin: 0;
-  float: right;
-  clear: both;
-}
-.alignRight > *:nth-child(2) {
-  clear: both;
-  display: block;
-  border: none;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    margin: 0;
+    float: right;
+    clear: both;
+  }
+  & > *:nth-child(2) {
+    clear: both;
+    display: block;
+    border: none;
+  }
 }
 svg {
   display: block;
-}
-/* font-family isn't space-separated, but =~ will have to do */
-svg[font-family~="monospace" i], svg [font-family~="monospace" i] {
-  font-family: var(--font-mono);
-}
-.alignCenter.art-text {
-  background-color: var(--highlight-color);
-  border: 1px solid var(--line-color);
-  border-radius: 3px;
-  padding: 0.5em 1em 0;
-  margin-bottom: 0.5em;
-}
-.alignCenter.art-text pre {
-  padding: 0;
-  width: auto;
+  /* font-family isn't space-separated, but =~ will have to do */
+  &[font-family~="monospace" i], & [font-family~="monospace" i] {
+    font-family: var(--font-mono);
+  }
 }
 .alignCenter {
   margin: 1em 0;
-}
-.alignCenter > *:first-child {
-  border: none;
-  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
-     support flexbox yet.
-  */
-  display: table;
-  margin: 0 auto;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+       support flexbox yet.
+    */
+    display: table;
+    margin: 0 auto;
+  }
 }
 
 /* lists */
@@ -442,26 +445,25 @@ dl {
     --indent: 5ch;
     & > dt {
       min-width: calc(var(--indent) - 2ch);
+      float: none;
     }
-  }
-  &.olPercent > dt {
-    float: none;
   }
 
   dl > dd > & {
     margin-top: 0.5em;
     margin-bottom: 0;
   }
-}
-dl:not(.dlNewline) > dt {
-  float: left;
-  margin-right: 2ch;
-  min-width: 8ch;
-}
-dl > dd {
-  margin-bottom: .8em;
-  margin-left: var(--indent) !important; /* stupid element overrides */
-  min-height: 2ex;
+
+  &:not(.dlNewline) > dt {
+    float: left;
+    margin-right: 2ch;
+    min-width: 8ch;
+  }
+  & > dd {
+    margin-bottom: .8em;
+    margin-left: var(--indent) !important; /* stupid element overrides */
+    min-height: 2ex;
+  }
 }
 :is(dl.compact, .dlCompact) > dd {
   margin-bottom: 0;
@@ -477,20 +479,22 @@ dl > dd {
 }
 
 /* links */
-a, a[href].selfRef:hover {
+a {
   text-decoration: none;
+  &[href] {
+    color: var(--link-color);
+    &:hover { text-decoration: underline; }
+    &.selfRef {
+      color: var(--text-color);
+      &:hover {
+        text-decoration: none;
+        background-color: var(--highlight-color);
+      }
+    }
+  }
 }
-a[href] {
-  color: var(--link-color);
-}
-a[href].selfRef, .iref + a[href].internal {
+.iref + a[href].internal {
   color: var(--text-color);
-}
-a[href]:hover {
-  text-decoration: underline;
-}
-a[href].selfRef:hover {
-  background-color: var(--highlight-color);
 }
 a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
   white-space: nowrap;
@@ -526,9 +530,9 @@ img {
 figure {
   margin: 0.5em 0;
   padding: 0;
-}
-figure blockquote {
-  margin: 0.8em 0.4em 0.4em;
+  & blockquote {
+    margin: 0.8em 0.4em 0.4em;
+  }
 }
 figcaption, caption {
   font-style: italic;
@@ -538,17 +542,19 @@ figcaption, caption {
 }
 @media screen {
   /* Auto-collapse boilerplate. */
-  :is(#status-of-memo, #copyright) p {
-    margin: -2px 0;
-    max-height: 0;
-    transition: max-height 2s ease, margin 0.5s ease 0.5s;
-    overflow: hidden;
-  }
-  :is(#status-of-memo, #copyright):hover p,
-  :is(#status-of-memo, #copyright) h2:target ~ p {
-    margin: 0.5em 0;
-    max-height: 500px;
-    overflow: auto;
+  :is(#status-of-memo, #copyright) {
+    & p {
+      margin: -2px 0;
+      max-height: 0;
+      transition: max-height 2s ease, margin 0.5s ease 0.5s;
+      overflow: hidden;
+    }
+    &:hover p,
+    & h2:target ~ p {
+      margin: 0.5em 0;
+      max-height: 500px;
+      overflow: auto;
+    }
   }
   pre, svg {
     display: inline-block;
@@ -598,25 +604,17 @@ table {
   max-width: 100%;
   margin: 0 0 1em;
   border-collapse: collapse;
-}
-table.right {
-  margin-left: auto;
-}
-table.center {
-  margin-left: auto;
-  margin-right: auto;
-}
-table.left {
-  margin-right: auto;
-}
-table .text-left {
-  text-align: left;
-}
-table .text-center {
-  text-align: center;
-}
-table .text-right {
-  text-align: right;
+  &.right { margin-left: auto; }
+  &.center { margin-left: auto; margin-right: auto; }
+  &.left { margin-right: auto; }
+  & .text-left { text-align: left; }
+  & .text-center { text-align: center; }
+  & .text-right { text-align: right; }
+  & caption {
+    margin: 0;
+    padding: 3px 0 3px 1em;
+  }
+  & p { margin: 0; }
 }
 
 thead, tbody {
@@ -636,13 +634,6 @@ th {
 :is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
   background-color: var(--highlight-color);
 }
-table caption {
-  margin: 0;
-  padding: 3px 0 3px 1em;
-}
-table p {
-  margin: 0;
-}
 
 /* pilcrow */
 a.pilcrow {
@@ -653,18 +644,16 @@ a.pilcrow {
     color: var(--pilcrow-weak);
     &:hover { text-decoration: none; }
   }
-}
-@media not print {
-  :hover > a.pilcrow, a.pilcrow:focus {
-    opacity: 1;
+  @media not print {
+    :hover > &, &:focus {
+      opacity: 1;
+    }
+    &[href]:hover {
+      color: var(--pilcrow-strong);
+      background-color: transparent;
+    }
   }
-  a.pilcrow[href]:hover {
-    color: var(--pilcrow-strong);
-    background-color: transparent;
-  }
-}
-@media print {
-  a.pilcrow {
+  @media print {
     display: none;
   }
 }
@@ -723,9 +712,9 @@ sub, sup {
   font-size: 0.9em;
   font-style: italic;
   margin-top: 2em;
-}
-.docInfo .prepared {
-  float: right;
+  & .prepared {
+    float: right;
+  }
 }
 
 /* table of contents */
@@ -815,23 +804,27 @@ hr.addr {
   max-width: calc(100% - 16px);
 }
 @media (min-width: 500px) {
-  #authors-addresses > section {
-    column-count: 2;
-    column-gap: 20px;
-  }
-  #authors-addresses > section > h2 {
-    column-span: all;
-  }
-  /* hack for break-inside: avoid-column */
-  #authors-addresses address {
-    display: inline-block;
-    break-inside: avoid-column;
+  #authors-addresses {
+    & > section {
+      column-count: 2;
+      column-gap: 20px;
+    }
+    & > section > h2 {
+      column-span: all;
+    }
+    /* hack for break-inside: avoid-column */
+    & address {
+      display: inline-block;
+      break-inside: avoid-column;
+    }
   }
 }
 
 /* Comments */
-.rfcEditorRemove p:first-of-type {
-  font-style: italic;
+.rfcEditorRemove {
+  & p:first-of-type {
+    font-style: italic;
+  }
 }
 .cref {
   background-color: rgba(249, 232, 105, 0.3);
@@ -842,19 +835,21 @@ hr.addr {
 }
 
 @media screen {
-  #toc nav {
-    font-family: var(--font-title);
-    font-weight: 360;
-    & > ul { margin-bottom: 2em; }
-    & ul {
-      margin: 0 0 0 4px;
-      & :is(p, li) {
-        margin: 2px 0;
+  #toc {
+    & nav {
+      font-family: var(--font-title);
+      font-weight: 360;
+      & > ul { margin-bottom: 2em; }
+      & ul {
+        margin: 0 0 0 4px;
+        & :is(p, li) {
+          margin: 2px 0;
+        }
       }
     }
-  }
-  #toc a.toplink {
-    float: right;
+    & a.toplink {
+      float: right;
+    }
   }
 }
 @media not screen {
@@ -875,54 +870,54 @@ hr.addr {
     margin: 0;
     border-bottom: 1px solid #ccc;
     opacity: 0.6;
-  }
-  #toc h2 {
-    margin: 0;
-    padding: 2px 0 2px 6px;
-    padding-right: 1em;
-    font-size: 18px;
-    line-height: 24px;
-    min-width: 190px;
-    text-align: right;
-    background-color: #444;
-    color: white;
-    cursor: pointer;
-    &::before { /* css hamburger */
-      float: right;
-      position: relative;
-      width: 1em;
-      height: 1px;
-      left: -164px;
-      margin: 8px 0 0 0;
-      background: white none repeat scroll 0 0;
-      box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
-      content: "";
+    & h2 {
+      margin: 0;
+      padding: 2px 0 2px 6px;
+      padding-right: 1em;
+      font-size: 18px;
+      line-height: 24px;
+      min-width: 190px;
+      text-align: right;
+      background-color: #444;
+      color: white;
+      cursor: pointer;
+      &::before { /* css hamburger */
+        float: right;
+        position: relative;
+        width: 1em;
+        height: 1px;
+        left: -164px;
+        margin: 8px 0 0 0;
+        background: white none repeat scroll 0 0;
+        box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+        content: "";
+      }
     }
-  }
-  #toc nav {
-    display: none;
-    background-color: var(--background-color);
-    padding: 0.5em 1em 1em;
-    overflow: auto;
-    overscroll-behavior: contain;
-    height: calc(100vh - 48px);
-    border-left: 1px solid #ddd;
-  }
-  #toc.active {
-    opacity: 1;
-    & nav { display: block; }
-  }
-  /* Make the collapsed ToC header render white on gray also when it's a link */
-  #toc h2 a,
-  #toc h2 a:is(:link, :focus, :hover),
-  #toc a.toplink,
-  #toc a.toplink:hover {
-    color: white;
-    background-color: #444;
-    text-decoration: none;
-  }
-  #toc a.toplink {
-    margin: 2px 0.5em 0;
+    & nav {
+      display: none;
+      background-color: var(--background-color);
+      padding: 0.5em 1em 1em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      height: calc(100vh - 48px);
+      border-left: 1px solid #ddd;
+    }
+    &.active {
+      opacity: 1;
+      & nav { display: block; }
+    }
+    /* Make the collapsed ToC header render white on gray also when it's a link */
+    & h2 a,
+    & h2 a:is(:link, :focus, :hover),
+    & a.toplink,
+    & a.toplink:hover {
+      color: white;
+      background-color: #444;
+      text-decoration: none;
+    }
+    & a.toplink {
+      margin: 2px 0.5em 0;
+    }
   }
 }
 
@@ -941,26 +936,26 @@ hr.addr {
     margin: 0;
     padding: 0;
     z-index: 1;
-  }
-  #toc h2 {
-    margin: 0;
-    padding: 0.25em 1em 1em 0;
-  }
-  #toc nav {
-    display: block;
-    height: calc(90vh - 84px);
-    bottom: 0;
-    padding: 0.5em 0 2em;
-    overflow: auto;
-    overscroll-behavior: contain;
-    scrollbar-width: thin;
+    & h2 {
+      margin: 0;
+      padding: 0.25em 1em 1em 0;
+    }
+    & nav {
+      display: block;
+      height: calc(90vh - 84px);
+      bottom: 0;
+      padding: 0.5em 0 2em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+    & a.toplink {
+      margin: 8px 0.5em 0;
+    }
   }
   img { /* future proofing */
     max-width: 100%;
     height: auto;
-  }
-  #toc a.toplink {
-    margin: 8px 0.5em 0;
   }
 }
 
@@ -976,12 +971,13 @@ hr.addr {
   #n-copyright-notice {
     border-bottom: none;
   }
-  #toc, #n-introduction {
-    page-break-before: always;
-  }
   #toc {
+    page-break-before: always;
     border-top: none;
     padding-top: 0;
+  }
+  #n-introduction {
+    page-break-before: always;
   }
   figure, pre, .vcard {
     page-break-inside: avoid;
@@ -1043,17 +1039,19 @@ hr.addr {
 }
 
 /* SVG Trick: a prefix match works because only black and white are allowed */
-svg :is([stroke="black"], [stroke^="#000"]) {
-  stroke: var(--text-color);
-}
-svg :is([stroke="white"], [stroke^="#fff"]) {
-  stroke: var(--background-color);
-}
-svg :is([fill="black"], [fill^="#000"], :not([fill])) {
-  fill: var(--text-color);
-}
-svg :is([fill="white"], [fill^="#fff"]) {
-  fill: var(--background-color);
+svg {
+  & :is([stroke="black"], [stroke^="#000"]) {
+    stroke: var(--text-color);
+  }
+  & :is([stroke="white"], [stroke^="#fff"]) {
+    stroke: var(--background-color);
+  }
+  & :is([fill="black"], [fill^="#000"], :not([fill])) {
+    fill: var(--text-color);
+  }
+  & :is([fill="white"], [fill^="#fff"]) {
+    fill: var(--background-color);
+  }
 }
 </style>
 
@@ -1067,7 +1065,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </tr></thead>
 <tfoot><tr>
 <td class="left">McGuinness</td>
-<td class="center">Expires 23 November 2026</td>
+<td class="center">Expires 29 November 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1080,12 +1078,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-connect-saml-idp-profile-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-05-22" class="published">22 May 2026</time>
+<time datetime="2026-05-28" class="published">28 May 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-11-23">23 November 2026</time></dd>
+<dd class="expires"><time datetime="2026-11-29">29 November 2026</time></dd>
 <dt class="label-authors">Author:</dt>
 <dd class="authors">
 <div class="author">
@@ -1146,7 +1144,7 @@ SPs become OIDC clients on their own timeline.<a href="#section-abstract-3" clas
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 23 November 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 29 November 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1176,7 +1174,10 @@ SPs become OIDC clients on their own timeline.<a href="#section-abstract-3" clas
             <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.1">
-                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-non-goals" class="internal xref">Non-Goals</a></p>
+                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-overview" class="internal xref">Overview</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.2">
+                <p id="section-toc.1-1.1.2.2.1" class="keepWithNext"><a href="#section-1.2" class="auto internal xref">1.2</a>.  <a href="#name-non-goals" class="internal xref">Non-Goals</a></p>
 </li>
             </ul>
 </li>
@@ -1184,7 +1185,7 @@ SPs become OIDC clients on their own timeline.<a href="#section-abstract-3" clas
             <p id="section-toc.1-1.2.1"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-conventions-and-terminology" class="internal xref">Conventions and Terminology</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.1">
-                <p id="section-toc.1-1.2.2.1.1" class="keepWithNext"><a href="#section-2.1" class="auto internal xref">2.1</a>.  <a href="#name-requirements-notation" class="internal xref">Requirements Notation</a></p>
+                <p id="section-toc.1-1.2.2.1.1"><a href="#section-2.1" class="auto internal xref">2.1</a>.  <a href="#name-requirements-notation" class="internal xref">Requirements Notation</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.2">
                 <p id="section-toc.1-1.2.2.2.1"><a href="#section-2.2" class="auto internal xref">2.2</a>.  <a href="#name-terminology" class="internal xref">Terminology</a></p>
@@ -1198,7 +1199,7 @@ SPs become OIDC clients on their own timeline.<a href="#section-abstract-3" clas
             <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-binding-and-issuance-model" class="internal xref">Binding and Issuance Model</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
-                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-issuance-authorization" class="internal xref">Issuance Authorization</a></p>
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-authorization-basis-and-rel" class="internal xref">Authorization Basis and Release Policy</a></p>
 </li>
             </ul>
 </li>
@@ -1248,22 +1249,19 @@ SPs become OIDC clients on their own timeline.<a href="#section-abstract-3" clas
             <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-oidc-authentication-flow-at" class="internal xref">OIDC Authentication Flow at the OP</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.1">
-                <p id="section-toc.1-1.8.2.1.1"><a href="#section-8.1" class="auto internal xref">8.1</a>.  <a href="#name-flow-overview" class="internal xref">Flow Overview</a></p>
+                <p id="section-toc.1-1.8.2.1.1"><a href="#section-8.1" class="auto internal xref">8.1</a>.  <a href="#name-authorization-request-proce" class="internal xref">Authorization Request Processing</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.2">
-                <p id="section-toc.1-1.8.2.2.1"><a href="#section-8.2" class="auto internal xref">8.2</a>.  <a href="#name-authorization-request-proce" class="internal xref">Authorization Request Processing</a></p>
+                <p id="section-toc.1-1.8.2.2.1"><a href="#section-8.2" class="auto internal xref">8.2</a>.  <a href="#name-idp-binding-selection" class="internal xref">IdP-Binding Selection</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.3">
-                <p id="section-toc.1-1.8.2.3.1"><a href="#section-8.3" class="auto internal xref">8.3</a>.  <a href="#name-idp-binding-selection" class="internal xref">IdP-Binding Selection</a></p>
+                <p id="section-toc.1-1.8.2.3.1"><a href="#section-8.3" class="auto internal xref">8.3</a>.  <a href="#name-saml-authnrequest-construct" class="internal xref">SAML AuthnRequest Construction</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.4">
-                <p id="section-toc.1-1.8.2.4.1"><a href="#section-8.4" class="auto internal xref">8.4</a>.  <a href="#name-saml-authnrequest-construct" class="internal xref">SAML AuthnRequest Construction</a></p>
+                <p id="section-toc.1-1.8.2.4.1"><a href="#section-8.4" class="auto internal xref">8.4</a>.  <a href="#name-stateless-correlation-with-" class="internal xref">Stateless Correlation with RelayState</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.5">
-                <p id="section-toc.1-1.8.2.5.1"><a href="#section-8.5" class="auto internal xref">8.5</a>.  <a href="#name-stateless-correlation-with-" class="internal xref">Stateless Correlation with RelayState</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.6">
-                <p id="section-toc.1-1.8.2.6.1"><a href="#section-8.6" class="auto internal xref">8.6</a>.  <a href="#name-error-handling" class="internal xref">Error Handling</a></p>
+                <p id="section-toc.1-1.8.2.5.1"><a href="#section-8.5" class="auto internal xref">8.5</a>.  <a href="#name-error-handling" class="internal xref">Error Handling</a></p>
 </li>
             </ul>
 </li>
@@ -1406,12 +1404,13 @@ SPs become OIDC clients on their own timeline.<a href="#section-abstract-3" clas
       <h2 id="name-introduction">
 <a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
       </h2>
-<p id="section-1-1">Many organizations have a SAML 2.0 IdP as their authoritative authentication
-source but want to expose OpenID Connect to relying parties — to support
-modern OIDC-based applications, to consolidate identity onto a single OAuth
-2.0 / OpenID Connect surface, or to begin a phased SAML deprecation. The
-practical question in each case is: can an OP be stood up before the SAML
-IdP is retired?<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-1">Many organizations have a SAML 2.0 IdP as their authoritative
+authentication source but want to expose OpenID Connect to relying
+parties. Reasons include supporting modern OIDC applications,
+consolidating identity onto a single OAuth 2.0 / OpenID Connect
+surface, and beginning a phased SAML deprecation. The practical
+question in each case is whether an OP can be stood up before the
+SAML IdP is retired.<a href="#section-1-1" class="pilcrow">¶</a></p>
 <p id="section-1-2">This profile answers that question. It defines an OP that acts as a thin
 translation layer: it receives standard OIDC authorization requests from
 relying parties, performs SAML 2.0 Web Browser SSO upstream against the
@@ -1460,56 +1459,106 @@ resolving them to a Local Account;<a href="#section-1-6.3.1" class="pilcrow">¶<
 preserving SAML SP-equivalent continuity; and<a href="#section-1-6.4.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-1-6.5">
-          <p id="section-1-6.5.1">defines rules for translating SAML attributes and authentication context
-into OIDC claims and <code>acr</code>.<a href="#section-1-6.5.1" class="pilcrow">¶</a></p>
+          <p id="section-1-6.5.1">defines rules for translating SAML attributes and authentication
+context into OIDC claims and <code>acr</code>.<a href="#section-1-6.5.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-1-7">What this profile does not define is enumerated in <a href="#non-goals" class="auto internal xref">Section 1.1</a>.<a href="#section-1-7" class="pilcrow">¶</a></p>
-<div id="non-goals">
+<div id="overview">
 <section id="section-1.1">
-        <h3 id="name-non-goals">
-<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-non-goals" class="section-name selfRef">Non-Goals</a>
+        <h3 id="name-overview">
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-overview" class="section-name selfRef">Overview</a>
         </h3>
-<p id="section-1.1-1">The profile is scoped to OP-side SAML federation and identity continuity.
-It does NOT define:<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<p id="section-1.1-1">This profile involves three actors:<a href="#section-1.1-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-1.1-2.1">
-            <p id="section-1.1-2.1.1">a generalized SAML 2.0 SP, including SOAP attribute query, ECP, Holder-
-of-Key SubjectConfirmation, or SP-specific SAML extensions;<a href="#section-1.1-2.1.1" class="pilcrow">¶</a></p>
+            <p id="section-1.1-2.1.1"><strong>OIDC RP</strong> -- an OpenID Connect Relying Party that uses the OP
+for authentication.<a href="#section-1.1-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-1.1-2.2">
-            <p id="section-1.1-2.2.1">federation establishment between otherwise independent OIDC and SAML
-parties; the OP and the SAML IdP are assumed to be under common
-administrative control;<a href="#section-1.1-2.2.1" class="pilcrow">¶</a></p>
+            <p id="section-1.1-2.2.1"><strong>OP</strong> -- the OpenID Provider defined by this profile. The OP
+acts as an OIDC AS toward RPs and as a SAML SP toward the
+upstream SAML IdP.<a href="#section-1.1-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-1.1-2.3">
-            <p id="section-1.1-2.3.1">migration methodology (rollout patterns, cutover sequencing, SAML IdP
-retirement);<a href="#section-1.1-2.3.1" class="pilcrow">¶</a></p>
+            <p id="section-1.1-2.3.1"><strong>Upstream SAML IdP</strong> -- the SAML 2.0 Identity Provider that
+authenticates end-users. Unmodified by this profile.<a href="#section-1.1-2.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-1.1-2.4">
-            <p id="section-1.1-2.4.1">account-linkage bootstrap (how a Local Account is established and bound
-to a SAML NameID before this profile's first run);<a href="#section-1.1-2.4.1" class="pilcrow">¶</a></p>
+        </ul>
+<div class="alignLeft art-text artwork" id="section-1.1-3">
+<pre>
+   +-------+               +---------+              +----------+
+   |       |--(A)-authzReq&gt;|         |---(B)-------&gt;|          |
+   |       |               |         | AuthnRequest | Upstream |
+   | OIDC  |               |   OP    |              |   SAML   |
+   |   RP  |               |         |&lt;--(C)--------|   IdP    |
+   |       |&lt;--(D)-tokens--|         |   SAML Resp  |          |
+   +-------+               +---------+              +----------+
+</pre><a href="#section-1.1-3" class="pilcrow">¶</a>
+</div>
+<p id="section-1.1-4">(A) An OIDC RP redirects the end-user to the OP's authorization
+    endpoint with a standard OIDC authorization request.<a href="#section-1.1-4" class="pilcrow">¶</a></p>
+<p id="section-1.1-5">(B) The OP has no SAML-authenticated session for the user. It
+    selects an IdP-Binding (<a href="#idp-binding-selection" class="auto internal xref">Section 8.2</a>), constructs
+    a signed SAML <code>AuthnRequest</code>
+    (<a href="#authn-request-construction" class="auto internal xref">Section 8.3</a>), and redirects the browser
+    to the upstream SAML IdP.<a href="#section-1.1-5" class="pilcrow">¶</a></p>
+<p id="section-1.1-6">(C) The upstream SAML IdP authenticates the end-user and POSTs a
+    signed SAML <code>Response</code> to the OP's ACS endpoint. The OP
+    validates the assertion (<a href="#saml-assertion-validation" class="auto internal xref">Section 7</a>),
+    resolves the user to a Local Account
+    (<a href="#local-subject-resolution" class="auto internal xref">Section 9</a>), derives a stable OIDC <code>sub</code>
+    (<a href="#subject-identifier-mapping" class="auto internal xref">Section 10</a>), and maps SAML attributes
+    and authentication context to OIDC claims
+    (<a href="#claim-mapping" class="auto internal xref">Section 11</a>).<a href="#section-1.1-6" class="pilcrow">¶</a></p>
+<p id="section-1.1-7">(D) The OP returns an OIDC authorization response to the RP.
+    Subsequent token and UserInfo requests follow <span>[<a href="#OIDC-CORE" class="cite xref">OIDC-CORE</a>]</span>.<a href="#section-1.1-7" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="non-goals">
+<section id="section-1.2">
+        <h3 id="name-non-goals">
+<a href="#section-1.2" class="section-number selfRef">1.2. </a><a href="#name-non-goals" class="section-name selfRef">Non-Goals</a>
+        </h3>
+<p id="section-1.2-1">The profile is scoped to OP-side SAML federation and identity continuity.
+It does NOT define:<a href="#section-1.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1.2-2.1">
+            <p id="section-1.2-2.1.1">a generalized SAML 2.0 SP, including SOAP attribute query, ECP, Holder-
+of-Key SubjectConfirmation, or SP-specific SAML extensions;<a href="#section-1.2-2.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-1.1-2.5">
-            <p id="section-1.1-2.5.1">provisioning, SCIM integration, or account-lifecycle workflows;<a href="#section-1.1-2.5.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-1.2-2.2">
+            <p id="section-1.2-2.2.1">federation establishment between otherwise independent OIDC and SAML
+parties; the OP and the SAML IdP are assumed to be under common
+administrative control;<a href="#section-1.2-2.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-1.1-2.6">
-            <p id="section-1.1-2.6.1">API authorization architectures, scope design, or resource-server
-policy;<a href="#section-1.1-2.6.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-1.2-2.3">
+            <p id="section-1.2-2.3.1">migration methodology (rollout patterns, cutover sequencing, SAML IdP
+retirement);<a href="#section-1.2-2.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-1.1-2.7">
-            <p id="section-1.1-2.7.1">governance models (approval, attestation, audit, segregation of duties);<a href="#section-1.1-2.7.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-1.2-2.4">
+            <p id="section-1.2-2.4.1">account-linkage bootstrap (how a Local Account is established and bound
+to a SAML NameID before this profile's first run);<a href="#section-1.2-2.4.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-1.1-2.8">
-            <p id="section-1.1-2.8.1">encrypted SAML element processing beyond decrypting an
+          <li class="normal" id="section-1.2-2.5">
+            <p id="section-1.2-2.5.1">provisioning, SCIM integration, or account-lifecycle workflows;<a href="#section-1.2-2.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.2-2.6">
+            <p id="section-1.2-2.6.1">API authorization architectures, scope design, or resource-server
+policy;<a href="#section-1.2-2.6.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.2-2.7">
+            <p id="section-1.2-2.7.1">governance models (approval, attestation, audit, segregation of duties);<a href="#section-1.2-2.7.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.2-2.8">
+            <p id="section-1.2-2.8.1">encrypted SAML element processing beyond decrypting an
 <code>EncryptedAssertion</code> addressed to the OP-as-SP role (see
 <a href="#accepted-saml-inputs" class="auto internal xref">Section 7.1</a>); <code>EncryptedID</code> and <code>EncryptedAttribute</code> are
-out of scope; or<a href="#section-1.1-2.8.1" class="pilcrow">¶</a></p>
+out of scope; or<a href="#section-1.2-2.8.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-1.1-2.9">
-            <p id="section-1.1-2.9.1">a Token Exchange variant — clients that already hold a SAML assertion
-and want to exchange it for OIDC tokens use <span>[<a href="#SAML-OIDC-MIGRATION" class="cite xref">SAML-OIDC-MIGRATION</a>]</span>
-instead.<a href="#section-1.1-2.9.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-1.2-2.9">
+            <p id="section-1.2-2.9.1">a Token Exchange variant. Clients that already hold a SAML
+assertion and want to exchange it for OIDC tokens use
+<span>[<a href="#SAML-OIDC-MIGRATION" class="cite xref">SAML-OIDC-MIGRATION</a>]</span> instead.<a href="#section-1.2-2.9.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
@@ -1541,7 +1590,8 @@ appear in all capitals, as shown here.<a href="#section-2.1-1" class="pilcrow">�
 identifier", "issuer", and "scope" from OAuth 2.0, OAuth 2.0 Authorization
 Server Metadata, and OpenID Connect. It uses the terms "Identity Provider",
 "Service Provider", "entityID", "Assertion", "Attribute",
-"AttributeStatement", "AuthnStatement", and "AuthnContext" from SAML 2.0.<a href="#section-2.2-1" class="pilcrow">¶</a></p>
+"AttributeStatement", "AuthnStatement", "AuthnContext", "Web Browser SSO",
+and "AssertionConsumerService" (the "ACS endpoint") from SAML 2.0.<a href="#section-2.2-1" class="pilcrow">¶</a></p>
 <p id="section-2.2-2">For the purposes of this document:<a href="#section-2.2-2" class="pilcrow">¶</a></p>
 <span class="break"></span><dl class="dlParallel" id="section-2.2-3">
           <dt id="section-2.2-3.1">OpenID Provider (OP):</dt>
@@ -1593,33 +1643,19 @@ that Local Account for each relying party context.<a href="#section-2.2-3.10.1" 
       <h2 id="name-applicability-and-deploymen">
 <a href="#section-3" class="section-number selfRef">3. </a><a href="#name-applicability-and-deploymen" class="section-name selfRef">Applicability and Deployment Model</a>
       </h2>
-<p id="section-3-1">This profile assumes that the OP and the SAML IdP are operated by, or
-under the administrative control of, the same authority. It is not
-intended to establish federation trust between otherwise independent OIDC
-and SAML parties.<a href="#section-3-1" class="pilcrow">¶</a></p>
-<p id="section-3-2">The profile establishes three bindings:<a href="#section-3-2" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-3-3.1">
-          <p id="section-3-3.1.1"><strong>Issuer binding:</strong> the OP's OAuth <code>issuer</code> is bound to one or more
-upstream SAML IdP entities through IdP-Bindings.<a href="#section-3-3.1.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-3-3.2">
-          <p id="section-3-3.2.1"><strong>IdP-Binding:</strong> the OP maintains per-IdP configuration scoping subject
-computation and attribute release (see
-<a href="#idp-binding-configuration" class="auto internal xref">Section 5</a>).<a href="#section-3-3.2.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-3-3.3">
-          <p id="section-3-3.3.1"><strong>Subject binding:</strong> the OP derives a stable OIDC <code>sub</code> from the SAML
-NameID per relying-party context (see <a href="#subject-identifier-mapping" class="auto internal xref">Section 10</a>).<a href="#section-3-3.3.1" class="pilcrow">¶</a></p>
-</li>
-      </ul>
-<p id="section-3-4">When these bindings are present, the OP can issue OIDC tokens that
-preserve the subject identifiers and claim release policy already
-established at the SAML IdP, without requiring any change to the SAML IdP
-or its existing SAML SP relationships.<a href="#section-3-4" class="pilcrow">¶</a></p>
-<p id="section-3-5">The profile is applicable only when the OP can resolve each
-SAML-authenticated end-user deterministically to exactly one active Local
-Account before issuing OIDC tokens (see <a href="#local-subject-resolution" class="auto internal xref">Section 9</a>).<a href="#section-3-5" class="pilcrow">¶</a></p>
+<p id="section-3-1">This profile assumes that the OP and the SAML IdP are operated by,
+or under the administrative control of, the same authority. It is
+not intended to establish federation trust between otherwise
+independent OIDC and SAML parties.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<p id="section-3-2">The OP can issue OIDC tokens preserving the subject identifiers and
+claim release policy already established at the SAML IdP, without
+requiring changes to the SAML IdP or its existing SAML SP
+relationships. <a href="#binding-and-issuance-model" class="auto internal xref">Section 4</a> defines the binding
+mechanism in detail.<a href="#section-3-2" class="pilcrow">¶</a></p>
+<p id="section-3-3">The profile is applicable only when the OP can resolve each
+SAML-authenticated end-user deterministically to exactly one active
+Local Account before issuing OIDC tokens
+(<a href="#local-subject-resolution" class="auto internal xref">Section 9</a>).<a href="#section-3-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="binding-and-issuance-model">
@@ -1652,36 +1688,40 @@ applies the IdP-Binding's subject-mapping and attribute-release policy
 before issuing OIDC tokens.<a href="#section-4-4" class="pilcrow">¶</a></p>
 <div id="authorization-assertion-model">
 <section id="section-4.1">
-        <h3 id="name-issuance-authorization">
-<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-issuance-authorization" class="section-name selfRef">Issuance Authorization</a>
+        <h3 id="name-authorization-basis-and-rel">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-authorization-basis-and-rel" class="section-name selfRef">Authorization Basis and Release Policy</a>
         </h3>
-<p id="section-4.1-1">The OP <span class="bcp14">MUST NOT</span> treat a valid SAML assertion as authorization to release
-arbitrary OIDC claims or to grant arbitrary OAuth scopes. The SAML
-assertion proves an authentication event and supplies identity inputs; the
-authorization basis for any OIDC token issuance remains an OP policy
-decision.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
-<p id="section-4.1-2">Before issuing an OIDC token or releasing OIDC claims, the OP <span class="bcp14">MUST</span> have
-an authorization basis that is bound to:<a href="#section-4.1-2" class="pilcrow">¶</a></p>
+<p id="section-4.1-1">The bindings above are necessary but not sufficient for token
+issuance. This subsection separates authentication evidence (what
+the SAML assertion proves) from authorization decisions (what the
+OP releases).<a href="#section-4.1-1" class="pilcrow">¶</a></p>
+<p id="section-4.1-2">The OP <span class="bcp14">MUST NOT</span> treat a valid SAML assertion as authorization to
+release arbitrary OIDC claims or to grant arbitrary OAuth scopes.
+The SAML assertion proves an authentication event and supplies
+identity inputs; the authorization basis for any OIDC token
+issuance remains an OP policy decision.<a href="#section-4.1-2" class="pilcrow">¶</a></p>
+<p id="section-4.1-3">Before issuing an OIDC token or releasing OIDC claims, the OP <span class="bcp14">MUST</span> have
+an authorization basis that is bound to:<a href="#section-4.1-3" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-4.1-3.1">
-            <p id="section-4.1-3.1.1">the authenticated relying-party client at the OP's OIDC layer;<a href="#section-4.1-3.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-4.1-4.1">
+            <p id="section-4.1-4.1.1">the authenticated relying-party client at the OP's OIDC layer;<a href="#section-4.1-4.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-4.1-3.2">
-            <p id="section-4.1-3.2.1">the requested OIDC scopes and token types; and<a href="#section-4.1-3.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-4.1-4.2">
+            <p id="section-4.1-4.2.1">the requested OIDC scopes and token types; and<a href="#section-4.1-4.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-4.1-3.3">
-            <p id="section-4.1-3.3.1">the resolved Local Account.<a href="#section-4.1-3.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-4.1-4.3">
+            <p id="section-4.1-4.3.1">the resolved Local Account.<a href="#section-4.1-4.3.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-4.1-4">The OP <span class="bcp14">MUST NOT</span> create, expand, or infer an authorization basis solely
+<p id="section-4.1-5">The OP <span class="bcp14">MUST NOT</span> create, expand, or infer an authorization basis solely
 from the presence or contents of the SAML assertion. SAML attributes <span class="bcp14">MAY</span>
 inform an already-established release policy rule, but the policy itself
 <span class="bcp14">MUST</span> exist independently of the SAML assertion presented in the current
-authentication.<a href="#section-4.1-4" class="pilcrow">¶</a></p>
-<p id="section-4.1-5">The OP <span class="bcp14">MUST NOT</span> release all SAML attributes to all OIDC RPs by default.
+authentication.<a href="#section-4.1-5" class="pilcrow">¶</a></p>
+<p id="section-4.1-6">The OP <span class="bcp14">MUST NOT</span> release all SAML attributes to all OIDC RPs by default.
 Deployments <span class="bcp14">MUST</span> configure explicit attribute release allowlists per OIDC
 client (or per RP group), independent of what the SAML IdP releases to
-the OP.<a href="#section-4.1-5" class="pilcrow">¶</a></p>
+the OP.<a href="#section-4.1-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1816,7 +1856,7 @@ HTTP-POST binding;<a href="#section-6.1-2.2.1" class="pilcrow">¶</a></p>
           <li class="normal" id="section-6.1-2.3">
             <p id="section-6.1-2.3.1"><span class="bcp14">MUST</span> set <code>SPSSODescriptor/@AuthnRequestsSigned="true"</code>, reflecting the
 default-<span class="bcp14">MUST</span> signature requirement on AuthnRequests under this profile
-(see <a href="#authn-request-construction" class="auto internal xref">Section 8.4</a>);<a href="#section-6.1-2.3.1" class="pilcrow">¶</a></p>
+(see <a href="#authn-request-construction" class="auto internal xref">Section 8.3</a>);<a href="#section-6.1-2.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-6.1-2.4">
             <p id="section-6.1-2.4.1"><span class="bcp14">MUST</span> set <code>SPSSODescriptor/@WantAssertionsSigned="true"</code>, reflecting the
@@ -1922,13 +1962,13 @@ traverse from either side to the other.<a href="#section-6.2-3" class="pilcrow">
         <h3 id="name-federation-metadata-coexist">
 <a href="#section-6.4" class="section-number selfRef">6.4. </a><a href="#name-federation-metadata-coexist" class="section-name selfRef">Federation Metadata Coexistence</a>
         </h3>
-<p id="section-6.4-1">An OP under this profile operates two protocol stacks in parallel: OAuth
-2.0 / OpenID Connect toward relying parties, and SAML 2.0 toward the
-upstream SAML IdP. The two stacks publish metadata through independent
-mechanisms — <code>.well-known/oauth-authorization-server</code> and
-<code>.well-known/openid-configuration</code> (<span>[<a href="#RFC8414" class="cite xref">RFC8414</a>]</span>, <span>[<a href="#OIDC-DISCOVERY" class="cite xref">OIDC-DISCOVERY</a>]</span>) and
-<code>EntityDescriptor</code> documents (<span>[<a href="#SAML2-METADATA" class="cite xref">SAML2-METADATA</a>]</span>) — that this profile
-does not unify. Deployments <span class="bcp14">SHOULD</span> observe the following:<a href="#section-6.4-1" class="pilcrow">¶</a></p>
+<p id="section-6.4-1">An OP under this profile operates two protocol stacks in parallel.
+OAuth 2.0 and OpenID Connect toward relying parties use
+<code>.well-known/oauth-authorization-server</code> and
+<code>.well-known/openid-configuration</code> (<span>[<a href="#RFC8414" class="cite xref">RFC8414</a>]</span>, <span>[<a href="#OIDC-DISCOVERY" class="cite xref">OIDC-DISCOVERY</a>]</span>).
+SAML 2.0 toward the upstream SAML IdP uses <code>EntityDescriptor</code>
+documents (<span>[<a href="#SAML2-METADATA" class="cite xref">SAML2-METADATA</a>]</span>). This profile does not unify the two.
+Deployments <span class="bcp14">SHOULD</span> observe the following.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-6.4-2.1">
             <p id="section-6.4-2.1.1">The OP's OAuth <code>issuer</code>, the OP-as-SP SAML Entity ID, and the upstream
@@ -1943,9 +1983,9 @@ published in the metadata of the protocol that uses it.<a href="#section-6.4-2.2
 </li>
           <li class="normal" id="section-6.4-2.3">
             <p id="section-6.4-2.3.1">The bidirectional pointer described in <a href="#op-as-metadata" class="auto internal xref">Section 6.2</a> (SAML
-<code>AdditionalMetadataLocation</code> ↔ AS <code>saml_metadata_uri</code>) is <span class="bcp14">OPTIONAL</span> but
-<span class="bcp14">RECOMMENDED</span> so that administrators and federation registries can
-traverse from either side to the other.<a href="#section-6.4-2.3.1" class="pilcrow">¶</a></p>
+<code>AdditionalMetadataLocation</code> &lt;-&gt; AS <code>saml_metadata_uri</code>) is
+<span class="bcp14">OPTIONAL</span> but <span class="bcp14">RECOMMENDED</span> so that administrators and federation
+registries can traverse from either side to the other.<a href="#section-6.4-2.3.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
@@ -1965,62 +2005,42 @@ Web Browser SSO flow defined in <a href="#op-authentication-flow" class="auto in
         <h3 id="name-accepted-saml-inputs">
 <a href="#section-7.1" class="section-number selfRef">7.1. </a><a href="#name-accepted-saml-inputs" class="section-name selfRef">Accepted SAML Inputs</a>
         </h3>
-<p id="section-7.1-1">The OP <span class="bcp14">MUST</span> only accept SAML assertions issued by SAML IdPs identified by
-a configured IdP-Binding. Assertions whose Issuer is not bound <span class="bcp14">MUST</span> be
+<p id="section-7.1-1">The OP <span class="bcp14">MUST</span> only accept SAML assertions issued by SAML IdPs
+identified by a configured IdP-Binding. Other issuers <span class="bcp14">MUST</span> be
 rejected.<a href="#section-7.1-1" class="pilcrow">¶</a></p>
-<p id="section-7.1-2">The submitted SAML input <span class="bcp14">MUST</span> be a signed SAML <code>Response</code> containing
-exactly one signed bearer <code>Assertion</code>. The OP <span class="bcp14">MUST</span> verify the signature
-on both the <code>Response</code> element and the enclosed <code>Assertion</code> element
-against the SAML IdP's signing key material published in the
-IdP-Binding's SAML metadata.<a href="#section-7.1-2" class="pilcrow">¶</a></p>
-<p id="section-7.1-3">The OP <span class="bcp14">MUST</span> perform full SAML validation per <span>[<a href="#SAML2-CORE" class="cite xref">SAML2-CORE</a>]</span>, including:<a href="#section-7.1-3" class="pilcrow">¶</a></p>
+<p id="section-7.1-2">The submitted input <span class="bcp14">MUST</span> be a signed SAML <code>Response</code> containing
+exactly one signed bearer <code>Assertion</code>. The OP <span class="bcp14">MUST</span> validate the
+signatures and the assertion content per <span>[<a href="#SAML2-CORE" class="cite xref">SAML2-CORE</a>]</span> and
+<span>[<a href="#SAML2-PROFILES" class="cite xref">SAML2-PROFILES</a>]</span> against the IdP-Binding's metadata. Validation
+<span class="bcp14">MUST</span> be resistant to XML Signature Wrapping (<a href="#xsw-incoming" class="auto internal xref">Section 14.2.1</a>).<a href="#section-7.1-2" class="pilcrow">¶</a></p>
+<p id="section-7.1-3">This profile adds the following constraints:<a href="#section-7.1-3" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-7.1-4.1">
-            <p id="section-7.1-4.1.1">verifying the <code>Issuer</code> of both the <code>Response</code> and the <code>Assertion</code>
-matches the IdP-Binding's configured SAML IdP Entity ID;<a href="#section-7.1-4.1.1" class="pilcrow">¶</a></p>
+            <p id="section-7.1-4.1.1"><code>Response/Issuer</code> and <code>Assertion/Issuer</code> <span class="bcp14">MUST</span> equal the configured
+SAML IdP Entity ID;<a href="#section-7.1-4.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-7.1-4.2">
-            <p id="section-7.1-4.2.1">verifying the <code>Recipient</code> value in
-<code>Subject/SubjectConfirmation/SubjectConfirmationData</code> equals the OP's
-ACS URL for this binding;<a href="#section-7.1-4.2.1" class="pilcrow">¶</a></p>
+            <p id="section-7.1-4.2.1"><code>SubjectConfirmationData/@Recipient</code> and <code>Response/@Destination</code>
+              <span class="bcp14">MUST</span> equal the OP's ACS URL;<a href="#section-7.1-4.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-7.1-4.3">
-            <p id="section-7.1-4.3.1">verifying that the assertion's <code>AudienceRestriction</code> contains the
-OP-as-SP Entity ID as an <code>Audience</code> value (and <span class="bcp14">MUST NOT</span> accept the
-assertion if the OP-as-SP Entity ID does not appear in every
-<code>AudienceRestriction</code> element);<a href="#section-7.1-4.3.1" class="pilcrow">¶</a></p>
+            <p id="section-7.1-4.3.1">the OP-as-SP Entity ID <span class="bcp14">MUST</span> appear in every <code>AudienceRestriction</code>
+element;<a href="#section-7.1-4.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-7.1-4.4">
-            <p id="section-7.1-4.4.1">verifying that <code>Conditions/@NotBefore</code> (when present) has been reached
-and <code>Conditions/@NotOnOrAfter</code> has not been reached, subject to
-reasonable clock skew tolerance;<a href="#section-7.1-4.4.1" class="pilcrow">¶</a></p>
+            <p id="section-7.1-4.4.1"><code>SubjectConfirmationData/@InResponseTo</code> <span class="bcp14">MUST</span> match the
+<code>AuthnRequest/@ID</code> issued by the OP for this flow;<a href="#section-7.1-4.4.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-7.1-4.5">
-            <p id="section-7.1-4.5.1">verifying <code>SubjectConfirmationData/@NotOnOrAfter</code> has not been reached;<a href="#section-7.1-4.5.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-7.1-4.6">
-            <p id="section-7.1-4.6.1">verifying <code>SubjectConfirmationData/@InResponseTo</code> equals the
-<code>AuthnRequest/@ID</code> previously issued by the OP for this flow;<a href="#section-7.1-4.6.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-7.1-4.7">
-            <p id="section-7.1-4.7.1">verifying <code>Response/@Destination</code> equals the OP's ACS URL; and<a href="#section-7.1-4.7.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-7.1-4.8">
-            <p id="section-7.1-4.8.1">verifying the assertion signature in a manner resistant to XML
-Signature Wrapping; see <a href="#xsw-incoming" class="auto internal xref">Section 14.2.1</a>.<a href="#section-7.1-4.8.1" class="pilcrow">¶</a></p>
+            <p id="section-7.1-4.5.1">signatures <span class="bcp14">MUST</span> use RSA-SHA-256 or stronger; SHA-1 <span class="bcp14">MUST NOT</span> be
+accepted (see <a href="#outgoing-signature-algorithms" class="auto internal xref">Section 14.2.2</a>).<a href="#section-7.1-4.5.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-7.1-5">The OP <span class="bcp14">MUST</span> require SAML signatures to use RSA-SHA-256 or stronger.
-Signature algorithms using SHA-1 <span class="bcp14">MUST NOT</span> be accepted. The same algorithm
-constraints as <a href="#outgoing-signature-algorithms" class="auto internal xref">Section 14.2.2</a> apply.<a href="#section-7.1-5" class="pilcrow">¶</a></p>
-<p id="section-7.1-6">The OP <span class="bcp14">MAY</span> accept assertions delivered as <code>EncryptedAssertion</code> if the OP
-publishes encryption key material in its SAML SP metadata; the OP <span class="bcp14">MUST</span>
-decrypt the assertion before applying the validation rules above. The
-inner <code>Assertion</code> <span class="bcp14">MUST</span> be signed by the SAML IdP independently of any
-signature on the enclosing <code>Response</code>, because a <code>Response</code>-level
-signature does not survive decryption of an <code>EncryptedAssertion</code> it
-contains. The OP <span class="bcp14">MUST</span> reject assertions containing <code>EncryptedID</code> or
-<code>EncryptedAttribute</code> elements.<a href="#section-7.1-6" class="pilcrow">¶</a></p>
+<p id="section-7.1-5">The OP <span class="bcp14">MAY</span> accept <code>EncryptedAssertion</code> when it publishes encryption
+key material in its SAML SP metadata. The OP <span class="bcp14">MUST</span> decrypt before
+validation. The inner <code>Assertion</code> <span class="bcp14">MUST</span> be signed independently of
+any <code>Response</code>-level signature. <code>EncryptedID</code> and
+<code>EncryptedAttribute</code> <span class="bcp14">MUST</span> be rejected.<a href="#section-7.1-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="replay-and-freshness">
@@ -2045,7 +2065,7 @@ rejected.<a href="#section-7.2-3" class="pilcrow">¶</a></p>
 <p id="section-7.2-4">OPs deployed across multiple nodes <span class="bcp14">MUST</span> share assertion-replay state and
 consumed AuthnRequest state across all nodes, or use equivalent
 distributed coordination. Pending AuthnRequest correlation context <span class="bcp14">MAY</span> be
-carried using <a href="#stateless-correlation" class="auto internal xref">Section 8.5</a>, but consumed identifiers still
+carried using <a href="#stateless-correlation" class="auto internal xref">Section 8.4</a>, but consumed identifiers still
 require shared replay protection. Per-node replay stores are insufficient.<a href="#section-7.2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -2078,195 +2098,144 @@ populating any OIDC claim.<a href="#section-7.3-3" class="pilcrow">¶</a></p>
       <h2 id="name-oidc-authentication-flow-at">
 <a href="#section-8" class="section-number selfRef">8. </a><a href="#name-oidc-authentication-flow-at" class="section-name selfRef">OIDC Authentication Flow at the OP</a>
       </h2>
-<p id="section-8-1">This section defines the flow in which an OIDC RP initiates authentication
-at the OP, the OP authenticates the end-user via the upstream SAML IdP,
-and the OP returns OIDC tokens to the RP.<a href="#section-8-1" class="pilcrow">¶</a></p>
-<div id="flow-overview">
-<section id="section-8.1">
-        <h3 id="name-flow-overview">
-<a href="#section-8.1" class="section-number selfRef">8.1. </a><a href="#name-flow-overview" class="section-name selfRef">Flow Overview</a>
-        </h3>
-<p id="section-8.1-1">The flow proceeds as follows:<a href="#section-8.1-1" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="section-8.1-2">
-<li id="section-8.1-2.1">
-            <p id="section-8.1-2.1.1">The OIDC RP redirects the end-user's browser to the OP's authorization
-endpoint with a standard OIDC authorization request.<a href="#section-8.1-2.1.1" class="pilcrow">¶</a></p>
-</li>
-          <li id="section-8.1-2.2">
-            <p id="section-8.1-2.2.1">The OP processes the OIDC authorization request per
-<a href="#authorization-request-processing" class="auto internal xref">Section 8.2</a>.<a href="#section-8.1-2.2.1" class="pilcrow">¶</a></p>
-</li>
-          <li id="section-8.1-2.3">
-            <p id="section-8.1-2.3.1">The OP selects the IdP-Binding for this authentication (see
-<a href="#idp-binding-selection" class="auto internal xref">Section 8.3</a>) and constructs a SAML <code>AuthnRequest</code> per
-<a href="#authn-request-construction" class="auto internal xref">Section 8.4</a>.<a href="#section-8.1-2.3.1" class="pilcrow">¶</a></p>
-</li>
-          <li id="section-8.1-2.4">
-            <p id="section-8.1-2.4.1">The OP redirects the browser to the upstream SAML IdP's
-<code>SingleSignOnService</code> endpoint via the HTTP-Redirect or HTTP-POST
-binding.<a href="#section-8.1-2.4.1" class="pilcrow">¶</a></p>
-</li>
-          <li id="section-8.1-2.5">
-            <p id="section-8.1-2.5.1">The SAML IdP authenticates the end-user and posts a signed SAML
-<code>Response</code> containing the assertion to the OP's ACS endpoint via the
-HTTP-POST binding.<a href="#section-8.1-2.5.1" class="pilcrow">¶</a></p>
-</li>
-          <li id="section-8.1-2.6">
-            <p id="section-8.1-2.6.1">The OP validates the SAML <code>Response</code> and the enclosed assertion per
-<a href="#saml-assertion-validation" class="auto internal xref">Section 7</a>.<a href="#section-8.1-2.6.1" class="pilcrow">¶</a></p>
-</li>
-          <li id="section-8.1-2.7">
-            <p id="section-8.1-2.7.1">The OP resolves the end-user to a Local Account per
-<a href="#local-subject-resolution" class="auto internal xref">Section 9</a>.<a href="#section-8.1-2.7.1" class="pilcrow">¶</a></p>
-</li>
-          <li id="section-8.1-2.8">
-            <p id="section-8.1-2.8.1">The OP derives the OIDC <code>sub</code> value per
-<a href="#subject-identifier-mapping" class="auto internal xref">Section 10</a> and maps SAML attributes and
-authentication context into OIDC claims per <a href="#claim-mapping" class="auto internal xref">Section 11</a>.<a href="#section-8.1-2.8.1" class="pilcrow">¶</a></p>
-</li>
-          <li id="section-8.1-2.9">
-            <p id="section-8.1-2.9.1">The OP completes the OIDC flow by returning an authorization code to
-the RP's <code>redirect_uri</code>. The RP exchanges the code at the OP's token
-endpoint per <span>[<a href="#OIDC-CORE" class="cite xref">OIDC-CORE</a>]</span>.<a href="#section-8.1-2.9.1" class="pilcrow">¶</a></p>
-</li>
-        </ol>
-</section>
-</div>
+<p id="section-8-1">This section specifies the flow whose abstract shape is given in
+<a href="#overview" class="auto internal xref">Section 1.1</a>: an OIDC RP initiates authentication at the OP, the OP
+authenticates the end-user via the upstream SAML IdP, and the OP
+returns OIDC tokens to the RP. The subsections below specify each
+step in detail.<a href="#section-8-1" class="pilcrow">¶</a></p>
 <div id="authorization-request-processing">
-<section id="section-8.2">
+<section id="section-8.1">
         <h3 id="name-authorization-request-proce">
-<a href="#section-8.2" class="section-number selfRef">8.2. </a><a href="#name-authorization-request-proce" class="section-name selfRef">Authorization Request Processing</a>
+<a href="#section-8.1" class="section-number selfRef">8.1. </a><a href="#name-authorization-request-proce" class="section-name selfRef">Authorization Request Processing</a>
         </h3>
-<p id="section-8.2-1">Upon receiving an OIDC authorization request, the OP <span class="bcp14">MUST</span> validate it per
-<span>[<a href="#OIDC-CORE" class="cite xref">OIDC-CORE</a>]</span> Section 3.1.2.2. In addition, the OP:<a href="#section-8.2-1" class="pilcrow">¶</a></p>
+<p id="section-8.1-1">The OP <span class="bcp14">MUST</span> validate the authorization request per <span>[<a href="#OIDC-CORE" class="cite xref">OIDC-CORE</a>]</span>
+Section 3.1.2.2 and follow <span>[<a href="#RFC9700" class="cite xref">RFC9700</a>]</span>. This profile is defined only
+for the Authorization Code Flow; other <code>response_type</code> values <span class="bcp14">MUST</span>
+be rejected.<a href="#section-8.1-1" class="pilcrow">¶</a></p>
+<p id="section-8.1-2">This profile adds the following:<a href="#section-8.1-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-8.2-2.1">
-            <p id="section-8.2-2.1.1"><span class="bcp14">MUST</span> support the Authorization Code Flow and <span class="bcp14">MUST</span> reject authentication
-requests under this profile that use <code>response_type</code> values other than
-<code>code</code>;<a href="#section-8.2-2.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-8.1-3.1">
+            <p id="section-8.1-3.1.1"><code>prompt</code>, <code>max_age</code>, and <code>acr_values</code> <span class="bcp14">MUST</span> be consumed when
+constructing the upstream SAML AuthnRequest
+(<a href="#authn-request-construction" class="auto internal xref">Section 8.3</a>);<a href="#section-8.1-3.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.2-2.2">
-            <p id="section-8.2-2.2.1"><span class="bcp14">MUST</span> authenticate the RP per its registered client authentication
-method when the request reaches the token endpoint; the OP <span class="bcp14">MUST</span> use
-current OAuth security best practice <span>[<a href="#RFC9700" class="cite xref">RFC9700</a>]</span> when supporting
-refresh tokens, sender-constrained tokens, or other extended
-capabilities;<a href="#section-8.2-2.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.1-3.2">
+            <p id="section-8.1-3.2.1"><code>login_hint</code> <span class="bcp14">MAY</span> influence IdP-Binding selection
+(<a href="#idp-binding-selection" class="auto internal xref">Section 8.2</a>) but <span class="bcp14">MUST NOT</span> override administrative
+routing. The OP <span class="bcp14">MAY</span> forward a hint value only via an
+IdP-Binding-configured mechanism. RP-supplied values <span class="bcp14">MUST NOT</span> be
+placed in <code>AuthnRequest/Subject/NameID</code>;<a href="#section-8.1-3.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.2-2.3">
-            <p id="section-8.2-2.3.1"><span class="bcp14">MUST</span> require PKCE <span>[<a href="#RFC7636" class="cite xref">RFC7636</a>]</span> with the <code>S256</code> code challenge method
-for public clients, and <span class="bcp14">SHOULD</span> require it for all clients, in
-accordance with <span>[<a href="#RFC9700" class="cite xref">RFC9700</a>]</span>;<a href="#section-8.2-2.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.1-3.3">
+            <p id="section-8.1-3.3.1"><code>ui_locales</code> <span class="bcp14">MAY</span> be propagated via a configured SAML extension;
+otherwise it affects OP-rendered UI only;<a href="#section-8.1-3.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.2-2.4">
-            <p id="section-8.2-2.4.1"><span class="bcp14">MUST</span> validate that the <code>redirect_uri</code> matches a registered value for
-the RP exactly;<a href="#section-8.2-2.4.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.1-3.4">
+            <p id="section-8.1-3.4.1"><code>claims</code> (<span>[<a href="#OIDC-CORE" class="cite xref">OIDC-CORE</a>]</span> Section 5.5) is a hint. The OP <span class="bcp14">MUST NOT</span>
+release a claim merely because it appears in <code>claims</code>;<a href="#section-8.1-3.4.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.2-2.5">
-            <p id="section-8.2-2.5.1"><span class="bcp14">MUST</span> consider <code>prompt</code>, <code>max_age</code>, and <code>acr_values</code> parameters when
-constructing the upstream SAML AuthnRequest per
-<a href="#authn-request-construction" class="auto internal xref">Section 8.4</a>;<a href="#section-8.2-2.5.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.1-3.5">
+            <p id="section-8.1-3.5.1"><code>request</code> and <code>request_uri</code> <span class="bcp14">SHOULD</span> be rejected unless explicitly
+configured;<a href="#section-8.1-3.5.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.2-2.6">
-            <p id="section-8.2-2.6.1"><span class="bcp14">MAY</span> consider the RP's <code>login_hint</code> as input to IdP-Binding selection
-(<a href="#idp-binding-selection" class="auto internal xref">Section 8.3</a>), but <span class="bcp14">MUST NOT</span> allow <code>login_hint</code> alone to
-override administrative routing policy; and<a href="#section-8.2-2.6.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.1-3.6">
+            <p id="section-8.1-3.6.1"><code>id_token_hint</code> is a hint. The OP <span class="bcp14">MUST NOT</span> skip upstream SAML
+authentication on its basis;<a href="#section-8.1-3.6.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.2-2.7">
-            <p id="section-8.2-2.7.1"><span class="bcp14">MUST</span> maintain protected correlation state that binds the OIDC
-authorization request context (RP <code>client_id</code>, requested scopes, PKCE
-challenge, nonce, redirect_uri, state) to the SAML AuthnRequest ID the
-OP will issue, so the eventual SAML assertion can be matched back to
-the originating OIDC request. This correlation state <span class="bcp14">MAY</span> be maintained
-server-side or by the stateless correlation mechanism in
-<a href="#stateless-correlation" class="auto internal xref">Section 8.5</a>.<a href="#section-8.2-2.7.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.1-3.7">
+            <p id="section-8.1-3.7.1"><code>display</code> <span class="bcp14">MAY</span> influence OP-rendered UI and is not propagated;<a href="#section-8.1-3.7.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-8.1-3.8">
+            <p id="section-8.1-3.8.1">the OP <span class="bcp14">MUST</span> maintain integrity-protected correlation state
+binding (RP <code>client_id</code>, scopes, PKCE challenge, <code>nonce</code>,
+<code>redirect_uri</code>, <code>state</code>) to the issued <code>AuthnRequest/@ID</code>. State
+<span class="bcp14">MAY</span> be server-side or carried per <a href="#stateless-correlation" class="auto internal xref">Section 8.4</a>.<a href="#section-8.1-3.8.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
 </div>
 <div id="idp-binding-selection">
-<section id="section-8.3">
+<section id="section-8.2">
         <h3 id="name-idp-binding-selection">
-<a href="#section-8.3" class="section-number selfRef">8.3. </a><a href="#name-idp-binding-selection" class="section-name selfRef">IdP-Binding Selection</a>
+<a href="#section-8.2" class="section-number selfRef">8.2. </a><a href="#name-idp-binding-selection" class="section-name selfRef">IdP-Binding Selection</a>
         </h3>
-<p id="section-8.3-1">The OP <span class="bcp14">MUST</span> select exactly one IdP-Binding per authentication. Selection
+<p id="section-8.2-1">The OP <span class="bcp14">MUST</span> select exactly one IdP-Binding per authentication. Selection
 inputs <span class="bcp14">MAY</span> include administrative routing policy, the RP's <code>acr_values</code>
 or <code>login_hint</code>, deployment-specific hints (e.g., the user's email
-domain), or interactive home-realm discovery.<a href="#section-8.3-1" class="pilcrow">¶</a></p>
-<p id="section-8.3-2">When multiple IdP-Bindings could match, the OP <span class="bcp14">MUST</span> resolve the choice
+domain), or interactive home-realm discovery.<a href="#section-8.2-1" class="pilcrow">¶</a></p>
+<p id="section-8.2-2">When multiple IdP-Bindings could match, the OP <span class="bcp14">MUST</span> resolve the choice
 deterministically before constructing the SAML AuthnRequest. The OP <span class="bcp14">MUST NOT</span> prompt the upstream SAML IdP to make this selection. The OP <span class="bcp14">MUST NOT</span>
 allow an OIDC RP to select an IdP-Binding it is not administratively
-authorized to consume.<a href="#section-8.3-2" class="pilcrow">¶</a></p>
-<p id="section-8.3-3">If no IdP-Binding can be selected for an OIDC authorization request, the
+authorized to consume.<a href="#section-8.2-2" class="pilcrow">¶</a></p>
+<p id="section-8.2-3">If no IdP-Binding can be selected for an OIDC authorization request, the
 OP <span class="bcp14">MUST</span> return an OIDC <code>invalid_request</code> error to the RP. The OP <span class="bcp14">MUST NOT</span> disclose to the RP which IdP-Bindings are configured or why
-selection failed.<a href="#section-8.3-3" class="pilcrow">¶</a></p>
+selection failed.<a href="#section-8.2-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="authn-request-construction">
-<section id="section-8.4">
+<section id="section-8.3">
         <h3 id="name-saml-authnrequest-construct">
-<a href="#section-8.4" class="section-number selfRef">8.4. </a><a href="#name-saml-authnrequest-construct" class="section-name selfRef">SAML AuthnRequest Construction</a>
+<a href="#section-8.3" class="section-number selfRef">8.3. </a><a href="#name-saml-authnrequest-construct" class="section-name selfRef">SAML AuthnRequest Construction</a>
         </h3>
-<p id="section-8.4-1">When initiating the SAML Web Browser SSO flow, the OP:<a href="#section-8.4-1" class="pilcrow">¶</a></p>
+<p id="section-8.3-1">The OP constructs <code>AuthnRequest</code> per <span>[<a href="#SAML2-CORE" class="cite xref">SAML2-CORE</a>]</span> and
+<span>[<a href="#SAML2-PROFILES" class="cite xref">SAML2-PROFILES</a>]</span>. This profile adds:<a href="#section-8.3-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-8.4-2.1">
-            <p id="section-8.4-2.1.1"><span class="bcp14">MUST</span> construct an <code>AuthnRequest</code> per <span>[<a href="#SAML2-CORE" class="cite xref">SAML2-CORE</a>]</span> and
-<span>[<a href="#SAML2-PROFILES" class="cite xref">SAML2-PROFILES</a>]</span>;<a href="#section-8.4-2.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-8.3-2.1">
+            <p id="section-8.3-2.1.1">the <code>AuthnRequest</code> <span class="bcp14">MUST</span> be signed. The signature mechanism is
+binding-specific per <span>[<a href="#SAML2-BINDINGS" class="cite xref">SAML2-BINDINGS</a>]</span>: detached query-parameter
+signature for HTTP-Redirect, enveloped <code>ds:Signature</code> for
+HTTP-POST. The signature <span class="bcp14">MUST</span> use RSA-SHA-256 or stronger;
+SHA-1 <span class="bcp14">MUST NOT</span> be used;<a href="#section-8.3-2.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.4-2.2">
-            <p id="section-8.4-2.2.1"><span class="bcp14">MUST</span> sign the <code>AuthnRequest</code>. Unsigned <code>AuthnRequest</code> messages <span class="bcp14">MUST NOT</span>
-be used. The signature <span class="bcp14">MUST</span> use RSA-SHA-256 or stronger;<a href="#section-8.4-2.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.3-2.2">
+            <p id="section-8.3-2.2.1"><code>Issuer/@Format</code>, when present, <span class="bcp14">MUST</span> be
+<code>urn:oasis:names:tc:SAML:2.0:nameid-format:entity</code>;<a href="#section-8.3-2.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.4-2.3">
-            <p id="section-8.4-2.3.1"><span class="bcp14">MUST</span> include <code>Issuer</code> set to the OP-as-SP Entity ID, with <code>@Format</code>
-absent or <code>urn:oasis:names:tc:SAML:2.0:nameid-format:entity</code>;<a href="#section-8.4-2.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.3-2.3">
+            <p id="section-8.3-2.3.1"><code>AssertionConsumerServiceURL</code> (or Index) <span class="bcp14">MUST</span> identify an ACS URL
+published in the OP's SAML SP metadata;<a href="#section-8.3-2.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.4-2.4">
-            <p id="section-8.4-2.4.1"><span class="bcp14">MUST</span> include <code>@Destination</code> set to the IdP's
-<code>SingleSignOnService</code> endpoint URL;<a href="#section-8.4-2.4.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.3-2.4">
+            <p id="section-8.3-2.4.1"><code>NameIDPolicy</code> <span class="bcp14">SHOULD</span> be constructed from the IdP-Binding;<a href="#section-8.3-2.4.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.4-2.5">
-            <p id="section-8.4-2.5.1"><span class="bcp14">MUST</span> include <code>@ID</code> (a fresh, unpredictable identifier) and
-<code>@IssueInstant</code>;<a href="#section-8.4-2.5.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.3-2.5">
+            <p id="section-8.3-2.5.1"><code>RequestedAuthnContext</code> <span class="bcp14">SHOULD</span> be translated from <code>acr_values</code>
+when configured. <code>@Comparison</code> follows IdP-Binding policy with a
+default <span class="bcp14">SHOULD</span> of <code>"exact"</code> (OIDC <code>acr_values</code> is unordered);<a href="#section-8.3-2.5.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.4-2.6">
-            <p id="section-8.4-2.6.1"><span class="bcp14">MUST</span> include <code>AssertionConsumerServiceURL</code> set to the OP's ACS URL
-(which <span class="bcp14">MUST</span> be among the URLs published in the OP's SAML SP metadata),
-or <code>AssertionConsumerServiceIndex</code> referencing the same;<a href="#section-8.4-2.6.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.3-2.6">
+            <p id="section-8.3-2.6.1"><code>@ForceAuthn="true"</code> when the OIDC request contains
+<code>prompt=login</code> or <code>max_age=0</code>;<a href="#section-8.3-2.6.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.4-2.7">
-            <p id="section-8.4-2.7.1"><span class="bcp14">SHOULD</span> include <code>NameIDPolicy</code> constructed from the IdP-Binding's
-configured policy;<a href="#section-8.4-2.7.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.3-2.7">
+            <p id="section-8.3-2.7.1">when <code>max_age &gt; 0</code>, the OP <span class="bcp14">MUST</span> treat the value as an upper
+bound on the received assertion's <code>AuthnInstant</code>. On violation,
+the OP <span class="bcp14">MAY</span> re-issue with <code>@ForceAuthn="true"</code> or return
+<code>login_required</code> (<a href="#flow-error-handling" class="auto internal xref">Section 8.5</a>);<a href="#section-8.3-2.7.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.4-2.8">
-            <p id="section-8.4-2.8.1"><span class="bcp14">SHOULD</span> include <code>RequestedAuthnContext</code> translated from the OIDC
-<code>acr_values</code> parameter, when the IdP-Binding defines that translation;<a href="#section-8.4-2.8.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.3-2.8">
+            <p id="section-8.3-2.8.1"><code>@IsPassive="true"</code> when the OIDC request contains <code>prompt=none</code>;<a href="#section-8.3-2.8.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.4-2.9">
-            <p id="section-8.4-2.9.1"><span class="bcp14">MUST</span> set <code>@ForceAuthn="true"</code> when the OIDC request contains
-<code>prompt=login</code> or <code>max_age=0</code>;<a href="#section-8.4-2.9.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-8.4-2.10">
-            <p id="section-8.4-2.10.1"><span class="bcp14">MUST</span> set <code>@IsPassive="true"</code> when the OIDC request contains
-<code>prompt=none</code>; and<a href="#section-8.4-2.10.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-8.4-2.11">
-            <p id="section-8.4-2.11.1"><span class="bcp14">MUST NOT</span> pass the requesting OIDC RP's <code>client_id</code> to the SAML IdP in
-a way that allows the SAML IdP to alter its authentication behavior
-based on which RP initiated the request, unless local policy
-explicitly authorizes such conditioning. See
-<a href="#privacy-considerations" class="auto internal xref">Section 15</a>.<a href="#section-8.4-2.11.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.3-2.9">
+            <p id="section-8.3-2.9.1">the OP <span class="bcp14">MUST NOT</span> convey the OIDC RP's <code>client_id</code> to the SAML IdP
+in any form that lets the IdP alter behavior per RP, unless
+local policy authorizes it (see <a href="#privacy-considerations" class="auto internal xref">Section 15</a>).<a href="#section-8.3-2.9.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-8.4-3">The OP <span class="bcp14">MUST</span> track the issued <code>AuthnRequest/@ID</code> for <code>InResponseTo</code>
-validation and replay protection per <a href="#replay-and-freshness" class="auto internal xref">Section 7.2</a>.<a href="#section-8.4-3" class="pilcrow">¶</a></p>
+<p id="section-8.3-3">The OP <span class="bcp14">MUST</span> track the issued <code>AuthnRequest/@ID</code> for <code>InResponseTo</code>
+validation and replay protection per <a href="#replay-and-freshness" class="auto internal xref">Section 7.2</a>.<a href="#section-8.3-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="stateless-correlation">
-<section id="section-8.5">
+<section id="section-8.4">
         <h3 id="name-stateless-correlation-with-">
-<a href="#section-8.5" class="section-number selfRef">8.5. </a><a href="#name-stateless-correlation-with-" class="section-name selfRef">Stateless Correlation with RelayState</a>
+<a href="#section-8.4" class="section-number selfRef">8.4. </a><a href="#name-stateless-correlation-with-" class="section-name selfRef">Stateless Correlation with RelayState</a>
         </h3>
-<p id="section-8.5-1">An OP <span class="bcp14">MAY</span> avoid deployment-wide server-side storage for ordinary
+<p id="section-8.4-1">This subsection defines an <span class="bcp14">OPTIONAL</span> implementation mechanism for the
+correlation state required by <a href="#authorization-request-processing" class="auto internal xref">Section 8.1</a>.
+Deployments <span class="bcp14">MAY</span> ignore this subsection and use server-side
+transaction storage instead.<a href="#section-8.4-1" class="pilcrow">¶</a></p>
+<p id="section-8.4-2">An OP <span class="bcp14">MAY</span> avoid deployment-wide server-side storage for ordinary
 authentication transaction context by carrying a protected transaction
 object across the OIDC-to-SAML round trip. The transaction object <span class="bcp14">MUST</span> be
 integrity protected and confidentiality protected using an authenticated
@@ -2275,93 +2244,93 @@ include an expiration time and enough context to reconstruct and validate
 the OIDC authorization request, including the RP <code>client_id</code>, registered
 <code>redirect_uri</code>, requested scope, OIDC <code>state</code>, OIDC <code>nonce</code>, PKCE code
 challenge and method, selected IdP-Binding, OP ACS URL, and SAML
-<code>AuthnRequest/@ID</code>.<a href="#section-8.5-1" class="pilcrow">¶</a></p>
-<p id="section-8.5-2">The OP <span class="bcp14">MAY</span> carry this protected object directly in SAML <code>RelayState</code> only
+<code>AuthnRequest/@ID</code>.<a href="#section-8.4-2" class="pilcrow">¶</a></p>
+<p id="section-8.4-3">The OP <span class="bcp14">MAY</span> carry this protected object directly in SAML <code>RelayState</code> only
 when the selected SAML binding and deployment profile safely support the
 resulting size. For broad SAML interoperability, deployments need to
 account for the HTTP-Redirect binding RelayState size limit defined by
 <span>[<a href="#SAML2-BINDINGS" class="cite xref">SAML2-BINDINGS</a>]</span>. When the protected object is too large for
 <code>RelayState</code>, the OP <span class="bcp14">MAY</span> store the protected object in a Secure,
 HttpOnly, SameSite cookie scoped to the OP and carry only a transaction
-identifier in <code>RelayState</code>.<a href="#section-8.5-2" class="pilcrow">¶</a></p>
-<p id="section-8.5-3">When processing the returned SAML <code>Response</code>, the OP <span class="bcp14">MUST</span> verify the
+identifier in <code>RelayState</code>.<a href="#section-8.4-3" class="pilcrow">¶</a></p>
+<p id="section-8.4-4">When processing the returned SAML <code>Response</code>, the OP <span class="bcp14">MUST</span> verify the
 protected transaction object before using it. In particular, the OP <span class="bcp14">MUST</span>
-verify that:<a href="#section-8.5-3" class="pilcrow">¶</a></p>
+verify that:<a href="#section-8.4-4" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-8.5-4.1">
-            <p id="section-8.5-4.1.1">the object decrypts and authenticates successfully;<a href="#section-8.5-4.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-8.4-5.1">
+            <p id="section-8.4-5.1.1">the object decrypts and authenticates successfully;<a href="#section-8.4-5.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.5-4.2">
-            <p id="section-8.5-4.2.1">the object has not expired;<a href="#section-8.5-4.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.4-5.2">
+            <p id="section-8.4-5.2.1">the object has not expired;<a href="#section-8.4-5.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.5-4.3">
-            <p id="section-8.5-4.3.1">the <code>RelayState</code> transaction identifier, when used, matches the
-transaction identifier inside the protected object;<a href="#section-8.5-4.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.4-5.3">
+            <p id="section-8.4-5.3.1">the <code>RelayState</code> transaction identifier, when used, matches the
+transaction identifier inside the protected object;<a href="#section-8.4-5.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.5-4.4">
-            <p id="section-8.5-4.4.1"><code>Response/@InResponseTo</code> and
+          <li class="normal" id="section-8.4-5.4">
+            <p id="section-8.4-5.4.1"><code>Response/@InResponseTo</code> and
 <code>SubjectConfirmationData/@InResponseTo</code> match the protected
-<code>AuthnRequest/@ID</code>;<a href="#section-8.5-4.4.1" class="pilcrow">¶</a></p>
+<code>AuthnRequest/@ID</code>;<a href="#section-8.4-5.4.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.5-4.5">
-            <p id="section-8.5-4.5.1"><code>SubjectConfirmationData/@Recipient</code> matches the protected OP ACS URL;<a href="#section-8.5-4.5.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.4-5.5">
+            <p id="section-8.4-5.5.1"><code>SubjectConfirmationData/@Recipient</code> matches the protected OP ACS URL;<a href="#section-8.4-5.5.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.5-4.6">
-            <p id="section-8.5-4.6.1">the SAML Issuer matches the selected IdP-Binding; and<a href="#section-8.5-4.6.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.4-5.6">
+            <p id="section-8.4-5.6.1">the SAML Issuer matches the selected IdP-Binding; and<a href="#section-8.4-5.6.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.5-4.7">
-            <p id="section-8.5-4.7.1">the OIDC <code>redirect_uri</code>, <code>nonce</code>, PKCE challenge, and requested scope
+          <li class="normal" id="section-8.4-5.7">
+            <p id="section-8.4-5.7.1">the OIDC <code>redirect_uri</code>, <code>nonce</code>, PKCE challenge, and requested scope
 used to complete the OIDC flow are taken from the protected object, not
-from unprotected browser input.<a href="#section-8.5-4.7.1" class="pilcrow">¶</a></p>
+from unprotected browser input.<a href="#section-8.4-5.7.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-8.5-5">This stateless correlation mechanism does not remove replay-detection
+<p id="section-8.4-6">This stateless correlation mechanism does not remove replay-detection
 requirements. The OP still <span class="bcp14">MUST</span> maintain shared replay state for consumed
 SAML assertion IDs, consumed or completed SAML <code>AuthnRequest/@ID</code> values,
 and redeemed authorization codes, as required by <a href="#replay-and-freshness" class="auto internal xref">Section 7.2</a>
 and <a href="#response-splicing" class="auto internal xref">Section 14.3</a>. Stateless correlation reduces deployment state
-for pending transactions; it does not make the security model stateless.<a href="#section-8.5-5" class="pilcrow">¶</a></p>
+for pending transactions; it does not make the security model stateless.<a href="#section-8.4-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="flow-error-handling">
-<section id="section-8.6">
+<section id="section-8.5">
         <h3 id="name-error-handling">
-<a href="#section-8.6" class="section-number selfRef">8.6. </a><a href="#name-error-handling" class="section-name selfRef">Error Handling</a>
+<a href="#section-8.5" class="section-number selfRef">8.5. </a><a href="#name-error-handling" class="section-name selfRef">Error Handling</a>
         </h3>
-<p id="section-8.6-1">If the SAML IdP returns a SAML error <code>Response</code> (a <code>Response</code> with a
+<p id="section-8.5-1">If the SAML IdP returns a SAML error <code>Response</code> (a <code>Response</code> with a
 non-Success <code>StatusCode</code>), the OP <span class="bcp14">MUST</span> translate the SAML status to an
 OIDC authorization error and return it to the RP. The OP <span class="bcp14">MUST NOT</span> expose
 the SAML IdP's internal error codes or descriptions to the RP. Common
-SAML status codes <span class="bcp14">SHOULD</span> be mapped as follows:<a href="#section-8.6-1" class="pilcrow">¶</a></p>
+SAML status codes <span class="bcp14">SHOULD</span> be mapped as follows:<a href="#section-8.5-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-8.6-2.1">
-            <p id="section-8.6-2.1.1"><code>urn:oasis:names:tc:SAML:2.0:status:NoPassive</code> →
+<li class="normal" id="section-8.5-2.1">
+            <p id="section-8.5-2.1.1"><code>urn:oasis:names:tc:SAML:2.0:status:NoPassive</code> →
 OIDC <code>interaction_required</code> (when <code>prompt=none</code> was requested) or
-<code>login_required</code> otherwise;<a href="#section-8.6-2.1.1" class="pilcrow">¶</a></p>
+<code>login_required</code> otherwise;<a href="#section-8.5-2.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.6-2.2">
-            <p id="section-8.6-2.2.1"><code>urn:oasis:names:tc:SAML:2.0:status:RequestDenied</code> →
-OIDC <code>access_denied</code>;<a href="#section-8.6-2.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.5-2.2">
+            <p id="section-8.5-2.2.1"><code>urn:oasis:names:tc:SAML:2.0:status:RequestDenied</code> →
+OIDC <code>access_denied</code>;<a href="#section-8.5-2.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.6-2.3">
-            <p id="section-8.6-2.3.1"><code>urn:oasis:names:tc:SAML:2.0:status:AuthnFailed</code> →
-OIDC <code>login_required</code>;<a href="#section-8.6-2.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.5-2.3">
+            <p id="section-8.5-2.3.1"><code>urn:oasis:names:tc:SAML:2.0:status:AuthnFailed</code> →
+OIDC <code>login_required</code>;<a href="#section-8.5-2.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.6-2.4">
-            <p id="section-8.6-2.4.1"><code>urn:oasis:names:tc:SAML:2.0:status:NoAuthnContext</code> →
+          <li class="normal" id="section-8.5-2.4">
+            <p id="section-8.5-2.4.1"><code>urn:oasis:names:tc:SAML:2.0:status:NoAuthnContext</code> →
 OIDC <code>login_required</code> (with operational logging of the ACR mismatch);
-and<a href="#section-8.6-2.4.1" class="pilcrow">¶</a></p>
+and<a href="#section-8.5-2.4.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-8.6-2.5">
-            <p id="section-8.6-2.5.1">any other SAML error → OIDC <code>server_error</code> or <code>temporarily_unavailable</code>
-as appropriate.<a href="#section-8.6-2.5.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-8.5-2.5">
+            <p id="section-8.5-2.5.1">any other SAML error → OIDC <code>server_error</code> or <code>temporarily_unavailable</code>
+as appropriate.<a href="#section-8.5-2.5.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-8.6-3">If SAML assertion validation fails for reasons other than an upstream
+<p id="section-8.5-3">If SAML assertion validation fails for reasons other than an upstream
 error (signature failure, audience mismatch, replay, expired, etc.), the
 OP <span class="bcp14">MUST</span> return an OIDC <code>server_error</code> to the RP and <span class="bcp14">MUST NOT</span> expose the
 specific validation failure reason. The validation failure <span class="bcp14">SHOULD</span> be
-logged at the OP for diagnostics.<a href="#section-8.6-3" class="pilcrow">¶</a></p>
+logged at the OP for diagnostics.<a href="#section-8.5-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2446,19 +2415,37 @@ from public SAML identifiers alone).<a href="#section-10.2-1" class="pilcrow">¶
         <h3 id="name-nameid-stability-and-reassi">
 <a href="#section-10.3" class="section-number selfRef">10.3. </a><a href="#name-nameid-stability-and-reassi" class="section-name selfRef">NameID Stability and Reassignment</a>
         </h3>
-<p id="section-10.3-1">The OP <span class="bcp14">MUST NOT</span> use a SAML NameID with format <code>transient</code> as the input
-to <code>sub</code> derivation (see <a href="#nameid-policy" class="auto internal xref">Section 5.2</a>). When local policy or
-out-of-band knowledge of the SAML IdP's behaviour indicates that
-<code>persistent</code> NameID values may be reassigned (a property SAML 2.0 does
-not preclude but <span>[<a href="#SAML2-SUBJ-ID" class="cite xref">SAML2-SUBJ-ID</a>]</span> <code>subject-id</code> and <code>pairwise-id</code>
-attributes specifically disallow), the IdP-Binding <span class="bcp14">MUST</span> configure use
-of a non-reassignable stable identifier — typically <code>subject-id</code> or
-<code>pairwise-id</code> from <span>[<a href="#SAML2-SUBJ-ID" class="cite xref">SAML2-SUBJ-ID</a>]</span>, <code>eduPersonUniqueId</code>, or an opaque
-internal account identifier — as the <code>sub</code> derivation input rather than
-the NameID.<a href="#section-10.3-1" class="pilcrow">¶</a></p>
-<p id="section-10.3-2">The OP <span class="bcp14">MUST NOT</span> use the <code>emailAddress</code> NameID format as the input to
-<code>sub</code> derivation when a more stable identifier is available, because
-email addresses are mutable.<a href="#section-10.3-2" class="pilcrow">¶</a></p>
+<p id="section-10.3-1">The OP <span class="bcp14">MUST NOT</span> use a SAML NameID with format <code>transient</code> as input
+to <code>sub</code> derivation (<a href="#nameid-policy" class="auto internal xref">Section 5.2</a>).<a href="#section-10.3-1" class="pilcrow">¶</a></p>
+<p id="section-10.3-2">When local policy or knowledge of the SAML IdP's behavior indicates
+that <code>persistent</code> NameID values may be reassigned, the IdP-Binding
+<span class="bcp14">MUST</span> configure use of a non-reassignable stable identifier as the
+<code>sub</code> derivation input. Suitable identifiers include <code>subject-id</code>
+and <code>pairwise-id</code> from <span>[<a href="#SAML2-SUBJ-ID" class="cite xref">SAML2-SUBJ-ID</a>]</span>, <code>eduPersonUniqueId</code>, or an
+opaque internal account identifier. SAML 2.0 does not preclude
+reassignment of <code>persistent</code> NameIDs, but <span>[<a href="#SAML2-SUBJ-ID" class="cite xref">SAML2-SUBJ-ID</a>]</span>
+identifiers specifically disallow it.<a href="#section-10.3-2" class="pilcrow">¶</a></p>
+<p id="section-10.3-3">The OP <span class="bcp14">MUST NOT</span> use the <code>emailAddress</code> NameID format as input to
+<code>sub</code> derivation when a more stable identifier is available.<a href="#section-10.3-3" class="pilcrow">¶</a></p>
+<p id="section-10.3-4">An upstream IdP may re-emit the same identifier for a new principal,
+in error or under deployment change. To detect this:<a href="#section-10.3-4" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-10.3-5.1">
+            <p id="section-10.3-5.1.1">the OP <span class="bcp14">MUST</span> persist the (source identifier, Local Account)
+mapping when first observed and treat it as authoritative;<a href="#section-10.3-5.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-10.3-5.2">
+            <p id="section-10.3-5.2.1">on a mapping-match whose attributes are inconsistent with the
+bound Local Account, the OP <span class="bcp14">MUST NOT</span> silently replace the mapping.
+The OP <span class="bcp14">MUST</span> either fail the authentication
+(<a href="#flow-error-handling" class="auto internal xref">Section 8.5</a>) or require explicit administrative
+remapping.<a href="#section-10.3-5.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-10.3-6">For IdP-guaranteed non-reassignable identifiers (<code>subject-id</code>,
+<code>pairwise-id</code>, <code>eduPersonUniqueId</code>), the mismatch check is an
+integrity assertion that should never fire. For other identifiers,
+the OP <span class="bcp14">MUST</span> apply the failure or remapping rule above.<a href="#section-10.3-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="sub-id-claim">
@@ -2505,7 +2492,12 @@ SAML assertion:<a href="#section-11.1-1" class="pilcrow">¶</a></p>
             <p id="section-11.1-2.3.1"><code>aud</code>: the OIDC RP's <code>client_id</code>.<a href="#section-11.1-2.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-11.1-2.4">
-            <p id="section-11.1-2.4.1"><code>iat</code>, <code>exp</code>, <code>nonce</code>: per <span>[<a href="#OIDC-CORE" class="cite xref">OIDC-CORE</a>]</span> Section 2.<a href="#section-11.1-2.4.1" class="pilcrow">¶</a></p>
+            <p id="section-11.1-2.4.1"><code>iat</code>, <code>exp</code>, <code>nonce</code>: per <span>[<a href="#OIDC-CORE" class="cite xref">OIDC-CORE</a>]</span> Section 2. <code>iat</code> is the
+ID Token issuance time at the OP, not the SAML <code>AuthnInstant</code>.
+<code>exp</code> <span class="bcp14">MUST NOT</span> derive from <code>Conditions/@NotOnOrAfter</code>. When the
+selected <code>AuthnStatement</code> carries <code>SessionNotOnOrAfter</code> and the ID
+Token represents the same SAML session, <code>exp</code> <span class="bcp14">MUST NOT</span> exceed
+<code>SessionNotOnOrAfter</code>.<a href="#section-11.1-2.4.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-11.1-2.5">
             <p id="section-11.1-2.5.1"><code>auth_time</code>: the SAML assertion's <code>AuthnStatement/@AuthnInstant</code>,
@@ -2544,28 +2536,42 @@ validity, not the underlying authenticated session.<a href="#section-11.1-2.9.1"
           <h4 id="name-acr-mapping">
 <a href="#section-11.1.1" class="section-number selfRef">11.1.1. </a><a href="#name-acr-mapping" class="section-name selfRef">ACR Mapping</a>
           </h4>
-<p id="section-11.1.1-1">The OP <span class="bcp14">MUST</span> determine <code>acr</code> as follows:<a href="#section-11.1.1-1" class="pilcrow">¶</a></p>
+<p id="section-11.1.1-1">A SAML <code>AuthnContext</code> <span class="bcp14">MAY</span> contain multiple <code>AuthnContextClassRef</code>
+elements. The OP selects one as authoritative for <code>acr</code> in this
+order:<a href="#section-11.1.1-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-11.1.1-2">
+<li id="section-11.1.1-2.1">
+              <p id="section-11.1.1-2.1.1">an IdP-Binding-configured selection rule (highest assurance,
+first listed, match <code>acr_values</code>, etc.);<a href="#section-11.1.1-2.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li id="section-11.1.1-2.2">
+              <p id="section-11.1.1-2.2.1">otherwise, the value mapping to the highest mapped <code>acr</code> under
+the IdP-Binding's ordering policy;<a href="#section-11.1.1-2.2.1" class="pilcrow">¶</a></p>
+</li>
+            <li id="section-11.1.1-2.3">
+              <p id="section-11.1.1-2.3.1">otherwise, the OP <span class="bcp14">MUST</span> omit <code>acr</code>.<a href="#section-11.1.1-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          </ol>
+<p id="section-11.1.1-3">Unselected values <span class="bcp14">MUST NOT</span> be exposed as additional <code>acr</code> values.
+OIDC <code>acr</code> is single-valued.<a href="#section-11.1.1-3" class="pilcrow">¶</a></p>
+<p id="section-11.1.1-4">Given the selected value, the OP determines <code>acr</code> as follows:<a href="#section-11.1.1-4" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-11.1.1-2.1">
-              <p id="section-11.1.1-2.1.1">if the IdP-Binding defines an explicit
-<code>AuthnContextClassRef</code>-to-<code>acr</code> mapping table, the OP <span class="bcp14">MUST</span> apply that
-mapping and use the mapped value;<a href="#section-11.1.1-2.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-11.1.1-5.1">
+              <p id="section-11.1.1-5.1.1">if the IdP-Binding defines an <code>AuthnContextClassRef</code>-to-<code>acr</code>
+mapping, the OP <span class="bcp14">MUST</span> apply it;<a href="#section-11.1.1-5.1.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-11.1.1-2.2">
-              <p id="section-11.1.1-2.2.1">if no explicit mapping is defined and the IdP-Binding's policy permits
-it, the OP <span class="bcp14">MAY</span> return the <code>AuthnContextClassRef</code> value as <code>acr</code>
-unchanged;<a href="#section-11.1.1-2.2.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="section-11.1.1-5.2">
+              <p id="section-11.1.1-5.2.1">otherwise, if the IdP-Binding permits passthrough, the OP <span class="bcp14">MAY</span>
+return the value unchanged;<a href="#section-11.1.1-5.2.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-11.1.1-2.3">
-              <p id="section-11.1.1-2.3.1">if no mapping is defined and passthrough is not permitted, the OP <span class="bcp14">MUST</span>
-return <code>urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified</code> as <code>acr</code>
-(or omit <code>acr</code>, per IdP-Binding policy); and<a href="#section-11.1.1-2.3.1" class="pilcrow">¶</a></p>
-</li>
-            <li class="normal" id="section-11.1.1-2.4">
-              <p id="section-11.1.1-2.4.1">the OP <span class="bcp14">MUST NOT</span> produce an <code>acr</code> value that asserts higher assurance
-than the SAML <code>AuthnContextClassRef</code> warrants.<a href="#section-11.1.1-2.4.1" class="pilcrow">¶</a></p>
+            <li class="normal" id="section-11.1.1-5.3">
+              <p id="section-11.1.1-5.3.1">otherwise the OP <span class="bcp14">MUST</span> omit <code>acr</code>. If the IdP-Binding configures a
+default, that default <span class="bcp14">MUST</span> be
+<code>urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified</code>.<a href="#section-11.1.1-5.3.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
+<p id="section-11.1.1-6">The OP <span class="bcp14">MUST NOT</span> produce an <code>acr</code> value asserting higher assurance
+than the selected <code>AuthnContextClassRef</code> warrants.<a href="#section-11.1.1-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="amr-mapping">
@@ -2667,6 +2673,16 @@ and the OP's OIDC session identifier (<code>sid</code>).<a href="#section-12.1-1
 identifier in the correlation record. When <code>SessionIndex</code> is absent, the
 OP <span class="bcp14">MUST</span> establish its own session identifier at the time of assertion
 consumption.<a href="#section-12.1-2" class="pilcrow">¶</a></p>
+<p id="section-12.1-3">The OIDC <code>sid</code> claim (<span>[<a href="#OIDC-FC-LOGOUT" class="cite xref">OIDC-FC-LOGOUT</a>]</span>, <span>[<a href="#OIDC-BC-LOGOUT" class="cite xref">OIDC-BC-LOGOUT</a>]</span>) is the
+OP-minted identifier above. The OP <span class="bcp14">MUST NOT</span> reuse the SAML
+<code>SessionIndex</code> directly as <code>sid</code>, because <code>SessionIndex</code> is scoped to
+the upstream IdP and is not guaranteed unique at the OIDC issuer.<a href="#section-12.1-3" class="pilcrow">¶</a></p>
+<p id="section-12.1-4">This profile does not define OIDC Session Management 1.0
+(<code>session_state</code>, <code>check_session_iframe</code>). OPs <span class="bcp14">MAY</span> additionally
+implement it; any binding to upstream SAML session state is
+deployment-defined. RPs needing SAML-aware liveness signals <span class="bcp14">SHOULD</span>
+use <span>[<a href="#OIDC-BC-LOGOUT" class="cite xref">OIDC-BC-LOGOUT</a>]</span> or <span>[<a href="#OIDC-FC-LOGOUT" class="cite xref">OIDC-FC-LOGOUT</a>]</span> notifications driven by
+SAML SLO events (<a href="#saml-single-logout" class="auto internal xref">Section 12.3</a>).<a href="#section-12.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="session-termination">
@@ -2735,13 +2751,23 @@ and <span class="bcp14">MUST</span> terminate the corresponding OP session, prop
 RPs as in <a href="#session-termination" class="auto internal xref">Section 12.2</a>;<a href="#section-12.3-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-12.3-2.3">
-            <p id="section-12.3-2.3.1">the OP <span class="bcp14">MUST</span> return a <code>LogoutResponse</code> to the upstream IdP even if
-RP-side propagation fails; and<a href="#section-12.3-2.3.1" class="pilcrow">¶</a></p>
+            <p id="section-12.3-2.3.1">the OP <span class="bcp14">MUST</span> return a signed <code>LogoutResponse</code> even if RP-side
+propagation fails. Signing follows <a href="#outgoing-signature-algorithms" class="auto internal xref">Section 14.2.2</a>.
+The signature mechanism is binding-specific (detached query-string
+for HTTP-Redirect, enveloped XML for HTTP-POST, SOAP message
+signature for SOAP);<a href="#section-12.3-2.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-12.3-2.4">
-            <p id="section-12.3-2.4.1">the OP <span class="bcp14">MAY</span> initiate <code>LogoutRequest</code> toward the upstream IdP when an
-OIDC RP-Initiated Logout occurs and the local OP-managed session has
-no other active RPs.<a href="#section-12.3-2.4.1" class="pilcrow">¶</a></p>
+            <p id="section-12.3-2.4.1">the OP <span class="bcp14">MUST</span> support the HTTP-Redirect binding for <code>LogoutResponse</code>
+and <span class="bcp14">MAY</span> additionally support HTTP-POST or SOAP;<a href="#section-12.3-2.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-12.3-2.5">
+            <p id="section-12.3-2.5.1">the OP <span class="bcp14">MAY</span> initiate <code>LogoutRequest</code> toward the upstream IdP on
+OIDC RP-Initiated Logout when no other RPs share the session.
+OP-initiated upstream SLO may invalidate the upstream session at
+every SP in that session, including SPs unrelated to this OP.
+Deployments <span class="bcp14">SHOULD</span> weigh that federation-wide impact when enabling
+this behavior.<a href="#section-12.3-2.5.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
@@ -2753,30 +2779,27 @@ no other active RPs.<a href="#section-12.3-2.4.1" class="pilcrow">¶</a></p>
       <h2 id="name-multi-idp-deployments">
 <a href="#section-13" class="section-number selfRef">13. </a><a href="#name-multi-idp-deployments" class="section-name selfRef">Multi-IdP Deployments</a>
       </h2>
-<p id="section-13-1">Deployments <span class="bcp14">MAY</span> configure multiple IdP-Bindings at a single OP, for
-example to federate to multiple regional or vendor SAML IdPs. In such
-deployments:<a href="#section-13-1" class="pilcrow">¶</a></p>
+<p id="section-13-1">Deployments <span class="bcp14">MAY</span> configure multiple IdP-Bindings at a single OP to
+federate to multiple regional or vendor SAML IdPs. The
+multi-IdP-specific rules are distributed across this document and
+summarized here as a reading aid: AS-metadata omission of
+<code>saml_idp_entity_id</code> (<a href="#saml-idp-entity-id-reuse" class="auto internal xref">Section 5.1</a>); deterministic
+IdP-Binding selection (<a href="#idp-binding-selection" class="auto internal xref">Section 8.2</a>); per-IdP-Binding
+isolation of validation and Local Account resolution
+(<a href="#saml-assertion-validation" class="auto internal xref">Section 7</a>, <a href="#local-subject-resolution" class="auto internal xref">Section 9</a>).<a href="#section-13-1" class="pilcrow">¶</a></p>
+<p id="section-13-2">This profile additionally permits per-IdP issuer aliasing:<a href="#section-13-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-13-2.1">
-          <p id="section-13-2.1.1">The OP <span class="bcp14">MUST NOT</span> publish a single <code>saml_idp_entity_id</code> value in its AS
-metadata; the per-flow IdP-Binding is selected at runtime and is not
-advertised through standard discovery. Deployments that publish OP-
-side metadata <span class="bcp14">MAY</span> use a custom extension or out-of-band mechanism to
-list configured IdP-Bindings.<a href="#section-13-2.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-13-3.1">
+          <p id="section-13-3.1.1">the OP <span class="bcp14">MAY</span> operate distinct OIDC <code>issuer</code> values per IdP-Binding.
+Each alias issuer <span class="bcp14">MUST</span> publish its own discovery document and
+<span class="bcp14">MAY</span> publish a distinct <code>jwks_uri</code>. Each alias issuer's
+<code>saml_idp_entity_id</code> <span class="bcp14">MAY</span> identify the single backing
+IdP-Binding.<a href="#section-13-3.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-13-2.2">
-          <p id="section-13-2.2.1">IdP-Binding selection (<a href="#idp-binding-selection" class="auto internal xref">Section 8.3</a>) <span class="bcp14">MUST</span> be
-deterministic per authentication.<a href="#section-13-2.2.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-13-2.3">
-          <p id="section-13-2.3.1">The OP <span class="bcp14">MUST NOT</span> allow assertions issued by one IdP-Binding's SAML IdP
-to be processed under another IdP-Binding's policy.<a href="#section-13-2.3.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-13-2.4">
-          <p id="section-13-2.4.1">Local Account resolution (<a href="#local-subject-resolution" class="auto internal xref">Section 9</a>) <span class="bcp14">MUST</span> scope
-the (SAML Issuer, NameID) lookup to the IdP-Binding that produced the
-assertion; an identical NameID value from a different IdP-Binding is a
-different Local Account.<a href="#section-13-2.4.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-13-3.2">
+          <p id="section-13-3.2.1">when per-IdP issuer aliasing is not used, the OP <span class="bcp14">MAY</span> emit a
+deployment-defined claim carrying the IdP-Binding identifier.
+This profile does not define such a claim.<a href="#section-13-3.2.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 </section>
@@ -2813,34 +2836,34 @@ registration.<a href="#section-14.1-2.3.1" class="pilcrow">¶</a></p>
 <p id="section-14.1-3">In-scope attacker capabilities and the rules that mitigate them:<a href="#section-14.1-3" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-14.1-4.1">
-            <p id="section-14.1-4.1.1">an attacker who obtains a SAML assertion in transit (XSS at the
-upstream IdP, intermediary compromise, log leakage) — the three-way
-binding (<a href="#binding-and-issuance-model" class="auto internal xref">Section 4</a>), audience/recipient/<code>InResponseTo</code>
-validation (<a href="#accepted-saml-inputs" class="auto internal xref">Section 7.1</a>), and replay rules
-(<a href="#replay-and-freshness" class="auto internal xref">Section 7.2</a>) limit what such an assertion enables;<a href="#section-14.1-4.1.1" class="pilcrow">¶</a></p>
+            <p id="section-14.1-4.1.1">obtaining a SAML assertion in transit (XSS at the upstream IdP,
+intermediary compromise, log leakage). Mitigated by the three-way
+binding (<a href="#binding-and-issuance-model" class="auto internal xref">Section 4</a>),
+audience/recipient/<code>InResponseTo</code> validation
+(<a href="#accepted-saml-inputs" class="auto internal xref">Section 7.1</a>), and replay rules
+(<a href="#replay-and-freshness" class="auto internal xref">Section 7.2</a>).<a href="#section-14.1-4.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-14.1-4.2">
-            <p id="section-14.1-4.2.1">an attacker who forges, replays, or manipulates a SAML <code>Response</code>
-toward the OP — signature, audience, recipient, freshness, and replay
-rules in <a href="#saml-assertion-validation" class="auto internal xref">Section 7</a>;<a href="#section-14.1-4.2.1" class="pilcrow">¶</a></p>
+            <p id="section-14.1-4.2.1">forging, replaying, or manipulating a SAML <code>Response</code> toward the
+OP. Mitigated by signature, audience, recipient, freshness, and
+replay rules in <a href="#saml-assertion-validation" class="auto internal xref">Section 7</a>.<a href="#section-14.1-4.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-14.1-4.3">
-            <p id="section-14.1-4.3.1">an attacker who attempts XML Signature Wrapping against the SAML
-<code>Response</code> or <code>Assertion</code> — <a href="#xsw-incoming" class="auto internal xref">Section 14.2.1</a>;<a href="#section-14.1-4.3.1" class="pilcrow">¶</a></p>
+            <p id="section-14.1-4.3.1">XML Signature Wrapping against the SAML <code>Response</code> or <code>Assertion</code>.
+See <a href="#xsw-incoming" class="auto internal xref">Section 14.2.1</a>.<a href="#section-14.1-4.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-14.1-4.4">
-            <p id="section-14.1-4.4.1">an attacker who attempts to splice a SAML response into a different
-OIDC request context — <code>InResponseTo</code> and OP-side state binding
-(<a href="#authorization-request-processing" class="auto internal xref">Section 8.2</a>);<a href="#section-14.1-4.4.1" class="pilcrow">¶</a></p>
+            <p id="section-14.1-4.4.1">splicing a SAML response into a different OIDC request context.
+Mitigated by <code>InResponseTo</code> and OP-side state binding
+(<a href="#authorization-request-processing" class="auto internal xref">Section 8.1</a>).<a href="#section-14.1-4.4.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-14.1-4.5">
-            <p id="section-14.1-4.5.1">an attacker who attempts to bind an OIDC client registration that
-triggers cross-IdP-Binding subject overlap — multi-IdP isolation
-rules (<a href="#multi-idp-deployments" class="auto internal xref">Section 13</a>); and<a href="#section-14.1-4.5.1" class="pilcrow">¶</a></p>
+            <p id="section-14.1-4.5.1">binding an OIDC client registration that triggers cross-IdP-Binding
+subject overlap. Mitigated by multi-IdP isolation
+(<a href="#multi-idp-deployments" class="auto internal xref">Section 13</a>).<a href="#section-14.1-4.5.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-14.1-4.6">
-            <p id="section-14.1-4.6.1">an attacker who compromises the OP-as-SP signing key — see
-<a href="#op-key-compromise" class="auto internal xref">Section 14.6</a>.<a href="#section-14.1-4.6.1" class="pilcrow">¶</a></p>
+            <p id="section-14.1-4.6.1">compromising the OP-as-SP signing key. See <a href="#op-key-compromise" class="auto internal xref">Section 14.6</a>.<a href="#section-14.1-4.6.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 <p id="section-14.1-5">Out of scope: compromise of the OP or the SAML IdP themselves;
@@ -2897,22 +2920,24 @@ for further adjustments.<a href="#section-14.2.2-1" class="pilcrow">¶</a></p>
         <h3 id="name-saml-response-splicing">
 <a href="#section-14.3" class="section-number selfRef">14.3. </a><a href="#name-saml-response-splicing" class="section-name selfRef">SAML Response Splicing</a>
         </h3>
-<p id="section-14.3-1">A browser-based attacker may attempt to deliver a SAML <code>Response</code>
-captured from one OIDC flow to the OP's ACS in the context of a
-different pending OIDC flow. The OP <span class="bcp14">MUST</span> prevent this by:<a href="#section-14.3-1" class="pilcrow">¶</a></p>
+<p id="section-14.3-1">A browser-based attacker may deliver a SAML <code>Response</code> captured from
+one OIDC flow to the OP's ACS in another pending flow. The OP <span class="bcp14">MUST</span>
+prevent this by:<a href="#section-14.3-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-14.3-2.1">
-            <p id="section-14.3-2.1.1">binding the SAML <code>AuthnRequest/@ID</code> it issues to the OIDC request
-context (per <a href="#authorization-request-processing" class="auto internal xref">Section 8.2</a>);<a href="#section-14.3-2.1.1" class="pilcrow">¶</a></p>
+            <p id="section-14.3-2.1.1">binding the issued <code>AuthnRequest/@ID</code> to the OIDC request context
+(<a href="#authorization-request-processing" class="auto internal xref">Section 8.1</a>). The bound context <span class="bcp14">MUST</span>
+include the OIDC <code>state</code>. Integrity protection of the binding is
+required (for example, via the authenticated transaction object in
+<a href="#stateless-correlation" class="auto internal xref">Section 8.4</a>);<a href="#section-14.3-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-14.3-2.2">
-            <p id="section-14.3-2.2.1">validating that the returned assertion's
-<code>SubjectConfirmationData/@InResponseTo</code> matches the pending
-<code>AuthnRequest/@ID</code> for the OIDC flow being completed; and<a href="#section-14.3-2.2.1" class="pilcrow">¶</a></p>
+            <p id="section-14.3-2.2.1">validating that <code>SubjectConfirmationData/@InResponseTo</code> matches
+the pending <code>AuthnRequest/@ID</code>; and<a href="#section-14.3-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-14.3-2.3">
             <p id="section-14.3-2.3.1">tracking outstanding <code>AuthnRequest/@ID</code> values and rejecting any
-<code>Response</code> whose <code>InResponseTo</code> is already consumed or unknown.<a href="#section-14.3-2.3.1" class="pilcrow">¶</a></p>
+<code>Response</code> whose <code>InResponseTo</code> is consumed or unknown.<a href="#section-14.3-2.3.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
@@ -2939,7 +2964,7 @@ profile.<a href="#section-14.4-2" class="pilcrow">¶</a></p>
         <h3 id="name-stateless-correlation-state">
 <a href="#section-14.5" class="section-number selfRef">14.5. </a><a href="#name-stateless-correlation-state" class="section-name selfRef">Stateless Correlation State</a>
         </h3>
-<p id="section-14.5-1">When the OP uses stateless correlation (<a href="#stateless-correlation" class="auto internal xref">Section 8.5</a>) to
+<p id="section-14.5-1">When the OP uses stateless correlation (<a href="#stateless-correlation" class="auto internal xref">Section 8.4</a>) to
 carry OIDC authorization request context across the SAML round trip:<a href="#section-14.5-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-14.5-2.1">
@@ -2964,8 +2989,13 @@ unless those values originated from the authenticated object; and<a href="#secti
           <li class="normal" id="section-14.5-2.4">
             <p id="section-14.5-2.4.1">when the protected object is stored in a cookie scoped to the OP
 rather than carried in <code>RelayState</code>, the cookie <span class="bcp14">MUST</span> be marked
-<code>Secure</code>, <code>HttpOnly</code>, and <code>SameSite=Lax</code> or stricter, and <span class="bcp14">MUST</span> be
-cleared on flow completion or expiry.<a href="#section-14.5-2.4.1" class="pilcrow">¶</a></p>
+<code>Secure</code>, <code>HttpOnly</code>, and <code>SameSite=None</code>. <code>SameSite=Lax</code> and
+<code>SameSite=Strict</code> <span class="bcp14">MUST NOT</span> be used: the SAML Response is delivered
+to the OP's ACS endpoint as a cross-site POST and Lax/Strict
+cookies are not sent. The cookie <span class="bcp14">MUST</span> be cleared on flow
+completion or expiry. Deployments that cannot use cross-site
+cookies <span class="bcp14">MUST</span> instead carry the object in <code>RelayState</code> or keep
+server-side state keyed by a small <code>RelayState</code> token.<a href="#section-14.5-2.4.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 <p id="section-14.5-3">Stateless correlation does not remove the replay-protection
@@ -3005,24 +3035,14 @@ policy, at least 24 hours is <span class="bcp14">RECOMMENDED</span>.<a href="#se
         <h3 id="name-oidc-rp-authorization">
 <a href="#section-14.7" class="section-number selfRef">14.7. </a><a href="#name-oidc-rp-authorization" class="section-name selfRef">OIDC RP Authorization</a>
         </h3>
-<p id="section-14.7-1">A valid SAML assertion is necessary but not sufficient for OIDC token
-issuance under this profile (see <a href="#authorization-assertion-model" class="auto internal xref">Section 4.1</a>). In
-particular:<a href="#section-14.7-1" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-14.7-2.1">
-            <p id="section-14.7-2.1.1">the OP <span class="bcp14">MUST NOT</span> release SAML attributes as OIDC claims solely because
-they are present in the assertion;<a href="#section-14.7-2.1.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-14.7-2.2">
-            <p id="section-14.7-2.2.1">the OP <span class="bcp14">MUST NOT</span> grant <code>offline_access</code> (refresh tokens) unless OIDC
-client policy authorizes it independently; and<a href="#section-14.7-2.2.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-14.7-2.3">
-            <p id="section-14.7-2.3.1">the OP <span class="bcp14">MUST NOT</span> broaden the set of OIDC RPs that can consume an
-identity sourced from a given IdP-Binding based on assertion contents
-alone.<a href="#section-14.7-2.3.1" class="pilcrow">¶</a></p>
-</li>
-        </ul>
+<p id="section-14.7-1">A valid SAML assertion is necessary but not sufficient for OIDC
+token issuance; the authorization basis is defined normatively in
+<a href="#authorization-assertion-model" class="auto internal xref">Section 4.1</a>. Common attack patterns that
+attempt to short-circuit that rule include treating the assertion
+as authorization to grant <code>offline_access</code>, or broadening the set
+of OIDC RPs that consume an IdP-Binding based on assertion
+contents. The authorization-basis rules in
+<a href="#authorization-assertion-model" class="auto internal xref">Section 4.1</a> forbid both.<a href="#section-14.7-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="open-redirect">
@@ -3096,24 +3116,32 @@ build an audit trail linking end-users to specific OIDC RPs, unless
 local policy explicitly permits this and the privacy implications have
 been assessed. Doing so could allow the SAML IdP to profile which OIDC
 RPs each user accesses.<a href="#section-15-4" class="pilcrow">¶</a></p>
-<p id="section-15-5">The <code>sub_id</code> claim (<a href="#sub-id-claim" class="auto internal xref">Section 10.4</a>) exposes the original SAML
+<p id="section-15-5">Independently of any RP-identity conveyance, the OP topology exposes
+some user-activity signal to the upstream IdP. Each authorization
+request requiring a fresh SAML authentication produces an
+<code>AuthnRequest</code>, so the IdP learns authentication frequency and
+timing even without RP identifiers. Deployments <span class="bcp14">SHOULD</span> weigh this
+when sizing the SAML session reuse window and <span class="bcp14">SHOULD</span> document the
+characteristic in privacy notices when federation boundaries cross
+organizations.<a href="#section-15-5" class="pilcrow">¶</a></p>
+<p id="section-15-6">The <code>sub_id</code> claim (<a href="#sub-id-claim" class="auto internal xref">Section 10.4</a>) exposes the original SAML
 <code>NameID</code> context, including the SAML IdP entityID and any <code>NameID</code>
 qualifiers. Deployments <span class="bcp14">SHOULD</span> release <code>sub_id</code> only when the RP
 genuinely needs the original SAML context (legacy account linking, audit
 correlation). A SAML <code>NameID</code> in <code>emailAddress</code> format carries
-email-equivalent sensitivity and <span class="bcp14">MUST</span> be handled accordingly.<a href="#section-15-5" class="pilcrow">¶</a></p>
-<p id="section-15-6">OP-side audit logs combine SAML and OIDC protocol identifiers (SAML
+email-equivalent sensitivity and <span class="bcp14">MUST</span> be handled accordingly.<a href="#section-15-6" class="pilcrow">¶</a></p>
+<p id="section-15-7">OP-side audit logs combine SAML and OIDC protocol identifiers (SAML
 Issuer, NameID, <code>SessionIndex</code>, OIDC <code>sub</code>, <code>client_id</code>) and are
 uniquely positioned to deanonymize pairwise <code>sub</code> values. The OP <span class="bcp14">SHOULD</span>
 retain such logs for the minimum period required by deployment policy
-and <span class="bcp14">SHOULD</span> apply the access controls appropriate for that combined data.<a href="#section-15-6" class="pilcrow">¶</a></p>
-<p id="section-15-7">The OP's published SAML SP metadata (<code>SPSSODescriptor</code>) discloses the
+and <span class="bcp14">SHOULD</span> apply the access controls appropriate for that combined data.<a href="#section-15-7" class="pilcrow">¶</a></p>
+<p id="section-15-8">The OP's published SAML SP metadata (<code>SPSSODescriptor</code>) discloses the
 OP's ACS URL, signing key, and (when emitted) <code>EncryptedAssertion</code>
 encryption key. In federations, this metadata may be aggregated and
 distributed widely. Deployments <span class="bcp14">SHOULD</span> treat the SAML SP metadata as
 public deployment topology information and <span class="bcp14">SHOULD NOT</span> include
 contact, organization, or internal-host detail beyond what the
-federation requires.<a href="#section-15-7" class="pilcrow">¶</a></p>
+federation requires.<a href="#section-15-8" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="iana-considerations">
@@ -3121,29 +3149,26 @@ federation requires.<a href="#section-15-7" class="pilcrow">¶</a></p>
       <h2 id="name-iana-considerations">
 <a href="#section-16" class="section-number selfRef">16. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
       </h2>
-<p id="section-16-1">This document does not request any new IANA registrations. It reuses
-existing registrations with consistent semantics:<a href="#section-16-1" class="pilcrow">¶</a></p>
+<p id="section-16-1">This document requests no new IANA registrations. The
+<code>session_expiry</code> claim referenced in <a href="#authentication-event-claims" class="auto internal xref">Section 11.1</a>
+is defined and registered by <span>[<a href="#OIDC-ENTERPRISE-EXTENSIONS" class="cite xref">OIDC-ENTERPRISE-EXTENSIONS</a>]</span>.<a href="#section-16-1" class="pilcrow">¶</a></p>
+<p id="section-16-2">This document reuses existing registrations with consistent
+semantics:<a href="#section-16-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-16-2.1">
-          <p id="section-16-2.1.1">the <code>saml_idp_entity_id</code> and <code>saml_metadata_uri</code> AS metadata
-parameters defined by <span>[<a href="#SAML-OIDC-MIGRATION" class="cite xref">SAML-OIDC-MIGRATION</a>]</span> are used unchanged to
-declare the OP's upstream SAML IdP binding;<a href="#section-16-2.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-16-3.1">
+          <p id="section-16-3.1.1"><code>saml_idp_entity_id</code> and <code>saml_metadata_uri</code> (AS metadata) from
+<span>[<a href="#SAML-OIDC-MIGRATION" class="cite xref">SAML-OIDC-MIGRATION</a>]</span> are used unchanged for the upstream SAML
+IdP binding;<a href="#section-16-3.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-16-2.2">
-          <p id="section-16-2.2.1">the <code>sub_id</code> JWT claim, <code>saml-nameid</code> Security Event Identifier
-Format, and <code>saml_subject</code> OAuth scope value defined by
-<span>[<a href="#SAML-OIDC-MIGRATION" class="cite xref">SAML-OIDC-MIGRATION</a>]</span> are reused unchanged to convey SAML
-provenance;<a href="#section-16-2.2.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-16-3.2">
+          <p id="section-16-3.2.1">the <code>sub_id</code> JWT claim from <span>[<a href="#RFC9493" class="cite xref">RFC9493</a>]</span>, the <code>saml-nameid</code> Subject
+Identifier Format value from <span>[<a href="#SAML-OIDC-MIGRATION" class="cite xref">SAML-OIDC-MIGRATION</a>]</span>, and the
+<code>saml_subject</code> OAuth scope value from <span>[<a href="#SAML-OIDC-MIGRATION" class="cite xref">SAML-OIDC-MIGRATION</a>]</span> are
+reused unchanged for SAML provenance;<a href="#section-16-3.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-16-2.3">
-          <p id="section-16-2.3.1">OAuth and OpenID Connect grant types, scopes, and metadata used by
-this profile are already registered by their respective
-specifications; this document does not modify those registrations;
-and<a href="#section-16-2.3.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-16-2.4">
-          <p id="section-16-2.4.1">SAML 2.0 protocol values used by this profile are already defined by
-the OASIS SAML 2.0 specifications.<a href="#section-16-2.4.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-16-3.3">
+          <p id="section-16-3.3.1">OAuth, OpenID Connect, and SAML 2.0 protocol values are governed
+by their respective specifications and not modified here.<a href="#section-16-3.3.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 </section>
@@ -3187,17 +3212,9 @@ the OASIS SAML 2.0 specifications.<a href="#section-16-2.4.1" class="pilcrow">¶
         <dd>
 <span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
 <dd class="break"></dd>
-<dt id="RFC4648">[RFC4648]</dt>
-        <dd>
-<span class="refAuthor">Josefsson, S.</span>, <span class="refTitle">"The Base16, Base32, and Base64 Data Encodings"</span>, <span class="seriesInfo">RFC 4648</span>, <span class="seriesInfo">DOI 10.17487/RFC4648</span>, <time datetime="2006-10" class="refDate">October 2006</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc4648">https://www.rfc-editor.org/rfc/rfc4648</a>&gt;</span>. </dd>
-<dd class="break"></dd>
 <dt id="RFC6749">[RFC6749]</dt>
         <dd>
 <span class="refAuthor">Hardt, D., Ed.</span>, <span class="refTitle">"The OAuth 2.0 Authorization Framework"</span>, <span class="seriesInfo">RFC 6749</span>, <span class="seriesInfo">DOI 10.17487/RFC6749</span>, <time datetime="2012-10" class="refDate">October 2012</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6749">https://www.rfc-editor.org/rfc/rfc6749</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="RFC7591">[RFC7591]</dt>
-        <dd>
-<span class="refAuthor">Richer, J., Ed.</span>, <span class="refAuthor">Jones, M.</span>, <span class="refAuthor">Bradley, J.</span>, <span class="refAuthor">Machulak, M.</span>, and <span class="refAuthor">P. Hunt</span>, <span class="refTitle">"OAuth 2.0 Dynamic Client Registration Protocol"</span>, <span class="seriesInfo">RFC 7591</span>, <span class="seriesInfo">DOI 10.17487/RFC7591</span>, <time datetime="2015-07" class="refDate">July 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7591">https://www.rfc-editor.org/rfc/rfc7591</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC7636">[RFC7636]</dt>
         <dd>
@@ -3222,6 +3239,10 @@ the OASIS SAML 2.0 specifications.<a href="#section-16-2.4.1" class="pilcrow">¶
 <dt id="RFC9700">[RFC9700]</dt>
         <dd>
 <span class="refAuthor">Lodderstedt, T.</span>, <span class="refAuthor">Bradley, J.</span>, <span class="refAuthor">Labunets, A.</span>, and <span class="refAuthor">D. Fett</span>, <span class="refTitle">"Best Current Practice for OAuth 2.0 Security"</span>, <span class="seriesInfo">BCP 240</span>, <span class="seriesInfo">RFC 9700</span>, <span class="seriesInfo">DOI 10.17487/RFC9700</span>, <time datetime="2025-01" class="refDate">January 2025</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9700">https://www.rfc-editor.org/rfc/rfc9700</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="SAML-OIDC-MIGRATION">[SAML-OIDC-MIGRATION]</dt>
+        <dd>
+<span class="refAuthor">McGuinness, K.</span>, <span class="refTitle">"OpenID Connect Migration Profile for SAML 2.0 Service Providers"</span>, <span>&lt;<a href="https://datatracker.ietf.org/doc/draft-connect-saml-migration-profile/">https://datatracker.ietf.org/doc/draft-connect-saml-migration-profile/</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="SAML2-BINDINGS">[SAML2-BINDINGS]</dt>
         <dd>
@@ -3256,17 +3277,9 @@ the OASIS SAML 2.0 specifications.<a href="#section-16-2.4.1" class="pilcrow">¶
         <dd>
 <span class="refAuthor">Lodderstedt, T., Ed.</span>, <span class="refAuthor">Dronia, S.</span>, and <span class="refAuthor">M. Scurtescu</span>, <span class="refTitle">"OAuth 2.0 Token Revocation"</span>, <span class="seriesInfo">RFC 7009</span>, <span class="seriesInfo">DOI 10.17487/RFC7009</span>, <time datetime="2013-08" class="refDate">August 2013</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7009">https://www.rfc-editor.org/rfc/rfc7009</a>&gt;</span>. </dd>
 <dd class="break"></dd>
-<dt id="RFC7522">[RFC7522]</dt>
-        <dd>
-<span class="refAuthor">Campbell, B.</span>, <span class="refAuthor">Mortimore, C.</span>, and <span class="refAuthor">M. Jones</span>, <span class="refTitle">"Security Assertion Markup Language (SAML) 2.0 Profile for OAuth 2.0 Client Authentication and Authorization Grants"</span>, <span class="seriesInfo">RFC 7522</span>, <span class="seriesInfo">DOI 10.17487/RFC7522</span>, <time datetime="2015-05" class="refDate">May 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7522">https://www.rfc-editor.org/rfc/rfc7522</a>&gt;</span>. </dd>
-<dd class="break"></dd>
 <dt id="SAML-OIDC-BRIDGE">[SAML-OIDC-BRIDGE]</dt>
-        <dd>
-<span class="refAuthor">McGuinness, K.</span>, <span class="refTitle">"OpenID Connect Bridge Profile for SAML 2.0 Service Providers"</span>, <span>&lt;<a href="https://datatracker.ietf.org/doc/draft-connect-saml-bridge-profile/">https://datatracker.ietf.org/doc/draft-connect-saml-bridge-profile/</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="SAML-OIDC-MIGRATION">[SAML-OIDC-MIGRATION]</dt>
       <dd>
-<span class="refAuthor">McGuinness, K.</span>, <span class="refTitle">"OpenID Connect Migration Profile for SAML 2.0 Service Providers"</span>, <span>&lt;<a href="https://datatracker.ietf.org/doc/draft-connect-saml-migration-profile/">https://datatracker.ietf.org/doc/draft-connect-saml-migration-profile/</a>&gt;</span>. </dd>
+<span class="refAuthor">McGuinness, K.</span>, <span class="refTitle">"OpenID Connect Bridge Profile for SAML 2.0 Service Providers"</span>, <span>&lt;<a href="https://datatracker.ietf.org/doc/draft-connect-saml-bridge-profile/">https://datatracker.ietf.org/doc/draft-connect-saml-bridge-profile/</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 </dl>
 </section>

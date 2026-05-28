@@ -7,30 +7,20 @@
 <title>OpenID Connect Bridge Profile for SAML 2.0 Service Providers</title>
 <meta content="Karl McGuinness" name="author">
 <meta content="
-       This document defines an interoperability profile for deployments that present
-a SAML 2.0 Identity Provider interface to existing Service Providers (SPs)
-while using an OpenID Provider (OP) as the underlying authentication authority.
-The profile specifies how a Bridge component, acting simultaneously as an OIDC
-Relying Party toward the OP and as a SAML IdP facade toward the SP, translates
-OIDC authentication results into SAML assertions while preserving subject
-continuity, enforcing audience restrictions, and maintaining per-SP attribute
-release policies. 
-       Two operational patterns are defined. The browser-based flow allows a SAML SP
-to initiate authentication through the Bridge using standard SAML Web SSO; the
-Bridge in turn authenticates the end-user via the OP and constructs a signed
-SAML assertion for delivery to the SP's Assertion Consumer Service. A Token
-Exchange variant allows a confidential client to present an OIDC ID Token to
-the Bridge's token endpoint and receive a SAML 2.0 assertion, without a
-browser-based SAML exchange. 
-       The intent is to let an OP serve existing SAML SPs without changes to the SPs'
-trust configuration, metadata, or ACS endpoints, and without re-federating each
-SP one by one. The profile is scoped to federation interoperability and
-identity continuity; it does not define a generalized SAML IdP, authorization
-architectures, provisioning, or governance models. 
-       This document is the inverse companion to the OpenID Connect Migration Profile
-for SAML 2.0 Service Providers  . The two profiles are
-designed to be deployed together, using the same Bridge entity as the
-translation point in both directions. 
+       This document defines an interoperability profile for deployments
+that present a SAML 2.0 Identity Provider interface to existing
+Service Providers (SPs) while using an OpenID Provider (OP) as the
+underlying authentication authority. A Bridge component acts as an
+OIDC Relying Party toward the OP and as a SAML IdP facade toward
+the SP, translating OIDC authentication into a signed SAML
+assertion. 
+       Two operational patterns are defined. The browser-based flow lets a
+SAML SP initiate authentication through the Bridge using SAML Web
+SSO; the Bridge authenticates the end-user via the OP and delivers
+a SAML assertion to the SP's ACS endpoint. A Token Exchange variant
+lets a confidential client exchange an OIDC ID Token for a SAML
+assertion without a browser-based SAML exchange. 
+       This document is the inverse companion to  . 
     " name="description">
 <meta content="xml2rfc 3.33.0" name="generator">
 <meta content="draft-connect-saml-bridge-profile-latest" name="ietf.draft">
@@ -313,16 +303,19 @@ h1, h2, h3, h4, h5, h6 {
   font-size-adjust: 0.5;
   color: var(--title-color);
 }
-h1#title {
-  font-size: 32px;
-  line-height: 40px;
-  clear: both;
-}
-h1#title, h1#rfcnum {
-  margin: 1.5em 0 0.2em;
-}
-h1#rfcnum + h1#title {
-  margin: 0.2em 0;
+h1 {
+  &#title {
+    font-size: 32px;
+    line-height: 40px;
+    clear: both;
+    margin: 1.5em 0 0.2em;
+  }
+  &#rfcnum {
+    margin: 1.5em 0 0.2em;
+    & + h1#title {
+      margin: 0.2em 0;
+    }
+  }
 }
 
 h1, h2, h3 {
@@ -342,10 +335,10 @@ h4, h5, h6 {
 #abstract+p {
   font-size: 18px;
   line-height: 24px;
-}
-#abstract+p code, #abstract+p samp, #abstract+p tt {
-  font-size: 16px;
-  line-height: 0;
+  & code, & samp, & tt {
+    font-size: 16px;
+    line-height: 0;
+  }
 }
 
 p {
@@ -356,59 +349,59 @@ p {
 div {
   margin: 0;
 }
-.alignRight.art-text {
-  background-color: var(--highlight-color);
-  border: 1px solid var(--line-color);
-  border-radius: 3px;
-  padding: 0.5em 1em 0;
-  margin-bottom: 0.5em;
-}
-.alignRight.art-text pre {
-  padding: 0;
-  width: auto;
-}
 .alignRight {
   margin: 1em 0;
-}
-.alignRight > *:first-child {
-  border: none;
-  margin: 0;
-  float: right;
-  clear: both;
-}
-.alignRight > *:nth-child(2) {
-  clear: both;
-  display: block;
-  border: none;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    margin: 0;
+    float: right;
+    clear: both;
+  }
+  & > *:nth-child(2) {
+    clear: both;
+    display: block;
+    border: none;
+  }
 }
 svg {
   display: block;
-}
-/* font-family isn't space-separated, but =~ will have to do */
-svg[font-family~="monospace" i], svg [font-family~="monospace" i] {
-  font-family: var(--font-mono);
-}
-.alignCenter.art-text {
-  background-color: var(--highlight-color);
-  border: 1px solid var(--line-color);
-  border-radius: 3px;
-  padding: 0.5em 1em 0;
-  margin-bottom: 0.5em;
-}
-.alignCenter.art-text pre {
-  padding: 0;
-  width: auto;
+  /* font-family isn't space-separated, but =~ will have to do */
+  &[font-family~="monospace" i], & [font-family~="monospace" i] {
+    font-family: var(--font-mono);
+  }
 }
 .alignCenter {
   margin: 1em 0;
-}
-.alignCenter > *:first-child {
-  border: none;
-  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
-     support flexbox yet.
-  */
-  display: table;
-  margin: 0 auto;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+       support flexbox yet.
+    */
+    display: table;
+    margin: 0 auto;
+  }
 }
 
 /* lists */
@@ -446,26 +439,25 @@ dl {
     --indent: 5ch;
     & > dt {
       min-width: calc(var(--indent) - 2ch);
+      float: none;
     }
-  }
-  &.olPercent > dt {
-    float: none;
   }
 
   dl > dd > & {
     margin-top: 0.5em;
     margin-bottom: 0;
   }
-}
-dl:not(.dlNewline) > dt {
-  float: left;
-  margin-right: 2ch;
-  min-width: 8ch;
-}
-dl > dd {
-  margin-bottom: .8em;
-  margin-left: var(--indent) !important; /* stupid element overrides */
-  min-height: 2ex;
+
+  &:not(.dlNewline) > dt {
+    float: left;
+    margin-right: 2ch;
+    min-width: 8ch;
+  }
+  & > dd {
+    margin-bottom: .8em;
+    margin-left: var(--indent) !important; /* stupid element overrides */
+    min-height: 2ex;
+  }
 }
 :is(dl.compact, .dlCompact) > dd {
   margin-bottom: 0;
@@ -481,20 +473,22 @@ dl > dd {
 }
 
 /* links */
-a, a[href].selfRef:hover {
+a {
   text-decoration: none;
+  &[href] {
+    color: var(--link-color);
+    &:hover { text-decoration: underline; }
+    &.selfRef {
+      color: var(--text-color);
+      &:hover {
+        text-decoration: none;
+        background-color: var(--highlight-color);
+      }
+    }
+  }
 }
-a[href] {
-  color: var(--link-color);
-}
-a[href].selfRef, .iref + a[href].internal {
+.iref + a[href].internal {
   color: var(--text-color);
-}
-a[href]:hover {
-  text-decoration: underline;
-}
-a[href].selfRef:hover {
-  background-color: var(--highlight-color);
 }
 a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
   white-space: nowrap;
@@ -530,9 +524,9 @@ img {
 figure {
   margin: 0.5em 0;
   padding: 0;
-}
-figure blockquote {
-  margin: 0.8em 0.4em 0.4em;
+  & blockquote {
+    margin: 0.8em 0.4em 0.4em;
+  }
 }
 figcaption, caption {
   font-style: italic;
@@ -542,17 +536,19 @@ figcaption, caption {
 }
 @media screen {
   /* Auto-collapse boilerplate. */
-  :is(#status-of-memo, #copyright) p {
-    margin: -2px 0;
-    max-height: 0;
-    transition: max-height 2s ease, margin 0.5s ease 0.5s;
-    overflow: hidden;
-  }
-  :is(#status-of-memo, #copyright):hover p,
-  :is(#status-of-memo, #copyright) h2:target ~ p {
-    margin: 0.5em 0;
-    max-height: 500px;
-    overflow: auto;
+  :is(#status-of-memo, #copyright) {
+    & p {
+      margin: -2px 0;
+      max-height: 0;
+      transition: max-height 2s ease, margin 0.5s ease 0.5s;
+      overflow: hidden;
+    }
+    &:hover p,
+    & h2:target ~ p {
+      margin: 0.5em 0;
+      max-height: 500px;
+      overflow: auto;
+    }
   }
   pre, svg {
     display: inline-block;
@@ -602,25 +598,17 @@ table {
   max-width: 100%;
   margin: 0 0 1em;
   border-collapse: collapse;
-}
-table.right {
-  margin-left: auto;
-}
-table.center {
-  margin-left: auto;
-  margin-right: auto;
-}
-table.left {
-  margin-right: auto;
-}
-table .text-left {
-  text-align: left;
-}
-table .text-center {
-  text-align: center;
-}
-table .text-right {
-  text-align: right;
+  &.right { margin-left: auto; }
+  &.center { margin-left: auto; margin-right: auto; }
+  &.left { margin-right: auto; }
+  & .text-left { text-align: left; }
+  & .text-center { text-align: center; }
+  & .text-right { text-align: right; }
+  & caption {
+    margin: 0;
+    padding: 3px 0 3px 1em;
+  }
+  & p { margin: 0; }
 }
 
 thead, tbody {
@@ -640,13 +628,6 @@ th {
 :is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
   background-color: var(--highlight-color);
 }
-table caption {
-  margin: 0;
-  padding: 3px 0 3px 1em;
-}
-table p {
-  margin: 0;
-}
 
 /* pilcrow */
 a.pilcrow {
@@ -657,18 +638,16 @@ a.pilcrow {
     color: var(--pilcrow-weak);
     &:hover { text-decoration: none; }
   }
-}
-@media not print {
-  :hover > a.pilcrow, a.pilcrow:focus {
-    opacity: 1;
+  @media not print {
+    :hover > &, &:focus {
+      opacity: 1;
+    }
+    &[href]:hover {
+      color: var(--pilcrow-strong);
+      background-color: transparent;
+    }
   }
-  a.pilcrow[href]:hover {
-    color: var(--pilcrow-strong);
-    background-color: transparent;
-  }
-}
-@media print {
-  a.pilcrow {
+  @media print {
     display: none;
   }
 }
@@ -727,9 +706,9 @@ sub, sup {
   font-size: 0.9em;
   font-style: italic;
   margin-top: 2em;
-}
-.docInfo .prepared {
-  float: right;
+  & .prepared {
+    float: right;
+  }
 }
 
 /* table of contents */
@@ -819,23 +798,27 @@ hr.addr {
   max-width: calc(100% - 16px);
 }
 @media (min-width: 500px) {
-  #authors-addresses > section {
-    column-count: 2;
-    column-gap: 20px;
-  }
-  #authors-addresses > section > h2 {
-    column-span: all;
-  }
-  /* hack for break-inside: avoid-column */
-  #authors-addresses address {
-    display: inline-block;
-    break-inside: avoid-column;
+  #authors-addresses {
+    & > section {
+      column-count: 2;
+      column-gap: 20px;
+    }
+    & > section > h2 {
+      column-span: all;
+    }
+    /* hack for break-inside: avoid-column */
+    & address {
+      display: inline-block;
+      break-inside: avoid-column;
+    }
   }
 }
 
 /* Comments */
-.rfcEditorRemove p:first-of-type {
-  font-style: italic;
+.rfcEditorRemove {
+  & p:first-of-type {
+    font-style: italic;
+  }
 }
 .cref {
   background-color: rgba(249, 232, 105, 0.3);
@@ -846,19 +829,21 @@ hr.addr {
 }
 
 @media screen {
-  #toc nav {
-    font-family: var(--font-title);
-    font-weight: 360;
-    & > ul { margin-bottom: 2em; }
-    & ul {
-      margin: 0 0 0 4px;
-      & :is(p, li) {
-        margin: 2px 0;
+  #toc {
+    & nav {
+      font-family: var(--font-title);
+      font-weight: 360;
+      & > ul { margin-bottom: 2em; }
+      & ul {
+        margin: 0 0 0 4px;
+        & :is(p, li) {
+          margin: 2px 0;
+        }
       }
     }
-  }
-  #toc a.toplink {
-    float: right;
+    & a.toplink {
+      float: right;
+    }
   }
 }
 @media not screen {
@@ -879,54 +864,54 @@ hr.addr {
     margin: 0;
     border-bottom: 1px solid #ccc;
     opacity: 0.6;
-  }
-  #toc h2 {
-    margin: 0;
-    padding: 2px 0 2px 6px;
-    padding-right: 1em;
-    font-size: 18px;
-    line-height: 24px;
-    min-width: 190px;
-    text-align: right;
-    background-color: #444;
-    color: white;
-    cursor: pointer;
-    &::before { /* css hamburger */
-      float: right;
-      position: relative;
-      width: 1em;
-      height: 1px;
-      left: -164px;
-      margin: 8px 0 0 0;
-      background: white none repeat scroll 0 0;
-      box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
-      content: "";
+    & h2 {
+      margin: 0;
+      padding: 2px 0 2px 6px;
+      padding-right: 1em;
+      font-size: 18px;
+      line-height: 24px;
+      min-width: 190px;
+      text-align: right;
+      background-color: #444;
+      color: white;
+      cursor: pointer;
+      &::before { /* css hamburger */
+        float: right;
+        position: relative;
+        width: 1em;
+        height: 1px;
+        left: -164px;
+        margin: 8px 0 0 0;
+        background: white none repeat scroll 0 0;
+        box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+        content: "";
+      }
     }
-  }
-  #toc nav {
-    display: none;
-    background-color: var(--background-color);
-    padding: 0.5em 1em 1em;
-    overflow: auto;
-    overscroll-behavior: contain;
-    height: calc(100vh - 48px);
-    border-left: 1px solid #ddd;
-  }
-  #toc.active {
-    opacity: 1;
-    & nav { display: block; }
-  }
-  /* Make the collapsed ToC header render white on gray also when it's a link */
-  #toc h2 a,
-  #toc h2 a:is(:link, :focus, :hover),
-  #toc a.toplink,
-  #toc a.toplink:hover {
-    color: white;
-    background-color: #444;
-    text-decoration: none;
-  }
-  #toc a.toplink {
-    margin: 2px 0.5em 0;
+    & nav {
+      display: none;
+      background-color: var(--background-color);
+      padding: 0.5em 1em 1em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      height: calc(100vh - 48px);
+      border-left: 1px solid #ddd;
+    }
+    &.active {
+      opacity: 1;
+      & nav { display: block; }
+    }
+    /* Make the collapsed ToC header render white on gray also when it's a link */
+    & h2 a,
+    & h2 a:is(:link, :focus, :hover),
+    & a.toplink,
+    & a.toplink:hover {
+      color: white;
+      background-color: #444;
+      text-decoration: none;
+    }
+    & a.toplink {
+      margin: 2px 0.5em 0;
+    }
   }
 }
 
@@ -945,26 +930,26 @@ hr.addr {
     margin: 0;
     padding: 0;
     z-index: 1;
-  }
-  #toc h2 {
-    margin: 0;
-    padding: 0.25em 1em 1em 0;
-  }
-  #toc nav {
-    display: block;
-    height: calc(90vh - 84px);
-    bottom: 0;
-    padding: 0.5em 0 2em;
-    overflow: auto;
-    overscroll-behavior: contain;
-    scrollbar-width: thin;
+    & h2 {
+      margin: 0;
+      padding: 0.25em 1em 1em 0;
+    }
+    & nav {
+      display: block;
+      height: calc(90vh - 84px);
+      bottom: 0;
+      padding: 0.5em 0 2em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+    & a.toplink {
+      margin: 8px 0.5em 0;
+    }
   }
   img { /* future proofing */
     max-width: 100%;
     height: auto;
-  }
-  #toc a.toplink {
-    margin: 8px 0.5em 0;
   }
 }
 
@@ -980,12 +965,13 @@ hr.addr {
   #n-copyright-notice {
     border-bottom: none;
   }
-  #toc, #n-introduction {
-    page-break-before: always;
-  }
   #toc {
+    page-break-before: always;
     border-top: none;
     padding-top: 0;
+  }
+  #n-introduction {
+    page-break-before: always;
   }
   figure, pre, .vcard {
     page-break-inside: avoid;
@@ -1047,17 +1033,19 @@ hr.addr {
 }
 
 /* SVG Trick: a prefix match works because only black and white are allowed */
-svg :is([stroke="black"], [stroke^="#000"]) {
-  stroke: var(--text-color);
-}
-svg :is([stroke="white"], [stroke^="#fff"]) {
-  stroke: var(--background-color);
-}
-svg :is([fill="black"], [fill^="#000"], :not([fill])) {
-  fill: var(--text-color);
-}
-svg :is([fill="white"], [fill^="#fff"]) {
-  fill: var(--background-color);
+svg {
+  & :is([stroke="black"], [stroke^="#000"]) {
+    stroke: var(--text-color);
+  }
+  & :is([stroke="white"], [stroke^="#fff"]) {
+    stroke: var(--background-color);
+  }
+  & :is([fill="black"], [fill^="#000"], :not([fill])) {
+    fill: var(--text-color);
+  }
+  & :is([fill="white"], [fill^="#fff"]) {
+    fill: var(--background-color);
+  }
 }
 </style>
 
@@ -1071,7 +1059,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </tr></thead>
 <tfoot><tr>
 <td class="left">McGuinness</td>
-<td class="center">Expires 23 November 2026</td>
+<td class="center">Expires 29 November 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1084,12 +1072,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-connect-saml-bridge-profile-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-05-22" class="published">22 May 2026</time>
+<time datetime="2026-05-28" class="published">28 May 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-11-23">23 November 2026</time></dd>
+<dd class="expires"><time datetime="2026-11-29">29 November 2026</time></dd>
 <dt class="label-authors">Author:</dt>
 <dd class="authors">
 <div class="author">
@@ -1102,30 +1090,20 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <h1 id="title">OpenID Connect Bridge Profile for SAML 2.0 Service Providers</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
-<p id="section-abstract-1">This document defines an interoperability profile for deployments that present
-a SAML 2.0 Identity Provider interface to existing Service Providers (SPs)
-while using an OpenID Provider (OP) as the underlying authentication authority.
-The profile specifies how a Bridge component, acting simultaneously as an OIDC
-Relying Party toward the OP and as a SAML IdP facade toward the SP, translates
-OIDC authentication results into SAML assertions while preserving subject
-continuity, enforcing audience restrictions, and maintaining per-SP attribute
-release policies.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
-<p id="section-abstract-2">Two operational patterns are defined. The browser-based flow allows a SAML SP
-to initiate authentication through the Bridge using standard SAML Web SSO; the
-Bridge in turn authenticates the end-user via the OP and constructs a signed
-SAML assertion for delivery to the SP's Assertion Consumer Service. A Token
-Exchange variant allows a confidential client to present an OIDC ID Token to
-the Bridge's token endpoint and receive a SAML 2.0 assertion, without a
-browser-based SAML exchange.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
-<p id="section-abstract-3">The intent is to let an OP serve existing SAML SPs without changes to the SPs'
-trust configuration, metadata, or ACS endpoints, and without re-federating each
-SP one by one. The profile is scoped to federation interoperability and
-identity continuity; it does not define a generalized SAML IdP, authorization
-architectures, provisioning, or governance models.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
-<p id="section-abstract-4">This document is the inverse companion to the OpenID Connect Migration Profile
-for SAML 2.0 Service Providers <span>[<a href="#SAML-OIDC-MIGRATION" class="cite xref">SAML-OIDC-MIGRATION</a>]</span>. The two profiles are
-designed to be deployed together, using the same Bridge entity as the
-translation point in both directions.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
+<p id="section-abstract-1">This document defines an interoperability profile for deployments
+that present a SAML 2.0 Identity Provider interface to existing
+Service Providers (SPs) while using an OpenID Provider (OP) as the
+underlying authentication authority. A Bridge component acts as an
+OIDC Relying Party toward the OP and as a SAML IdP facade toward
+the SP, translating OIDC authentication into a signed SAML
+assertion.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-2">Two operational patterns are defined. The browser-based flow lets a
+SAML SP initiate authentication through the Bridge using SAML Web
+SSO; the Bridge authenticates the end-user via the OP and delivers
+a SAML assertion to the SP's ACS endpoint. A Token Exchange variant
+lets a confidential client exchange an OIDC ID Token for a SAML
+assertion without a browser-based SAML exchange.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
+<p id="section-abstract-3">This document is the inverse companion to <span>[<a href="#SAML-OIDC-MIGRATION" class="cite xref">SAML-OIDC-MIGRATION</a>]</span>.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-discussion-venues">
@@ -1154,7 +1132,7 @@ translation point in both directions.<a href="#section-abstract-4" class="pilcro
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 23 November 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 29 November 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1181,10 +1159,21 @@ translation point in both directions.<a href="#section-abstract-4" class="pilcro
         </h2>
 <nav class="toc"><ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
-            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+            <p id="section-toc.1-1.1.1"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.1">
-                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-non-goals" class="internal xref">Non-Goals</a></p>
+                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-overview" class="internal xref">Overview</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.1.2.1">
+                    <p id="section-toc.1-1.1.2.1.2.1.1" class="keepWithNext"><a href="#section-1.1.1" class="auto internal xref">1.1.1</a>.  <a href="#name-browser-based-mode" class="internal xref">Browser-Based Mode</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.1.2.2">
+                    <p id="section-toc.1-1.1.2.1.2.2.1" class="keepWithNext"><a href="#section-1.1.2" class="auto internal xref">1.1.2</a>.  <a href="#name-token-exchange-mode" class="internal xref">Token Exchange Mode</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.2">
+                <p id="section-toc.1-1.1.2.2.1"><a href="#section-1.2" class="auto internal xref">1.2</a>.  <a href="#name-non-goals" class="internal xref">Non-Goals</a></p>
 </li>
             </ul>
 </li>
@@ -1192,7 +1181,7 @@ translation point in both directions.<a href="#section-abstract-4" class="pilcro
             <p id="section-toc.1-1.2.1"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-conventions-and-terminology" class="internal xref">Conventions and Terminology</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.1">
-                <p id="section-toc.1-1.2.2.1.1" class="keepWithNext"><a href="#section-2.1" class="auto internal xref">2.1</a>.  <a href="#name-requirements-notation" class="internal xref">Requirements Notation</a></p>
+                <p id="section-toc.1-1.2.2.1.1"><a href="#section-2.1" class="auto internal xref">2.1</a>.  <a href="#name-requirements-notation" class="internal xref">Requirements Notation</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.2">
                 <p id="section-toc.1-1.2.2.2.1"><a href="#section-2.2" class="auto internal xref">2.2</a>.  <a href="#name-terminology" class="internal xref">Terminology</a></p>
@@ -1519,42 +1508,127 @@ authentication context; and<a href="#section-1-5.4.1" class="pilcrow">¶</a></p>
 SAML assertion without a browser-based flow.<a href="#section-1-5.5.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-1-6">What this profile does not define is enumerated in <a href="#non-goals" class="auto internal xref">Section 1.1</a>.<a href="#section-1-6" class="pilcrow">¶</a></p>
-<p id="section-1-7">This profile is the inverse companion to <span>[<a href="#SAML-OIDC-MIGRATION" class="cite xref">SAML-OIDC-MIGRATION</a>]</span>, which defines
-how a SAML assertion can be exchanged for an OAuth 2.0 or OpenID Connect token.
-The two profiles share a common Bridge entity and are designed to be deployed
-together when an organization needs to maintain SAML SPs on different migration
-timelines.<a href="#section-1-7" class="pilcrow">¶</a></p>
-<div id="non-goals">
+<p id="section-1-6">This profile is the inverse companion to <span>[<a href="#SAML-OIDC-MIGRATION" class="cite xref">SAML-OIDC-MIGRATION</a>]</span>,
+which defines how a SAML assertion can be exchanged for an OAuth 2.0
+or OpenID Connect token. The two profiles share a common Bridge
+entity and are designed to be deployed together when an organization
+needs to maintain SAML SPs on different migration timelines.<a href="#section-1-6" class="pilcrow">¶</a></p>
+<div id="overview">
 <section id="section-1.1">
-        <h3 id="name-non-goals">
-<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-non-goals" class="section-name selfRef">Non-Goals</a>
+        <h3 id="name-overview">
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-overview" class="section-name selfRef">Overview</a>
         </h3>
-<p id="section-1.1-1">The profile is scoped to OIDC-to-SAML interoperability and identity continuity.
-It does NOT define:<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<p id="section-1.1-1">This profile involves four actors:<a href="#section-1.1-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-1.1-2.1">
-            <p id="section-1.1-2.1.1">a generalized SAML 2.0 IdP, including SAML-native authentication, generic
-SAML SLO orchestration, AttributeQuery, AuthzDecisionStatement, or
-SP-specific SAML extensions;<a href="#section-1.1-2.1.1" class="pilcrow">¶</a></p>
+            <p id="section-1.1-2.1.1"><strong>SAML SP</strong> -- the existing SAML 2.0 Service Provider, unmodified.<a href="#section-1.1-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-1.1-2.2">
-            <p id="section-1.1-2.2.1">federation establishment between otherwise independent OIDC and SAML parties;<a href="#section-1.1-2.2.1" class="pilcrow">¶</a></p>
+            <p id="section-1.1-2.2.1"><strong>Bridge</strong> -- the component this profile defines. The Bridge
+acts as a SAML IdP toward the SP and as an OIDC Relying Party
+toward the OP.<a href="#section-1.1-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-1.1-2.3">
-            <p id="section-1.1-2.3.1">API authorization architectures, scope design, or resource-server policy;<a href="#section-1.1-2.3.1" class="pilcrow">¶</a></p>
+            <p id="section-1.1-2.3.1"><strong>OP</strong> -- the backing OpenID Provider that authenticates
+end-users.<a href="#section-1.1-2.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-1.1-2.4">
-            <p id="section-1.1-2.4.1">provisioning, SCIM integration, or account-lifecycle workflows;<a href="#section-1.1-2.4.1" class="pilcrow">¶</a></p>
+            <p id="section-1.1-2.4.1"><strong>Client</strong> (Token Exchange mode only) -- a confidential OAuth
+client that has obtained an OIDC ID Token from the OP through
+its own registration and exchanges it for a SAML assertion.<a href="#section-1.1-2.4.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-1.1-2.5">
-            <p id="section-1.1-2.5.1">governance models (approval, attestation, audit, segregation of duties);<a href="#section-1.1-2.5.1" class="pilcrow">¶</a></p>
+        </ul>
+<p id="section-1.1-3">The Bridge serves SAML SPs in two modes.<a href="#section-1.1-3" class="pilcrow">¶</a></p>
+<div id="overview-browser">
+<section id="section-1.1.1">
+          <h4 id="name-browser-based-mode">
+<a href="#section-1.1.1" class="section-number selfRef">1.1.1. </a><a href="#name-browser-based-mode" class="section-name selfRef">Browser-Based Mode</a>
+          </h4>
+<div class="alignLeft art-text artwork" id="section-1.1.1-1">
+<pre>
+   +--------+                              +----------+
+   |        |---(A)-- SAML AuthnRequest --&gt;|          |
+   |        |                              |          |
+   |  SAML  |   (Bridge runs an OIDC       |          |
+   |   SP   |    Authorization Code flow   |  Bridge  |
+   |        |    with the OP; end-user     |          |
+   |        |    authenticates at the OP)  |          |
+   |        |&lt;--(B)-- SAML Response -------|          |
+   +--------+         (signed assertion)   +----------+
+</pre><a href="#section-1.1.1-1" class="pilcrow">¶</a>
+</div>
+<p id="section-1.1.1-2">(A) The SAML SP redirects the end-user's browser to the Bridge
+    with a SAML <code>AuthnRequest</code>. The Bridge starts an OIDC
+    Authorization Code flow at the backing OP and receives an ID
+    Token after the end-user authenticates.<a href="#section-1.1.1-2" class="pilcrow">¶</a></p>
+<p id="section-1.1.1-3">(B) The Bridge derives an SP-specific NameID
+    (<a href="#nameid-construction" class="auto internal xref">Section 11</a>), maps OIDC claims to SAML attributes
+    per the SP-Binding's policy (<a href="#claim-attribute-mapping" class="auto internal xref">Section 12.2</a>), and
+    posts a signed SAML <code>Response</code> to the SP's ACS endpoint
+    (<a href="#browser-based-flow" class="auto internal xref">Section 8</a>).<a href="#section-1.1.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="overview-token-exchange">
+<section id="section-1.1.2">
+          <h4 id="name-token-exchange-mode">
+<a href="#section-1.1.2" class="section-number selfRef">1.1.2. </a><a href="#name-token-exchange-mode" class="section-name selfRef">Token Exchange Mode</a>
+          </h4>
+<div class="alignLeft art-text artwork" id="section-1.1.2-1">
+<pre>
+   +---------+                              +----------+
+   |         |---(A)-- OIDC ID Token ------&gt;|          |
+   |         |         (token-exchange)     |          |
+   | Client  |                              |  Bridge  |
+   |         |&lt;--(B)-- SAML Assertion ------|          |
+   |         |         (signed)             |          |
+   +---------+                              +----------+
+</pre><a href="#section-1.1.2-1" class="pilcrow">¶</a>
+</div>
+<p id="section-1.1.2-2">(A) A confidential client at the Bridge's token endpoint, having
+    obtained an ID Token from the OP through its own OIDC client
+    registration, presents the ID Token as the <code>subject_token</code> of
+    an <span>[<a href="#RFC8693" class="cite xref">RFC8693</a>]</span> Token Exchange request.<a href="#section-1.1.2-2" class="pilcrow">¶</a></p>
+<p id="section-1.1.2-3">(B) The Bridge validates the ID Token, derives an SP-specific
+    NameID for the SP-Binding bound to the authenticated client,
+    constructs a signed SAML assertion, and returns it
+    (<a href="#token-exchange" class="auto internal xref">Section 9</a>). No browser interaction is involved.<a href="#section-1.1.2-3" class="pilcrow">¶</a></p>
+<p id="section-1.1.2-4">In both modes, the SP sees the Bridge as a standard SAML IdP and
+needs no change to its SAML metadata, ACS configuration, or trust
+relationship.<a href="#section-1.1.2-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="non-goals">
+<section id="section-1.2">
+        <h3 id="name-non-goals">
+<a href="#section-1.2" class="section-number selfRef">1.2. </a><a href="#name-non-goals" class="section-name selfRef">Non-Goals</a>
+        </h3>
+<p id="section-1.2-1">The profile is scoped to OIDC-to-SAML interoperability and identity continuity.
+It does NOT define:<a href="#section-1.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1.2-2.1">
+            <p id="section-1.2-2.1.1">a generalized SAML 2.0 IdP, including SAML-native authentication, generic
+SAML SLO orchestration, AttributeQuery, AuthzDecisionStatement, or
+SP-specific SAML extensions;<a href="#section-1.2-2.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-1.1-2.6">
-            <p id="section-1.1-2.6.1">migration methodology (rollout patterns, cutover sequencing); or<a href="#section-1.1-2.6.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-1.2-2.2">
+            <p id="section-1.2-2.2.1">federation establishment between otherwise independent OIDC and SAML parties;<a href="#section-1.2-2.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-1.1-2.7">
-            <p id="section-1.1-2.7.1">SAML EncryptedAssertion or EncryptedID issuance.<a href="#section-1.1-2.7.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-1.2-2.3">
+            <p id="section-1.2-2.3.1">API authorization architectures, scope design, or resource-server policy;<a href="#section-1.2-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.2-2.4">
+            <p id="section-1.2-2.4.1">provisioning, SCIM integration, or account-lifecycle workflows;<a href="#section-1.2-2.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.2-2.5">
+            <p id="section-1.2-2.5.1">governance models (approval, attestation, audit, segregation of duties);<a href="#section-1.2-2.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.2-2.6">
+            <p id="section-1.2-2.6.1">migration methodology (rollout patterns, cutover sequencing); or<a href="#section-1.2-2.6.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.2-2.7">
+            <p id="section-1.2-2.7.1">SAML EncryptedAssertion or EncryptedID issuance.<a href="#section-1.2-2.7.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
@@ -1610,19 +1684,20 @@ places. Where ambiguity is possible, this document uses the qualifying
 prepositional phrase rather than a separate term:<a href="#section-2.2-4" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-2.2-5.1">
-            <p id="section-2.2-5.1.1">the Bridge's OIDC client at the OP — used in the browser-based flow, and
-the expected <code>aud</code> value of ID Tokens consumed in that flow;<a href="#section-2.2-5.1.1" class="pilcrow">¶</a></p>
+            <p id="section-2.2-5.1.1">the Bridge's OIDC client at the OP. Used in the browser-based
+flow. Its <code>client_id</code> is the expected <code>aud</code> value of ID Tokens
+consumed in that flow.<a href="#section-2.2-5.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-2.2-5.2">
-            <p id="section-2.2-5.2.1">a Token Exchange client's OAuth client at the Bridge's token endpoint —
-used to authenticate the client and to look up its bound
-<code>saml_sp_entity_id</code>; and<a href="#section-2.2-5.2.1" class="pilcrow">¶</a></p>
+            <p id="section-2.2-5.2.1">a Token Exchange client's OAuth client at the Bridge's token
+endpoint. Used to authenticate the client and to look up its bound
+<code>saml_sp_entity_id</code>.<a href="#section-2.2-5.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-2.2-5.3">
-            <p id="section-2.2-5.3.1">a Token Exchange client's OIDC client at the OP — separate from the
-Bridge's — used to obtain the ID Token the client later submits to the
-Bridge. Each SP-Binding configures the set of these OP client identifiers
-it accepts as ID Token <code>aud</code>.<a href="#section-2.2-5.3.1" class="pilcrow">¶</a></p>
+            <p id="section-2.2-5.3.1">a Token Exchange client's OIDC client at the OP. Separate from the
+Bridge's own client. Used to obtain the ID Token the client later
+submits to the Bridge. Each SP-Binding configures the set of these
+OP client identifiers it accepts as ID Token <code>aud</code>.<a href="#section-2.2-5.3.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 <span class="break"></span><dl class="dlParallel" id="section-2.2-6">
@@ -1737,20 +1812,31 @@ assertion. The ID Token proves the authentication event; the decision to
 issue an assertion to a given SP remains a Bridge policy decision, grounded
 in the SP-Binding configuration established before any assertion request is
 processed.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
-<p id="section-4.1-2">Before constructing a SAML assertion, the Bridge <span class="bcp14">MUST</span> have an issuance
-basis bound to the resolved Local Account and the target SP-Binding, that
-authorizes the specific NameID format and attributes to be released, and —
-for the Token Exchange variant — that authorizes the authenticated client
-to request assertions for that SP-Binding. The issuance basis <span class="bcp14">MAY</span> come
-from static SP-Binding configuration, administrative policy, or any
-equivalent mechanism established before the assertion is issued.<a href="#section-4.1-2" class="pilcrow">¶</a></p>
-<p id="section-4.1-3">The Bridge <span class="bcp14">MUST NOT</span> create, expand, or infer an issuance basis solely from
+<p id="section-4.1-2">Before constructing a SAML assertion, the Bridge <span class="bcp14">MUST</span> have an
+issuance basis. The basis <span class="bcp14">MUST</span>:<a href="#section-4.1-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4.1-3.1">
+            <p id="section-4.1-3.1.1">be bound to the resolved Local Account and the target SP-Binding;<a href="#section-4.1-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.1-3.2">
+            <p id="section-4.1-3.2.1">authorize the specific NameID format and attributes to be released;
+and<a href="#section-4.1-3.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.1-3.3">
+            <p id="section-4.1-3.3.1">for the Token Exchange variant, authorize the authenticated client
+to request assertions for that SP-Binding.<a href="#section-4.1-3.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-4.1-4">The issuance basis <span class="bcp14">MAY</span> come from static SP-Binding configuration,
+administrative policy, or any equivalent mechanism established
+before the assertion is issued.<a href="#section-4.1-4" class="pilcrow">¶</a></p>
+<p id="section-4.1-5">The Bridge <span class="bcp14">MUST NOT</span> create, expand, or infer an issuance basis solely from
 the presence, validity, or contents of the ID Token. OIDC claims <span class="bcp14">MAY</span> inform
 an already-established release policy rule, but the policy itself <span class="bcp14">MUST</span>
-exist independently of the ID Token presented in the current request.<a href="#section-4.1-3" class="pilcrow">¶</a></p>
-<p id="section-4.1-4">The Bridge <span class="bcp14">MUST NOT</span> release all OIDC claims to all SPs by default.
+exist independently of the ID Token presented in the current request.<a href="#section-4.1-5" class="pilcrow">¶</a></p>
+<p id="section-4.1-6">The Bridge <span class="bcp14">MUST NOT</span> release all OIDC claims to all SPs by default.
 Deployments <span class="bcp14">MUST</span> configure explicit attribute release allowlists per
-SP-Binding.<a href="#section-4.1-4" class="pilcrow">¶</a></p>
+SP-Binding.<a href="#section-4.1-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1868,44 +1954,46 @@ changes <code>saml_sp_entity_id</code>.<a href="#section-5.1.1-5" class="pilcrow
         <h3 id="name-nameid-format-policy">
 <a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-nameid-format-policy" class="section-name selfRef">NameID Format Policy</a>
         </h3>
-<p id="section-5.2-1">Each SP-Binding <span class="bcp14">MUST</span> specify the NameID format to use for assertions issued to
-that SP. The following formats are supported under this profile:<a href="#section-5.2-1" class="pilcrow">¶</a></p>
+<p id="section-5.2-1">Each SP-Binding <span class="bcp14">MUST</span> specify the NameID format for issued assertions.
+Supported formats:<a href="#section-5.2-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-5.2-2.1">
-            <p id="section-5.2-2.1.1"><code>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</code>: A stable,
-non-reassignable identifier. Derived as defined in
+            <p id="section-5.2-2.1.1"><code>...persistent</code>: stable, non-reassignable. Derived per
 <a href="#pairwise-nameid-construction" class="auto internal xref">Section 11.1</a> or <a href="#public-nameid-construction" class="auto internal xref">Section 11.2</a>.<a href="#section-5.2-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-5.2-2.2">
-            <p id="section-5.2-2.2.1"><code>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</code>: An email address
-derived from the OIDC <code>email</code> claim. <span class="bcp14">MUST</span> only be used when the SP-Binding
-explicitly permits it and when the <code>email</code> claim is present and permitted for
-release to this SP.<a href="#section-5.2-2.2.1" class="pilcrow">¶</a></p>
+            <p id="section-5.2-2.2.1"><code>...emailAddress</code>: derived from the OIDC <code>email</code> claim. Permitted
+only when the SP-Binding allows it and <code>email</code> is releasable.<a href="#section-5.2-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-5.2-2.3">
-            <p id="section-5.2-2.3.1"><code>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</code>: A session-scoped
-random identifier. The Bridge <span class="bcp14">MUST</span> generate a fresh random value per
-assertion and <span class="bcp14">MUST NOT</span> persist or reuse it.<a href="#section-5.2-2.3.1" class="pilcrow">¶</a></p>
+            <p id="section-5.2-2.3.1"><code>...transient</code>: session-scoped, freshly generated per assertion.
+<span class="bcp14">MUST NOT</span> be persisted or reused. <span class="bcp14">MUST NOT</span> be used for SPs
+requiring cross-session continuity.<a href="#section-5.2-2.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-5.2-2.4">
-            <p id="section-5.2-2.4.1"><code>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</code>: Deployment-defined
-semantics. <span class="bcp14">SHOULD NOT</span> be used for new SP-Bindings; supported only for
-compatibility with SPs that historically expect this format, in which
-case the SP-Binding <span class="bcp14">MUST</span> define the identifier semantics explicitly.<a href="#section-5.2-2.4.1" class="pilcrow">¶</a></p>
+            <p id="section-5.2-2.4.1"><code>...unspecified</code>: <span class="bcp14">SHOULD NOT</span> be used for new SP-Bindings.
+Permitted only for legacy SPs and only when the SP-Binding defines
+the identifier semantics.<a href="#section-5.2-2.4.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-5.2-3">The Bridge <span class="bcp14">MUST NOT</span> use <code>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</code>
-as a NameID format for any SP that requires subject continuity across sessions.<a href="#section-5.2-3" class="pilcrow">¶</a></p>
-<p id="section-5.2-4">If an <code>AuthnRequest</code> includes a <code>NameIDPolicy</code> element, the Bridge <span class="bcp14">MUST</span> verify
-that the requested format matches or is compatible with the format configured
-for the SP-Binding. If the requested format is incompatible, the Bridge <span class="bcp14">MUST</span>
-return a SAML error response and <span class="bcp14">MUST NOT</span> issue an assertion.<a href="#section-5.2-4" class="pilcrow">¶</a></p>
-<p id="section-5.2-5">If <code>NameIDPolicy/@AllowCreate</code> is <code>false</code> and no persisted NameID mapping
-exists for the resolved Local Account and SP-Binding, the Bridge <span class="bcp14">MUST</span> return
-a SAML error response with <code>StatusCode</code>
-          <code>urn:oasis:names:tc:SAML:2.0:status:InvalidNameIDPolicy</code> and <span class="bcp14">MUST NOT</span> create
-a new NameID mapping. If a persisted mapping already exists, the Bridge <span class="bcp14">MUST</span>
-use it regardless of the <code>AllowCreate</code> value.<a href="#section-5.2-5" class="pilcrow">¶</a></p>
+<p id="section-5.2-3">When an <code>AuthnRequest</code> includes <code>NameIDPolicy</code>, the Bridge <span class="bcp14">MUST</span>
+verify format compatibility with the SP-Binding and <span class="bcp14">MUST</span> return a
+SAML error on incompatibility.<a href="#section-5.2-3" class="pilcrow">¶</a></p>
+<p id="section-5.2-4"><code>NameIDPolicy/@AllowCreate</code> applies only to persistent NameID formats
+per <span>[<a href="#SAML2-CORE" class="cite xref">SAML2-CORE</a>]</span>. When the requested format is persistent and
+<code>@AllowCreate="false"</code>:<a href="#section-5.2-4" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5.2-5.1">
+            <p id="section-5.2-5.1.1">if no NameID mapping is persisted for the Local Account and
+SP-Binding, the Bridge <span class="bcp14">MUST</span> return SAML status
+<code>urn:oasis:names:tc:SAML:2.0:status:InvalidNameIDPolicy</code> and <span class="bcp14">MUST NOT</span> create a mapping;<a href="#section-5.2-5.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.2-5.2">
+            <p id="section-5.2-5.2.1">if a mapping is already persisted, the Bridge <span class="bcp14">MUST</span> use it.<a href="#section-5.2-5.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-5.2-6">For non-persistent formats (transient, emailAddress), the Bridge <span class="bcp14">MUST</span>
+ignore <code>@AllowCreate</code>.<a href="#section-5.2-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1927,8 +2015,11 @@ with the Bridge's SAML IdP Entity ID as its <code>entityID</code>. This metadata
             <p id="section-6.1-2.1.1"><span class="bcp14">MUST</span> include an <code>IDPSSODescriptor</code> element;<a href="#section-6.1-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-6.1-2.2">
-            <p id="section-6.1-2.2.1"><span class="bcp14">MUST</span> set <code>IDPSSODescriptor/@WantAuthnRequestsSigned="true"</code>, reflecting the
-default-<span class="bcp14">MUST</span> signature requirement in <a href="#authn-request-processing" class="auto internal xref">Section 8.2</a>;<a href="#section-6.1-2.2.1" class="pilcrow">¶</a></p>
+            <p id="section-6.1-2.2.1"><span class="bcp14">MUST</span> set <code>IDPSSODescriptor/@WantAuthnRequestsSigned="true"</code> when
+every configured SP-Binding requires signed <code>AuthnRequest</code> messages.
+When at least one SP-Binding permits unsigned requests, the Bridge
+<span class="bcp14">MAY</span> publish <code>"false"</code>. In either case, the per-SP-Binding rules in
+<a href="#authn-request-processing" class="auto internal xref">Section 8.2</a> remain authoritative;<a href="#section-6.1-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-6.1-2.3">
             <p id="section-6.1-2.3.1"><span class="bcp14">MUST</span> include at least one <code>SingleSignOnService</code> endpoint using the HTTP-POST
@@ -2037,13 +2128,14 @@ of incoming ID Tokens under this profile.<a href="#section-6.2.1-2.3.1" class="p
         <h3 id="name-federation-metadata-coexist">
 <a href="#section-6.4" class="section-number selfRef">6.4. </a><a href="#name-federation-metadata-coexist" class="section-name selfRef">Federation Metadata Coexistence</a>
         </h3>
-<p id="section-6.4-1">A Bridge operates two protocol stacks in parallel: SAML 2.0 toward SPs, and
-OpenID Connect / OAuth 2.0 toward the backing OP and (when offered) toward
-Token Exchange clients. The two stacks publish metadata through independent
-mechanisms — <code>EntityDescriptor</code> documents (<span>[<a href="#SAML2-METADATA" class="cite xref">SAML2-METADATA</a>]</span>) and
-<code>.well-known/oauth-authorization-server</code> or <code>.well-known/openid-configuration</code>
-(<span>[<a href="#RFC8414" class="cite xref">RFC8414</a>]</span>, <span>[<a href="#OIDC-DISCOVERY" class="cite xref">OIDC-DISCOVERY</a>]</span>) — that this profile does not unify.
-Deployments <span class="bcp14">SHOULD</span> observe the following:<a href="#section-6.4-1" class="pilcrow">¶</a></p>
+<p id="section-6.4-1">A Bridge operates two protocol stacks in parallel. SAML 2.0 toward
+SPs uses <code>EntityDescriptor</code> metadata (<span>[<a href="#SAML2-METADATA" class="cite xref">SAML2-METADATA</a>]</span>). OpenID
+Connect and OAuth 2.0 toward the backing OP, and toward Token
+Exchange clients when offered, use
+<code>.well-known/oauth-authorization-server</code> or
+<code>.well-known/openid-configuration</code> (<span>[<a href="#RFC8414" class="cite xref">RFC8414</a>]</span>, <span>[<a href="#OIDC-DISCOVERY" class="cite xref">OIDC-DISCOVERY</a>]</span>).
+This profile does not unify the two. Deployments <span class="bcp14">SHOULD</span> observe the
+following.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-6.4-2.1">
             <p id="section-6.4-2.1.1">The Bridge's SAML IdP <code>entityID</code>, the backing OP's <code>issuer</code>, and the
@@ -2077,52 +2169,42 @@ IdP facade.<a href="#section-6.4-2.3.1" class="pilcrow">¶</a></p>
         <h3 id="name-accepted-id-token-inputs">
 <a href="#section-7.1" class="section-number selfRef">7.1. </a><a href="#name-accepted-id-token-inputs" class="section-name selfRef">Accepted ID Token Inputs</a>
         </h3>
-<p id="section-7.1-1">The Bridge <span class="bcp14">MUST</span> only accept ID Tokens issued by the OP identified by
-<code>oidc_op_issuer</code>. ID Tokens from any other issuer <span class="bcp14">MUST</span> be rejected.<a href="#section-7.1-1" class="pilcrow">¶</a></p>
-<p id="section-7.1-2">The Bridge <span class="bcp14">MUST</span> perform full ID Token validation as required by <span>[<a href="#OIDC-CORE" class="cite xref">OIDC-CORE</a>]</span>
-Section 3.1.3.7, including:<a href="#section-7.1-2" class="pilcrow">¶</a></p>
+<p id="section-7.1-1">The Bridge <span class="bcp14">MUST</span> validate ID Tokens per <span>[<a href="#OIDC-CORE" class="cite xref">OIDC-CORE</a>]</span> Section 3.1.3.7.
+This profile adds the following constraints on top of <span>[<a href="#OIDC-CORE" class="cite xref">OIDC-CORE</a>]</span>:<a href="#section-7.1-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-7.1-3.1">
-            <p id="section-7.1-3.1.1">verifying the <code>iss</code> claim matches the <code>oidc_op_issuer</code> value;<a href="#section-7.1-3.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-7.1-2.1">
+            <p id="section-7.1-2.1.1">the <code>iss</code> claim <span class="bcp14">MUST</span> match <code>oidc_op_issuer</code>. ID Tokens from any
+other issuer <span class="bcp14">MUST</span> be rejected;<a href="#section-7.1-2.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-7.1-3.2">
-            <p id="section-7.1-3.2.1">verifying the ID Token signature using the OP's JOSE signing keys obtained
-via the OP's <code>jwks_uri</code>;<a href="#section-7.1-3.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-7.1-2.2">
+            <p id="section-7.1-2.2.1"><code>aud</code> validation is flow-specific, see below;<a href="#section-7.1-2.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-7.1-3.3">
-            <p id="section-7.1-3.3.1">verifying the <code>aud</code> claim as described below;<a href="#section-7.1-3.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-7.1-2.3">
+            <p id="section-7.1-2.3.1">the <code>iat</code> freshness window is enforced per <a href="#id-token-freshness" class="auto internal xref">Section 7.2</a>;<a href="#section-7.1-2.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-7.1-3.4">
-            <p id="section-7.1-3.4.1">verifying that the <code>exp</code> claim has not passed;<a href="#section-7.1-3.4.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-7.1-3.5">
-            <p id="section-7.1-3.5.1">verifying that the <code>iat</code> claim is not unreasonably far in the past, subject
-to a locally configured freshness window; and<a href="#section-7.1-3.5.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-7.1-3.6">
-            <p id="section-7.1-3.6.1">verifying the <code>nonce</code> claim when the ID Token was obtained through the
-browser-based flow, against the nonce the Bridge included in the OIDC
-authorization request. For the Token Exchange variant, the ID Token was
-not obtained through a Bridge-issued authorization request and the Bridge
-has no expected <code>nonce</code> value to validate against; the Bridge <span class="bcp14">MUST NOT</span>
-validate <code>nonce</code> for ID Tokens received via Token Exchange.<a href="#section-7.1-3.6.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-7.1-2.4">
+            <p id="section-7.1-2.4.1">for ID Tokens received via Token Exchange, the Bridge <span class="bcp14">MUST NOT</span>
+validate <code>nonce</code>. The Bridge did not issue the authorization
+request and has no expected <code>nonce</code> value.<a href="#section-7.1-2.4.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-7.1-4">For the browser-based flow, the Bridge validates the ID Token it receives after
-completing the authorization code exchange; the <code>aud</code> claim <span class="bcp14">MUST</span> contain the
-Bridge's own <code>client_id</code> at the OP.<a href="#section-7.1-4" class="pilcrow">¶</a></p>
-<p id="section-7.1-5">For the Token Exchange variant, the client obtains an ID Token from
-the OP using its own OIDC client registration; the <code>aud</code> claim therefore
-contains the client's <code>client_id</code> at the OP, not the Bridge's. The
-Bridge <span class="bcp14">MUST</span> validate the <code>aud</code> claim against the set of authorized OP
-<code>client_id</code> values configured in the SP-Binding for this purpose. An ID Token
-whose <code>aud</code> is not in that authorized set <span class="bcp14">MUST</span> be rejected. This set <span class="bcp14">MUST</span> be
-maintained administratively and <span class="bcp14">MUST NOT</span> be inferred from the presented token.<a href="#section-7.1-5" class="pilcrow">¶</a></p>
-<p id="section-7.1-6">When the ID Token's <code>aud</code> claim is a JSON array, the Bridge <span class="bcp14">MUST</span> require an
-<code>azp</code> claim and <span class="bcp14">MUST</span> validate it against the same authorized client
-identifier(s) as <code>aud</code> (the Bridge's own <code>client_id</code> for the browser-based
-flow, or the SP-Binding's authorized OP client set for the Token Exchange
-variant). An ID Token whose <code>azp</code> is not authorized <span class="bcp14">MUST</span> be rejected.<a href="#section-7.1-6" class="pilcrow">¶</a></p>
+<p id="section-7.1-3">The <code>aud</code> claim and (when <code>aud</code> is a JSON array) the <code>azp</code> claim
+are validated against a set of authorized OP <code>client_id</code> values
+that depends on the flow:<a href="#section-7.1-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.1-4.1">
+            <p id="section-7.1-4.1.1">browser-based flow: the singleton {Bridge's own <code>client_id</code> at
+the OP};<a href="#section-7.1-4.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-7.1-4.2">
+            <p id="section-7.1-4.2.1">Token Exchange variant: the SP-Binding's administratively
+configured authorized OP <code>client_id</code> set.<a href="#section-7.1-4.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-7.1-5">The Bridge <span class="bcp14">MUST</span> reject an ID Token whose <code>aud</code> (and <code>azp</code> when
+required) is not in the applicable authorized set. The Token
+Exchange authorized set <span class="bcp14">MUST NOT</span> be inferred from the presented
+token.<a href="#section-7.1-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="id-token-freshness">
@@ -2130,16 +2212,24 @@ variant). An ID Token whose <code>azp</code> is not authorized <span class="bcp1
         <h3 id="name-freshness-and-authenticatio">
 <a href="#section-7.2" class="section-number selfRef">7.2. </a><a href="#name-freshness-and-authenticatio" class="section-name selfRef">Freshness and Authentication Time</a>
         </h3>
-<p id="section-7.2-1">When the ID Token contains <code>auth_time</code>, the Bridge <span class="bcp14">SHOULD</span> verify that the
-time elapsed since <code>auth_time</code> does not exceed a deployment-configured
-freshness window before issuing a SAML assertion that represents that
-authentication event. Recommended defaults: 8 hours for the browser-based
-flow (consistent with typical enterprise SSO session durations); 5 minutes
-for the Token Exchange variant (because the ID Token is presented as a
-credential at rest). The Bridge <span class="bcp14">MUST</span> also verify <code>iat</code> freshness; 5 minutes
-is <span class="bcp14">RECOMMENDED</span> for the Token Exchange variant.<a href="#section-7.2-1" class="pilcrow">¶</a></p>
-<p id="section-7.2-2">When the Bridge derives <code>AuthnInstant</code> from <code>auth_time</code>, the freshness
-window <span class="bcp14">MUST</span> be evaluated against <code>auth_time</code>, not <code>iat</code>.<a href="#section-7.2-2" class="pilcrow">¶</a></p>
+<p id="section-7.2-1">The Bridge <span class="bcp14">MUST</span> enforce a freshness window before issuing a SAML
+assertion. When <code>auth_time</code> is present, the Bridge <span class="bcp14">MUST</span> verify that
+the time elapsed since <code>auth_time</code> does not exceed the configured
+window. Recommended defaults:<a href="#section-7.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.2-2.1">
+            <p id="section-7.2-2.1.1">8 hours for the browser-based flow;<a href="#section-7.2-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-7.2-2.2">
+            <p id="section-7.2-2.2.1">5 minutes for the Token Exchange variant (the ID Token is a
+credential at rest).<a href="#section-7.2-2.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-7.2-3">For the Token Exchange variant, when <code>auth_time</code> is absent the
+Bridge <span class="bcp14">MUST</span> apply the same 5-minute window against <code>iat</code>. The Bridge
+<span class="bcp14">MUST</span> always verify <code>iat</code> freshness.<a href="#section-7.2-3" class="pilcrow">¶</a></p>
+<p id="section-7.2-4">When deriving <code>AuthnInstant</code> from <code>auth_time</code>, the freshness window
+<span class="bcp14">MUST</span> be evaluated against <code>auth_time</code>, not <code>iat</code>.<a href="#section-7.2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="required-id-token-claims">
@@ -2242,8 +2332,11 @@ and that the SP-Binding permits the binding (HTTP-Redirect or HTTP-POST)
 over which the request was received. The Bridge <span class="bcp14">MUST</span> require
 <code>AuthnRequest/Issuer/@Format</code> to be absent or
 <code>urn:oasis:names:tc:SAML:2.0:nameid-format:entity</code>; other formats <span class="bcp14">MUST</span> be
-rejected. The Bridge <span class="bcp14">MUST</span> ignore <code>AuthnRequest/Scoping</code> and <span class="bcp14">MUST NOT</span> alter
-its OIDC flow based on its contents. <code>AuthnRequest/NameIDPolicy/@SPNameQualifier</code>,
+rejected. The Bridge <span class="bcp14">MUST NOT</span> honor <code>AuthnRequest/Scoping</code>. If
+<code>Scoping/IDPList</code> is non-empty and excludes the Bridge's
+configured OP, the Bridge <span class="bcp14">SHOULD</span> reject with
+<code>urn:oasis:names:tc:SAML:2.0:status:NoSupportedIDP</code>.
+<code>AuthnRequest/NameIDPolicy/@SPNameQualifier</code>,
 when present, <span class="bcp14">MUST</span> equal the SAML SP Entity ID of the issuing SP-Binding;
 other values <span class="bcp14">MUST</span> be rejected;<a href="#section-8.2-2.2.1" class="pilcrow">¶</a></p>
 </li>
@@ -2265,54 +2358,43 @@ processed within the freshness window;<a href="#section-8.2-2.5.1" class="pilcro
 compatible with the SP-Binding's configured NameID format;<a href="#section-8.2-2.6.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-8.2-2.7">
-            <p id="section-8.2-2.7.1">if <code>RequestedAuthnContext</code> is present, record the requested
-<code>AuthnContextClassRef</code> values and the <code>Comparison</code> attribute for use in
-constructing the <code>AuthnContext</code> of the issued assertion. This profile
-supports <code>Comparison</code> values of <code>exact</code> (the default per <span>[<a href="#SAML2-CORE" class="cite xref">SAML2-CORE</a>]</span>)
-and <code>minimum</code> only; if <code>Comparison</code> is <code>maximum</code> or <code>better</code>, the Bridge
-<span class="bcp14">MUST</span> return a SAML error response with <code>StatusCode</code>
-              <code>urn:oasis:names:tc:SAML:2.0:status:NoAuthnContext</code>. For <code>exact</code>, the
-Bridge <span class="bcp14">MUST NOT</span> issue an assertion whose <code>AuthnContextClassRef</code> is not
-identical to one of the requested values, and <span class="bcp14">MUST</span> return a SAML error if
-no such value can be produced. For <code>minimum</code>, the Bridge <span class="bcp14">MUST NOT</span> issue an
-assertion whose <code>AuthnContextClassRef</code> has a lower assurance level than
-the requested class under the SP-Binding's ACR ordering policy, and <span class="bcp14">MUST</span>
-return a SAML error if this cannot be satisfied;<a href="#section-8.2-2.7.1" class="pilcrow">¶</a></p>
+            <p id="section-8.2-2.7.1">if <code>RequestedAuthnContext</code> is present, record the values and
+<code>Comparison</code> for use in constructing the issued assertion's
+<code>AuthnContext</code>. This profile supports <code>Comparison</code> of <code>exact</code>
+(the <span>[<a href="#SAML2-CORE" class="cite xref">SAML2-CORE</a>]</span> default) and <code>minimum</code> only; <code>maximum</code> and
+<code>better</code> <span class="bcp14">MUST</span> be rejected with
+<code>urn:oasis:names:tc:SAML:2.0:status:NoAuthnContext</code>. The Bridge
+<span class="bcp14">MUST NOT</span> issue an assertion that does not satisfy the recorded
+<code>Comparison</code> semantics, and <span class="bcp14">MUST</span> return a SAML error if it
+cannot satisfy them;<a href="#section-8.2-2.7.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-8.2-2.8">
-            <p id="section-8.2-2.8.1">if <code>@ForceAuthn</code> is <code>true</code>, the Bridge <span class="bcp14">MUST</span> cause a fresh end-user
-authentication at the OP by including <code>prompt=login</code> (or, when an exact
-recency bound is required, <code>max_age=0</code>) in the OIDC authorization request;<a href="#section-8.2-2.8.1" class="pilcrow">¶</a></p>
+            <p id="section-8.2-2.8.1">if <code>@ForceAuthn</code> is <code>true</code>, cause a fresh end-user
+authentication by including <code>prompt=login</code> in the OIDC
+authorization request. The Bridge <span class="bcp14">MAY</span> also include <code>max_age=0</code>;<a href="#section-8.2-2.8.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-8.2-2.9">
-            <p id="section-8.2-2.9.1">if <code>@IsPassive</code> is <code>true</code>, the Bridge <span class="bcp14">MUST</span> include <code>prompt=none</code> in the
-OIDC authorization request and <span class="bcp14">MUST</span> return a SAML error response with
-<code>StatusCode</code> <code>urn:oasis:names:tc:SAML:2.0:status:NoPassive</code> if the OP
-indicates that interaction would be required;<a href="#section-8.2-2.9.1" class="pilcrow">¶</a></p>
+            <p id="section-8.2-2.9.1">if <code>@IsPassive</code> is <code>true</code>, include <code>prompt=none</code> and return SAML
+status <code>...NoPassive</code> when the OP indicates interaction would
+be required;<a href="#section-8.2-2.9.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-8.2-2.10">
-            <p id="section-8.2-2.10.1">record <code>AuthnRequest/@ID</code> for inclusion in <code>Response/@InResponseTo</code> and
-<code>SubjectConfirmationData/@InResponseTo</code>; and<a href="#section-8.2-2.10.1" class="pilcrow">¶</a></p>
+            <p id="section-8.2-2.10.1">record <code>AuthnRequest/@ID</code> for inclusion in <code>InResponseTo</code>; and<a href="#section-8.2-2.10.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-8.2-2.11">
-            <p id="section-8.2-2.11.1">if <code>AssertionConsumerServiceURL</code> is present, verify that its value
-exactly matches one of the registered ACS URLs in the SP-Binding
-configuration or in the SP's SAML metadata. If no match is found, the
-Bridge <span class="bcp14">MUST</span> return a SAML error response and <span class="bcp14">MUST NOT</span> proceed. If
-absent, use the default ACS URL from the SP-Binding configuration. If
-<code>AssertionConsumerServiceIndex</code> is present, the Bridge <span class="bcp14">MUST</span> resolve it
-against the SP's SAML metadata <code>AssertionConsumerService</code> entries
-indexed by <code>index</code>. <code>AssertionConsumerServiceURL</code> and
+            <p id="section-8.2-2.11.1">resolve the destination ACS. If <code>AssertionConsumerServiceURL</code>
+is present it <span class="bcp14">MUST</span> match a registered ACS URL; if absent, use
+the SP-Binding default; if <code>AssertionConsumerServiceIndex</code> is
+present, resolve it against the SP's SAML metadata.
+<code>AssertionConsumerServiceURL</code> and
 <code>AssertionConsumerServiceIndex</code> <span class="bcp14">MUST NOT</span> both be present.<a href="#section-8.2-2.11.1" class="pilcrow">¶</a></p>
 </li>
         </ol>
-<p id="section-8.2-3">The Bridge <span class="bcp14">MUST</span> reject <code>AuthnRequest</code> messages that reference SP entities
-without a configured SP-Binding. The Bridge <span class="bcp14">MUST NOT</span> issue assertions to SPs
-that have not been administratively registered.<a href="#section-8.2-3" class="pilcrow">¶</a></p>
-<p id="section-8.2-4">The Bridge <span class="bcp14">MAY</span> preserve the <code>AuthnRequest</code>'s <code>RelayState</code> value through the
-OIDC flow and reflect it on the SAML <code>Response</code> POST to the SP's ACS, subject
-to the length limit in <span>[<a href="#SAML2-BINDINGS" class="cite xref">SAML2-BINDINGS</a>]</span> (80 bytes). The Bridge <span class="bcp14">MUST NOT</span>
-treat <code>RelayState</code> as carrying any authorization or identity semantics.<a href="#section-8.2-4" class="pilcrow">¶</a></p>
+<p id="section-8.2-3">The Bridge <span class="bcp14">MUST</span> reject <code>AuthnRequest</code> messages for unregistered SP
+entities.<a href="#section-8.2-3" class="pilcrow">¶</a></p>
+<p id="section-8.2-4">The Bridge <span class="bcp14">MAY</span> preserve <code>RelayState</code> through the OIDC flow within
+the <span>[<a href="#SAML2-BINDINGS" class="cite xref">SAML2-BINDINGS</a>]</span> length limit. The Bridge <span class="bcp14">MUST NOT</span> treat
+<code>RelayState</code> as carrying authorization or identity semantics.<a href="#section-8.2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="oidc-authorization-request">
@@ -2334,19 +2416,20 @@ treat <code>RelayState</code> as carrying any authorization or identity semantic
 request ID under a Bridge-held key);<a href="#section-8.3-2.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-8.3-2.4">
-            <p id="section-8.3-2.4.1"><span class="bcp14">MUST</span> include a <code>state</code> value that is unpredictable to third parties and
-bound to the SAML <code>AuthnRequest</code> context, so the returned authorization
-response can be matched to the original SAML request and cannot be spliced
-with an unrelated request;<a href="#section-8.3-2.4.1" class="pilcrow">¶</a></p>
+            <p id="section-8.3-2.4.1"><span class="bcp14">MUST</span> include a <code>state</code> value that is unpredictable to third
+parties and integrity-protected (for example, an HMAC over the
+SAML <code>AuthnRequest/@ID</code> and a fresh nonce under a Bridge-held key,
+or an authenticated-encryption payload), so the returned response
+can be matched to the original SAML request and cannot be spliced;<a href="#section-8.3-2.4.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-8.3-2.5">
             <p id="section-8.3-2.5.1"><span class="bcp14">MUST</span> use PKCE <span>[<a href="#RFC7636" class="cite xref">RFC7636</a>]</span> with the <code>S256</code> code challenge method, in
 accordance with current OAuth security best practice <span>[<a href="#RFC9700" class="cite xref">RFC9700</a>]</span>;<a href="#section-8.3-2.5.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-8.3-2.6">
-            <p id="section-8.3-2.6.1"><span class="bcp14">SHOULD</span> request the <code>auth_time</code> claim in the ID Token, either via the
-<code>claims</code> parameter or by including <code>max_age=0</code> when an exact <code>auth_time</code>
-value is required;<a href="#section-8.3-2.6.1" class="pilcrow">¶</a></p>
+            <p id="section-8.3-2.6.1"><span class="bcp14">SHOULD</span> request the <code>auth_time</code> claim via the <code>claims</code> parameter.
+Per <span>[<a href="#OIDC-CORE" class="cite xref">OIDC-CORE</a>]</span>, <code>max_age=0</code> forces re-authentication; it does
+not merely request <code>auth_time</code>;<a href="#section-8.3-2.6.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-8.3-2.7">
             <p id="section-8.3-2.7.1"><span class="bcp14">MAY</span> translate <code>RequestedAuthnContext</code> values from the <code>AuthnRequest</code> into
@@ -2508,10 +2591,10 @@ be rejected with <code>invalid_request</code>.<a href="#section-9.1-13" class="p
 <p id="section-9.1-14">The Bridge derives the target SP from the authenticated client's registered
 <code>saml_sp_entity_id</code>. This profile does not define use of the <code>audience</code>,
 <code>resource</code>, <code>scope</code>, <code>actor_token</code>, or <code>actor_token_type</code> Token Exchange
-parameters; clients <span class="bcp14">MUST NOT</span> send them. If any are present, the Bridge <span class="bcp14">MUST</span>
-either reject the request with <code>invalid_request</code> or ignore the parameter; the
-Bridge <span class="bcp14">MUST NOT</span> allow such parameters to alter the target SP, audience,
-release policy, or delegation chain of the issued assertion.<a href="#section-9.1-14" class="pilcrow">¶</a></p>
+parameters; clients <span class="bcp14">MUST NOT</span> send them. If any are present, the Bridge
+<span class="bcp14">MUST</span> reject the request with <code>invalid_request</code>. The Bridge <span class="bcp14">MUST NOT</span>
+allow such parameters to alter the target SP, audience, release policy,
+or delegation chain of the issued assertion.<a href="#section-9.1-14" class="pilcrow">¶</a></p>
 <p id="section-9.1-15">Per <a href="#sp-binding-saml-sp-entity-id" class="auto internal xref">Section 5.1</a>, the Token Exchange variant is defined
 only for confidential clients. The authenticated client <span class="bcp14">MUST</span> be a
 confidential client registered with a <code>saml_sp_entity_id</code> corresponding to a
@@ -2592,8 +2675,12 @@ characters (<code>=</code>); and<a href="#section-9.3-2.2.1" class="pilcrow">¶<
             <p id="section-9.3-2.3.1"><code>token_type</code> set to <code>N_A</code>.<a href="#section-9.3-2.3.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-9.3-3">The Bridge <span class="bcp14">SHOULD</span> include <code>expires_in</code> reflecting the SAML assertion's
-<code>SubjectConfirmationData/@NotOnOrAfter</code> duration.<a href="#section-9.3-3" class="pilcrow">¶</a></p>
+<p id="section-9.3-3">The Bridge <span class="bcp14">SHOULD</span> set <code>expires_in</code> to the time, in seconds, until
+<code>SubjectConfirmationData/@NotOnOrAfter</code> (the delivery window).
+<code>expires_in</code> <span class="bcp14">MUST NOT</span> exceed the time until
+<code>Conditions/@NotOnOrAfter</code>. The Bridge <span class="bcp14">SHOULD</span> make
+<code>SubjectConfirmationData/@NotOnOrAfter</code> no later than
+<code>Conditions/@NotOnOrAfter</code> (<a href="#subject-confirmation-data" class="auto internal xref">Section 13.2</a>).<a href="#section-9.3-3" class="pilcrow">¶</a></p>
 <p id="section-9.3-4">The Bridge <span class="bcp14">MUST NOT</span> include a <code>refresh_token</code> in the Token Exchange response.
 SAML assertions issued under this profile are short-lived bearer artifacts
 that do not have refresh semantics; clients needing a new assertion <span class="bcp14">MUST</span>
@@ -2620,23 +2707,31 @@ SAML 2.0 assertion when <code>issued_token_type</code> is
         <h3 id="name-error-response">
 <a href="#section-9.4" class="section-number selfRef">9.4. </a><a href="#name-error-response" class="section-name selfRef">Error Response</a>
         </h3>
-<p id="section-9.4-1">If the request is malformed, the Bridge <span class="bcp14">MUST</span> return an error response as defined
-by <span>[<a href="#RFC6749" class="cite xref">RFC6749</a>]</span> and <span>[<a href="#RFC8693" class="cite xref">RFC8693</a>]</span>.<a href="#section-9.4-1" class="pilcrow">¶</a></p>
-<p id="section-9.4-2">The Bridge <span class="bcp14">MUST</span> use <code>invalid_request</code> for malformed or internally inconsistent
-Token Exchange parameters, including an ID Token that is invalid, expired,
-issued by an unexpected OP, addressed to a different audience, or otherwise
-unacceptable under this profile.<a href="#section-9.4-2" class="pilcrow">¶</a></p>
-<p id="section-9.4-3">The Bridge <span class="bcp14">SHOULD</span> use:<a href="#section-9.4-3" class="pilcrow">¶</a></p>
+<p id="section-9.4-1">Error responses follow <span>[<a href="#RFC6749" class="cite xref">RFC6749</a>]</span> Section 5.2 and <span>[<a href="#RFC8693" class="cite xref">RFC8693</a>]</span>
+Section 2.4. Error code selection follows <span>[<a href="#RFC7522" class="cite xref">RFC7522</a>]</span> Section 2.1.1:
+defects in the <code>subject_token</code> (the OIDC ID Token) are reported as
+<code>invalid_grant</code>, defects in request structure as <code>invalid_request</code>.<a href="#section-9.4-1" class="pilcrow">¶</a></p>
+<p id="section-9.4-2">The Bridge <span class="bcp14">MUST</span> use:<a href="#section-9.4-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-9.4-4.1">
-            <p id="section-9.4-4.1.1"><code>unauthorized_client</code> when the authenticated client is not permitted to use
-the bound SP-Binding or to request assertions for the bound SP Entity ID;<a href="#section-9.4-4.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-9.4-3.1">
+            <p id="section-9.4-3.1.1"><code>invalid_request</code> for malformed or inconsistent parameters.
+Examples: missing <code>subject_token_type</code>, unsupported
+<code>requested_token_type</code>, or presence of any prohibited parameter
+per <a href="#token-exchange-request" class="auto internal xref">Section 9.1</a>;<a href="#section-9.4-3.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-9.4-4.2">
-            <p id="section-9.4-4.2.1"><code>invalid_request</code> when the ID Token lacks a <code>jti</code> claim, the (<code>iss</code>, <code>jti</code>)
-pair has been previously accepted, the ID Token <code>aud</code> is not in the
-SP-Binding's authorized set, subject resolution fails, the ID Token contains
-no usable <code>sub</code> claim, or the Bridge cannot derive a NameID for the target SP.<a href="#section-9.4-4.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-9.4-3.2">
+            <p id="section-9.4-3.2.1"><code>invalid_grant</code> when the ID Token is parseable but unacceptable.
+This covers an invalid, expired, or wrong-issuer ID Token; an
+<code>aud</code> outside the SP-Binding's authorized set; missing or replayed
+<code>jti</code>; missing or unresolvable <code>sub</code>;<a href="#section-9.4-3.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-9.4-3.3">
+            <p id="section-9.4-3.3.1"><code>unauthorized_client</code> when the client is not permitted to use the
+bound SP-Binding or its SP Entity ID;<a href="#section-9.4-3.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-9.4-3.4">
+            <p id="section-9.4-3.4.1"><code>server_error</code> for failures not attributable to the request or the
+ID Token (for example, transient infrastructure issues).<a href="#section-9.4-3.4.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
@@ -2695,31 +2790,36 @@ addresses the existing <code>persistent</code> NameID continuity expectations of
 that have not adopted that profile.<a href="#section-11.1-1" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-11.1-2">
 <li id="section-11.1-2.1">
-            <p id="section-11.1-2.1.1">If the Bridge already has a persisted pairwise NameID mapping for the same
-resolved Local Account and SP-Binding, it <span class="bcp14">MUST</span> reuse that mapping.<a href="#section-11.1-2.1.1" class="pilcrow">¶</a></p>
+            <p id="section-11.1-2.1.1">If a pairwise NameID mapping is already persisted for the same
+Local Account and SP-Binding, the Bridge <span class="bcp14">MUST</span> reuse it.<a href="#section-11.1-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-11.1-2.2">
-            <p id="section-11.1-2.2.1">If no persisted mapping exists, the Bridge <span class="bcp14">MUST</span> derive a deterministic,
-non-reassignable pairwise identifier by combining the (<code>iss</code>, <code>sub</code>) pair
-from the ID Token, the SAML SP Entity ID, and a deployment-specific salt
-using a collision-resistant method. A suitable derivation function is:<a href="#section-11.1-2.2.1" class="pilcrow">¶</a></p>
+            <p id="section-11.1-2.2.1">Otherwise the Bridge <span class="bcp14">MUST</span> derive a deterministic, non-reassignable
+pairwise identifier using:<a href="#section-11.1-2.2.1" class="pilcrow">¶</a></p>
 </li>
         </ol>
 <div class="alignLeft art-text artwork" id="section-11.1-3">
 <pre>
-NameID = base64url( SHA-256( issuer || ":" || sub || ":" || sp_entity_id || ":" || salt ) )
+DST    = "SAML-OIDC-BRIDGE-PAIRWISE-V1"
+input  = b64url(DST) || "." || b64url(issuer) || "." || b64url(sub)
+       || "." || b64url(sp_entity_id) || "." || b64url(salt)
+NameID = base64url( SHA-256( utf8(input) ) )
 </pre><a href="#section-11.1-3" class="pilcrow">¶</a>
 </div>
-<p id="section-11.1-4">where <code>issuer</code> and <code>sub</code> are the <code>iss</code> and <code>sub</code> values from the ID Token,
-   <code>sp_entity_id</code> is the SAML SP Entity ID from the SP-Binding, and <code>salt</code> is
-   a deployment-specific secret value maintained by the Bridge. The Bridge <span class="bcp14">MUST</span>
-   persist the resulting NameID mapping for future use.<a href="#section-11.1-4" class="pilcrow">¶</a></p>
-<p id="section-11.1-5">The <code>salt</code> value <span class="bcp14">MUST</span> be at least 128 bits of entropy and <span class="bcp14">MUST</span> be kept
-confidential. Compromise of the salt allows derivation of NameID values from
-known (<code>iss</code>, <code>sub</code>, <code>sp_entity_id</code>) inputs, which could expose cross-SP
-correlation.<a href="#section-11.1-5" class="pilcrow">¶</a></p>
-<p id="section-11.1-6">The Bridge <span class="bcp14">MUST NOT</span> expose a pairwise NameID value to any SP other than the SP
-for whose SP-Binding it was derived.<a href="#section-11.1-6" class="pilcrow">¶</a></p>
+<p id="section-11.1-4">where <code>b64url(s)</code> is the unpadded base64url encoding (<span>[<a href="#RFC4648" class="cite xref">RFC4648</a>]</span>
+   Section 5) of the UTF-8 octets of <code>s</code>. The inputs <code>issuer</code> and
+   <code>sub</code> come from the ID Token. The <code>sp_entity_id</code> comes from the
+   SP-Binding. The <code>salt</code> is a deployment-held secret. The Bridge
+   <span class="bcp14">MUST</span> persist the resulting mapping.<a href="#section-11.1-4" class="pilcrow">¶</a></p>
+<p id="section-11.1-5">The <code>.</code> separator cannot appear inside a base64url-encoded value, so
+the segment join is injective. The leading DST reserves headroom for
+a future revision of the derivation.<a href="#section-11.1-5" class="pilcrow">¶</a></p>
+<p id="section-11.1-6">The <code>salt</code> <span class="bcp14">MUST</span> be at least 128 bits of entropy and <span class="bcp14">MUST</span> be kept
+confidential. Salt compromise allows derivation of NameID values
+from known <code>(iss, sub, sp_entity_id)</code> inputs and enables cross-SP
+correlation.<a href="#section-11.1-6" class="pilcrow">¶</a></p>
+<p id="section-11.1-7">The Bridge <span class="bcp14">MUST NOT</span> expose a pairwise NameID value to any SP other than the SP
+for whose SP-Binding it was derived.<a href="#section-11.1-7" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="public-nameid-construction">
@@ -2731,18 +2831,32 @@ for whose SP-Binding it was derived.<a href="#section-11.1-6" class="pilcrow">¶
 (i.e., the same NameID value is used for the same user regardless of which
 SP receives the assertion), the Bridge <span class="bcp14">MUST</span> reuse any persisted public
 NameID mapping for the resolved Local Account.<a href="#section-11.2-1" class="pilcrow">¶</a></p>
-<p id="section-11.2-2">If no persisted mapping exists, the Bridge <span class="bcp14">MUST</span> mint a new public NameID
-value using either a randomly generated opaque identifier with at least 128
-bits of entropy (<span class="bcp14">RECOMMENDED</span>), or a deterministic derivation from the
-(<code>iss</code>, <code>sub</code>) pair combined with a Bridge-held secret salt of at least 128
-bits, e.g. <code>base64url(SHA-256(issuer || ":" || sub || ":" || salt))</code>. The
-Bridge <span class="bcp14">MUST</span> persist the resulting Local-Account-to-NameID mapping. A purely
-deterministic derivation without a Bridge-held secret <span class="bcp14">MUST NOT</span> be used,
-because it would allow any party knowing the OP <code>iss</code> and <code>sub</code> to
-reproduce the public NameID.<a href="#section-11.2-2" class="pilcrow">¶</a></p>
-<p id="section-11.2-3">The <code>salt</code> used here <span class="bcp14">MAY</span> be the same value as the pairwise salt
+<p id="section-11.2-2">If no persisted mapping exists, the Bridge <span class="bcp14">MUST</span> mint a new public
+NameID value using one of:<a href="#section-11.2-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-11.2-3.1">
+            <p id="section-11.2-3.1.1">a randomly generated opaque identifier with at least 128 bits of
+entropy (<span class="bcp14">RECOMMENDED</span>); or<a href="#section-11.2-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-11.2-3.2">
+            <p id="section-11.2-3.2.1">the segment encoding from <a href="#pairwise-nameid-construction" class="auto internal xref">Section 11.1</a>, with
+the <code>sp_entity_id</code> segment omitted and a distinct DST:<a href="#section-11.2-3.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<div class="alignLeft art-text artwork" id="section-11.2-4">
+<pre>
+DST    = "SAML-OIDC-BRIDGE-PUBLIC-V1"
+input  = b64url(DST) || "." || b64url(issuer)
+       || "." || b64url(sub) || "." || b64url(salt)
+NameID = base64url( SHA-256( utf8(input) ) )
+</pre><a href="#section-11.2-4" class="pilcrow">¶</a>
+</div>
+<p id="section-11.2-5">The Bridge <span class="bcp14">MUST</span> persist the resulting mapping. A purely deterministic
+derivation without a Bridge-held secret <span class="bcp14">MUST NOT</span> be used. Any party
+knowing the OP <code>iss</code> and <code>sub</code> could otherwise reproduce the NameID.<a href="#section-11.2-5" class="pilcrow">¶</a></p>
+<p id="section-11.2-6">The <code>salt</code> used here <span class="bcp14">MAY</span> be the same value as the pairwise salt
 (<a href="#pairwise-nameid-construction" class="auto internal xref">Section 11.1</a>). It <span class="bcp14">MUST</span> be kept confidential and is
-subject to the same compromise considerations.<a href="#section-11.2-3" class="pilcrow">¶</a></p>
+subject to the same compromise considerations.<a href="#section-11.2-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="emailaddress-nameid">
@@ -2780,11 +2894,15 @@ mapping, because email addresses are mutable.<a href="#section-11.3-2.5.1" class
         <h3 id="name-transient-nameid">
 <a href="#section-11.4" class="section-number selfRef">11.4. </a><a href="#name-transient-nameid" class="section-name selfRef">Transient NameID</a>
         </h3>
-<p id="section-11.4-1">When the SP-Binding specifies <code>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</code>,
-the Bridge <span class="bcp14">MUST</span> generate a fresh, unpredictable random value per assertion.
-The Bridge <span class="bcp14">MUST NOT</span> persist or reuse transient NameID values. Transient NameIDs
-<span class="bcp14">MUST</span> only be used for SPs that explicitly require them and that do not rely on
-subject continuity.<a href="#section-11.4-1" class="pilcrow">¶</a></p>
+<p id="section-11.4-1">When the SP-Binding specifies
+<code>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</code>, the Bridge
+<span class="bcp14">MUST</span> generate a fresh value per assertion from a cryptographically
+secure random source. The value <span class="bcp14">MUST</span> contain at least 128 bits of
+entropy. Guessable transient NameIDs enable SubjectConfirmation
+forgery and session-fixation against SPs that key on them.<a href="#section-11.4-1" class="pilcrow">¶</a></p>
+<p id="section-11.4-2">The Bridge <span class="bcp14">MUST NOT</span> persist or reuse transient NameID values. The
+Bridge <span class="bcp14">MUST NOT</span> use the transient format for SPs that require subject
+continuity across sessions.<a href="#section-11.4-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="nameid-common-rules">
@@ -2832,78 +2950,31 @@ attributes and authentication context for the issued assertion.<a href="#section
         <h3 id="name-authentication-context-mapp">
 <a href="#section-12.1" class="section-number selfRef">12.1. </a><a href="#name-authentication-context-mapp" class="section-name selfRef">Authentication Context Mapping</a>
         </h3>
-<p id="section-12.1-1">The Bridge <span class="bcp14">MUST</span> populate an <code>AuthnStatement</code> in every issued assertion. The
-<code>AuthnStatement</code> <span class="bcp14">MUST</span> include:<a href="#section-12.1-1" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-12.1-2.1">
-            <p id="section-12.1-2.1.1"><code>AuthnInstant</code>: the time of the end-user's authentication, derived as follows:<a href="#section-12.1-2.1.1" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-12.1-2.1.2.1">
-                <p id="section-12.1-2.1.2.1.1">if the ID Token contains an <code>auth_time</code> claim, <code>AuthnInstant</code> <span class="bcp14">MUST</span> be set
-to that value, converted from a NumericDate (seconds since epoch) to an XML
-<code>dateTime</code> value in UTC;<a href="#section-12.1-2.1.2.1.1" class="pilcrow">¶</a></p>
-</li>
-              <li class="normal" id="section-12.1-2.1.2.2">
-                <p id="section-12.1-2.1.2.2.1">if <code>auth_time</code> is absent from the ID Token and the SP-Binding permits it,
-<code>AuthnInstant</code> <span class="bcp14">MAY</span> be set to the Bridge's assertion issuance time; and<a href="#section-12.1-2.1.2.2.1" class="pilcrow">¶</a></p>
-</li>
-              <li class="normal" id="section-12.1-2.1.2.3">
-                <p id="section-12.1-2.1.2.3.1">the Bridge <span class="bcp14">MUST NOT</span> set <code>AuthnInstant</code> to the time of the Token Exchange
-or OIDC token issuance event unless that event is confirmed to represent the
-actual end-user authentication.<a href="#section-12.1-2.1.2.3.1" class="pilcrow">¶</a></p>
-</li>
-            </ul>
-</li>
-          <li class="normal" id="section-12.1-2.2">
-            <p id="section-12.1-2.2.1"><code>SessionIndex</code>: <span class="bcp14">OPTIONAL</span>. The Bridge <span class="bcp14">MAY</span> populate <code>SessionIndex</code> from the
-OIDC <code>sid</code> claim when present and when the SP-Binding requires session
-continuity for logout support. If the raw <code>sid</code> value is not suitable as a
-SAML <code>SessionIndex</code> (e.g., it is not unique within the Bridge's SAML issuer),
-the Bridge <span class="bcp14">MUST</span> derive and persist a Bridge-scoped session identifier bound to
-the OIDC session.<a href="#section-12.1-2.2.1" class="pilcrow">¶</a></p>
-</li>
-        </ul>
-<p id="section-12.1-3">The <code>AuthnContext</code> element <span class="bcp14">MUST</span> include an <code>AuthnContextClassRef</code>. The Bridge
-<span class="bcp14">MUST</span> determine this value as follows:<a href="#section-12.1-3" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-12.1-4.1">
-            <p id="section-12.1-4.1.1">if the SP-Binding defines an explicit ACR-to-AuthnContextClassRef mapping
-table, the Bridge <span class="bcp14">MUST</span> apply that mapping and use the mapped value;<a href="#section-12.1-4.1.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-12.1-4.2">
-            <p id="section-12.1-4.2.1">if the ID Token contains an <code>acr</code> claim, the SP-Binding does not define an
-explicit mapping, and the SP-Binding explicitly permits passthrough of
-unmapped ACR values, the Bridge <span class="bcp14">MAY</span> use the <code>acr</code> value as
-<code>AuthnContextClassRef</code> only when that exact value appears in the SP-Binding's
-configured ACR allowlist; the Bridge <span class="bcp14">MUST NOT</span> pass through arbitrary <code>acr</code>
-strings as <code>AuthnContextClassRef</code> values;<a href="#section-12.1-4.2.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-12.1-4.3">
-            <p id="section-12.1-4.3.1">if the <code>acr</code> claim is absent or cannot be resolved to a configured value, the
-Bridge <span class="bcp14">MUST</span> use <code>urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified</code> unless
-the SP-Binding defines a different default; and<a href="#section-12.1-4.3.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-12.1-4.4">
-            <p id="section-12.1-4.4.1">the Bridge <span class="bcp14">MUST NOT</span> produce an <code>AuthnContextClassRef</code> that asserts higher
-assurance than the OP's authenticated event warrants.<a href="#section-12.1-4.4.1" class="pilcrow">¶</a></p>
-</li>
-        </ul>
-<p id="section-12.1-5">The <code>amr</code> claim <span>[<a href="#RFC8176" class="cite xref">RFC8176</a>]</span> in an ID Token lists authentication method
-references and does not map directly to a SAML <code>AuthnContextClassRef</code>. The
-Bridge:<a href="#section-12.1-5" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-12.1-6.1">
-            <p id="section-12.1-6.1.1"><span class="bcp14">MUST NOT</span> copy <code>amr</code> values directly into <code>AuthnContextClassRef</code>;<a href="#section-12.1-6.1.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-12.1-6.2">
-            <p id="section-12.1-6.2.1"><span class="bcp14">MAY</span> reflect <code>amr</code> content in an extension element within <code>AuthnContext</code> when
-the SP-Binding defines such an extension and the SP is known to process it;
-and<a href="#section-12.1-6.2.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-12.1-6.3">
-            <p id="section-12.1-6.3.1"><span class="bcp14">MUST NOT</span> overstate authentication assurance based on <code>amr</code> values alone.<a href="#section-12.1-6.3.1" class="pilcrow">¶</a></p>
-</li>
-        </ul>
+<p id="section-12.1-1">Every issued assertion <span class="bcp14">MUST</span> contain an <code>AuthnStatement</code>.<a href="#section-12.1-1" class="pilcrow">¶</a></p>
+<p id="section-12.1-2"><code>AuthnInstant</code> is set from the ID Token <code>auth_time</code> (converted from
+NumericDate to XML <code>dateTime</code>). When <code>auth_time</code> is absent and the
+SP-Binding permits it, the Bridge <span class="bcp14">MAY</span> use its assertion issuance
+time. The Bridge <span class="bcp14">MUST NOT</span> use the OIDC token issuance time as
+<code>AuthnInstant</code> when it does not represent the actual authentication.<a href="#section-12.1-2" class="pilcrow">¶</a></p>
+<p id="section-12.1-3"><code>SessionIndex</code> is <span class="bcp14">OPTIONAL</span>. When emitted, it carries the OIDC <code>sid</code>
+when that value is unique within the Bridge's SAML issuer;
+otherwise the Bridge derives and persists a Bridge-scoped session
+identifier bound to the OIDC session.<a href="#section-12.1-3" class="pilcrow">¶</a></p>
+<p id="section-12.1-4"><code>AuthnContext</code> <span class="bcp14">MUST</span> include <code>AuthnContextClassRef</code>, determined as
+follows. If the SP-Binding defines an <code>acr</code>-to-<code>AuthnContextClassRef</code>
+mapping, the Bridge <span class="bcp14">MUST</span> apply it. Otherwise, when the SP-Binding
+permits passthrough, the Bridge <span class="bcp14">MAY</span> emit an ID Token <code>acr</code> value
+only when it appears in the SP-Binding's allowlist. Otherwise the
+Bridge emits <code>urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified</code>,
+or another default named by the SP-Binding. The Bridge <span class="bcp14">MUST NOT</span>
+emit an <code>AuthnContextClassRef</code> asserting higher assurance than the
+OP's authentication event warrants.<a href="#section-12.1-4" class="pilcrow">¶</a></p>
+<p id="section-12.1-5">The OIDC <code>amr</code> claim <span>[<a href="#RFC8176" class="cite xref">RFC8176</a>]</span> carries authentication-method
+references, not context classes. The Bridge <span class="bcp14">MUST NOT</span> copy <code>amr</code>
+into <code>AuthnContextClassRef</code>. The Bridge <span class="bcp14">MAY</span> reflect <code>amr</code> in an
+SP-Binding-defined <code>AuthnContext</code> extension element; <span>[<a href="#SAML2-CORE" class="cite xref">SAML2-CORE</a>]</span>
+defines no such generic extension, so the SP-Binding <span class="bcp14">MUST</span> specify
+its namespace, schema, and processing rules.<a href="#section-12.1-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="claim-attribute-mapping">
@@ -2968,10 +3039,16 @@ OIDC subject is represented exclusively through the NameID; and<a href="#section
 are permitted for release to the target SP.<a href="#section-12.2-7.5.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-12.2-8">If the <code>email_verified</code> claim is <code>false</code> or absent, the Bridge <span class="bcp14">MUST NOT</span> emit
-any attribute that implies the email address has been verified unless the
-SP-Binding explicitly overrides this. The Bridge <span class="bcp14">MUST NOT</span> infer verification
-status from the presence of a <code>phone_number</code> claim.<a href="#section-12.2-8" class="pilcrow">¶</a></p>
+<p id="section-12.2-8">If the <code>email_verified</code> claim is <code>false</code> or absent, the Bridge <span class="bcp14">MUST NOT</span> emit any SAML attribute whose semantics signal verified-email
+status. Examples include <code>eduPersonPrincipalName</code>
+(<code>urn:oid:1.3.6.1.4.1.5923.1.1.1.6</code>), a <code>mail</code> attribute
+(<code>urn:oid:0.9.2342.19200300.100.1.3</code>) released with an attribute-level
+verification flag, or a deployment-specific verified-email indicator.<a href="#section-12.2-8" class="pilcrow">¶</a></p>
+<p id="section-12.2-9">The SP-Binding <span class="bcp14">MAY</span> override this rule by explicitly identifying the
+specific attribute or attributes whose verified-status semantics are
+accepted.<a href="#section-12.2-9" class="pilcrow">¶</a></p>
+<p id="section-12.2-10">The Bridge <span class="bcp14">MUST NOT</span> infer verification status from the presence of a
+<code>phone_number</code> claim.<a href="#section-12.2-10" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="session-validity-bound">
@@ -3036,8 +3113,9 @@ Bridge's SAML metadata.<a href="#section-13.1-2.2.1" class="pilcrow">¶</a></p>
   up to 30 seconds is <span class="bcp14">RECOMMENDED</span>;
 * <code>NotOnOrAfter</code>: set to a short interval after issuance. The Bridge <span class="bcp14">SHOULD</span>
   set this to no more than 5 minutes from the assertion's <code>IssueInstant</code>;
-* at least one <code>AudienceRestriction</code> element containing the SAML SP Entity ID
-  as the sole <code>Audience</code> value; and
+* at least one <code>AudienceRestriction</code> containing the SAML SP Entity
+  ID as one of its <code>Audience</code> values. The Bridge <span class="bcp14">MAY</span> include
+  additional configured <code>Audience</code> values per <span>[<a href="#SAML2-CORE" class="cite xref">SAML2-CORE</a>]</span>; and
 * a <code>OneTimeUse</code> condition <span class="bcp14">SHOULD</span> be included to instruct the SP to enforce
   one-time consumption of the assertion per <span>[<a href="#SAML2-CORE" class="cite xref">SAML2-CORE</a>]</span> Section 2.5.1.5.<a href="#section-13.1-2.6.1" class="pilcrow">¶</a></p>
 </dd>
@@ -3093,9 +3171,12 @@ expects;<a href="#section-13.2-2.1.1" class="pilcrow">¶</a></p>
 value; and<a href="#section-13.2-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-13.2-2.3">
-            <p id="section-13.2-2.3.1"><code>InResponseTo</code>: for SP-initiated browser-based flows, <span class="bcp14">MUST</span> be set to the
-<code>AuthnRequest/@ID</code>. For IdP-initiated flows and the Token Exchange variant,
-this attribute <span class="bcp14">SHOULD</span> be omitted.<a href="#section-13.2-2.3.1" class="pilcrow">¶</a></p>
+            <p id="section-13.2-2.3.1"><code>InResponseTo</code>: for SP-initiated browser-based flows, <span class="bcp14">MUST</span> be set
+to the <code>AuthnRequest/@ID</code>. For IdP-initiated flows and the Token
+Exchange variant, this attribute <span class="bcp14">MUST</span> be omitted. These flows
+produce unsolicited assertions, and <span>[<a href="#SAML2-PROFILES" class="cite xref">SAML2-PROFILES</a>]</span> requires
+<code>InResponseTo</code> to be present only when responding to a specific
+<code>&lt;AuthnRequest&gt;</code>.<a href="#section-13.2-2.3.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
@@ -3122,7 +3203,9 @@ delivery via the HTTP-POST binding in the browser-based flow. The <code>Response
             <p id="section-13.3-2.4.1"><code>Destination</code>: the ACS URL of the target SP;<a href="#section-13.3-2.4.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-13.3-2.5">
-            <p id="section-13.3-2.5.1"><code>InResponseTo</code>: the <code>AuthnRequest/@ID</code>, for SP-initiated flows;<a href="#section-13.3-2.5.1" class="pilcrow">¶</a></p>
+            <p id="section-13.3-2.5.1"><code>InResponseTo</code>: the <code>AuthnRequest/@ID</code>, for SP-initiated flows; <span class="bcp14">MUST</span>
+be omitted for IdP-initiated flows (and the Token Exchange variant
+does not produce a <code>Response</code> wrapper at all);<a href="#section-13.3-2.5.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-13.3-2.6">
             <p id="section-13.3-2.6.1"><code>Status/StatusCode/@Value</code>:
@@ -3187,11 +3270,23 @@ the Bridge <span class="bcp14">MUST</span> establish its own internal session id
 the authorization code exchange (browser-based flow) or assertion issuance
 (Token Exchange variant) and bind it to the SAML sessions it subsequently
 creates.<a href="#section-14.1-2" class="pilcrow">¶</a></p>
-<p id="section-14.1-3">When <code>sid</code> is absent, logout propagation from the OP to the Bridge depends on
-the Bridge detecting token revocation or expiry through the standard refresh
-flow rather than through a push notification. Deployments that rely on this
-fallback <span class="bcp14">MUST</span> document the relationship between OP-side termination and
-Bridge detection in local policy.<a href="#section-14.1-3" class="pilcrow">¶</a></p>
+<p id="section-14.1-3">When <code>sid</code> is absent, logout propagation from the OP to the Bridge
+depends on the Bridge detecting token revocation or expiry through
+the refresh flow rather than a push notification. Deployments
+relying on this fallback <span class="bcp14">MUST</span> document the relationship in local
+policy.<a href="#section-14.1-3" class="pilcrow">¶</a></p>
+<p id="section-14.1-4">The Token Exchange variant has a further limitation. The Bridge
+holds no refresh token at the OP (the client holds the ID Token
+directly), so the Bridge cannot detect OP-side termination through a
+refresh failure. Discovery of OP-side termination requires either
+(a) a <span>[<a href="#OIDC-BC-LOGOUT" class="cite xref">OIDC-BC-LOGOUT</a>]</span> back-channel logout from the OP to the
+Bridge carrying a bound <code>sid</code>, or (b) an out-of-band revocation
+channel.<a href="#section-14.1-4" class="pilcrow">¶</a></p>
+<p id="section-14.1-5">Deployments using the Token Exchange variant for SPs that require
+timely logout propagation <span class="bcp14">SHOULD</span> configure the OP to emit <code>sid</code> and
+<span class="bcp14">SHOULD</span> register the Bridge as a back-channel logout client at the OP.
+Otherwise the SAML session at the SP <span class="bcp14">MUST</span> be treated as valid for
+the assertion's <code>SessionNotOnOrAfter</code> window.<a href="#section-14.1-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="session-termination">
@@ -3279,8 +3374,11 @@ its <code>@ID</code> has not already been processed; and<a href="#section-14.3-2
 Logout or revoking the relevant tokens;<a href="#section-14.3-2.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-14.3-2.4">
-            <p id="section-14.3-2.4.1">the Bridge <span class="bcp14">SHOULD</span> propagate the logout to other SPs sharing the same OIDC
-session by sending <code>LogoutRequest</code> messages to their SLO endpoints;<a href="#section-14.3-2.4.1" class="pilcrow">¶</a></p>
+            <p id="section-14.3-2.4.1">the Bridge <span class="bcp14">SHOULD</span> propagate the logout to other SPs sharing the
+same OIDC session by sending <code>LogoutRequest</code> to their SLO
+endpoints. The Bridge <span class="bcp14">MUST</span> maintain a record of SAML sessions
+per OIDC <code>sid</code> (or per Bridge-scoped session identifier when <code>sid</code>
+is absent) populated at issuance time (<a href="#session-binding" class="auto internal xref">Section 14.1</a>);<a href="#section-14.3-2.4.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-14.3-2.5">
             <p id="section-14.3-2.5.1">the Bridge <span class="bcp14">MUST</span> return a <code>LogoutResponse</code> to the initiating SP even if
@@ -3326,26 +3424,28 @@ administratively authorized <code>saml_sp_entity_id</code> bindings (see
 <p id="section-15.1-3">In-scope attacker capabilities and the rules that mitigate them:<a href="#section-15.1-3" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-15.1-4.1">
-            <p id="section-15.1-4.1.1">obtaining an ID Token in transit — three-way binding
+            <p id="section-15.1-4.1.1">obtaining an ID Token in transit. Mitigated by three-way binding
 (<a href="#binding-and-issuance-model" class="auto internal xref">Section 4</a>), <code>aud</code>/<code>azp</code> validation
-(<a href="#accepted-id-token-inputs" class="auto internal xref">Section 7.1</a>), <code>jti</code> replay (<a href="#assertion-id" class="auto internal xref">Section 13.4</a>);<a href="#section-15.1-4.1.1" class="pilcrow">¶</a></p>
+(<a href="#accepted-id-token-inputs" class="auto internal xref">Section 7.1</a>), and <code>jti</code> replay
+(<a href="#assertion-id" class="auto internal xref">Section 13.4</a>).<a href="#section-15.1-4.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-15.1-4.2">
-            <p id="section-15.1-4.2.1">attempting unauthorized <code>saml_sp_entity_id</code> registration —
-<a href="#sp-binding-saml-sp-entity-id-authorization" class="auto internal xref">Section 5.1.1</a>;<a href="#section-15.1-4.2.1" class="pilcrow">¶</a></p>
+            <p id="section-15.1-4.2.1">attempting unauthorized <code>saml_sp_entity_id</code> registration. Mitigated
+by <a href="#sp-binding-saml-sp-entity-id-authorization" class="auto internal xref">Section 5.1.1</a>.<a href="#section-15.1-4.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-15.1-4.3">
             <p id="section-15.1-4.3.1">forging, replaying, or manipulating a SAML <code>AuthnRequest</code> or
-<code>LogoutRequest</code> — signature, <code>Destination</code>, freshness, ID-replay, and XSW
-rules in <a href="#authn-request-processing" class="auto internal xref">Section 8.2</a>, <a href="#saml-single-logout" class="auto internal xref">Section 14.3</a>, and
-<a href="#xsw-incoming" class="auto internal xref">Section 15.2.1</a>;<a href="#section-15.1-4.3.1" class="pilcrow">¶</a></p>
+<code>LogoutRequest</code>. Mitigated by signature, <code>Destination</code>, freshness,
+ID-replay, and XSW rules in <a href="#authn-request-processing" class="auto internal xref">Section 8.2</a>,
+<a href="#saml-single-logout" class="auto internal xref">Section 14.3</a>, and <a href="#xsw-incoming" class="auto internal xref">Section 15.2.1</a>.<a href="#section-15.1-4.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-15.1-4.4">
-            <p id="section-15.1-4.4.1">splicing an OIDC authorization response across SAML contexts — <code>state</code>,
-<code>nonce</code>, and PKCE rules in <a href="#oidc-authorization-request" class="auto internal xref">Section 8.3</a>; and<a href="#section-15.1-4.4.1" class="pilcrow">¶</a></p>
+            <p id="section-15.1-4.4.1">splicing an OIDC authorization response across SAML contexts.
+Mitigated by <code>state</code>, <code>nonce</code>, and PKCE rules in
+<a href="#oidc-authorization-request" class="auto internal xref">Section 8.3</a>.<a href="#section-15.1-4.4.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-15.1-4.5">
-            <p id="section-15.1-4.5.1">compromising the Bridge's refresh token at the OP — see
+            <p id="section-15.1-4.5.1">compromising the Bridge's refresh token at the OP. See
 <a href="#refresh-token-compromise" class="auto internal xref">Section 15.9</a>.<a href="#section-15.1-4.5.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
@@ -3443,23 +3543,13 @@ issuance to outlive the underlying OIDC session.<a href="#section-15.3-3" class=
         <h3 id="name-oidc-authorization-response">
 <a href="#section-15.4" class="section-number selfRef">15.4. </a><a href="#name-oidc-authorization-response" class="section-name selfRef">OIDC Authorization Response Splicing</a>
         </h3>
-<p id="section-15.4-1">A browser-based attacker may attempt to splice an authorization response
-obtained in one context onto a SAML <code>AuthnRequest</code> issued by the Bridge in a
-different context. The Bridge <span class="bcp14">MUST</span> prevent this by:<a href="#section-15.4-1" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-15.4-2.1">
-            <p id="section-15.4-2.1.1">binding the OIDC <code>state</code> and <code>nonce</code> values to the SAML <code>AuthnRequest</code> ID
-it is processing, as required by <a href="#oidc-authorization-request" class="auto internal xref">Section 8.3</a>;<a href="#section-15.4-2.1.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-15.4-2.2">
-            <p id="section-15.4-2.2.1">using PKCE <span>[<a href="#RFC7636" class="cite xref">RFC7636</a>]</span> with <code>S256</code> so that an intercepted authorization
-code cannot be exchanged by another party at the OP's token endpoint; and<a href="#section-15.4-2.2.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-15.4-2.3">
-            <p id="section-15.4-2.3.1">validating on the authorization response that the returned <code>state</code> matches
-the value the Bridge issued for the SAML <code>AuthnRequest</code> being completed.<a href="#section-15.4-2.3.1" class="pilcrow">¶</a></p>
-</li>
-        </ul>
+<p id="section-15.4-1">A browser-based attacker may attempt to splice an authorization
+response obtained in one context onto a SAML <code>AuthnRequest</code> issued
+by the Bridge in a different context. The <code>state</code>, <code>nonce</code>, and
+PKCE requirements in <a href="#oidc-authorization-request" class="auto internal xref">Section 8.3</a> defeat this
+attack: an intercepted authorization code cannot be exchanged by
+another party at the OP, and the returned <code>state</code> cannot match the
+Bridge's expected value for the targeted <code>AuthnRequest</code>.<a href="#section-15.4-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="metadata-ssrf">
@@ -3531,10 +3621,10 @@ allowlist and is never copied blindly from <code>acr</code>. The <code>amr</code
 <span>[<a href="#RFC8176" class="cite xref">RFC8176</a>]</span> <span class="bcp14">MUST NOT</span> be copied directly into <code>AuthnContextClassRef</code>.<a href="#section-15.8-2" class="pilcrow">¶</a></p>
 <p id="section-15.8-3">The Bridge <span class="bcp14">MUST NOT</span> expose the OP <code>sub</code> value as a SAML <code>Attribute</code> element.
 The OIDC subject is translated exclusively into the SAML <code>NameID</code>.<a href="#section-15.8-3" class="pilcrow">¶</a></p>
-<p id="section-15.8-4">The Bridge <span class="bcp14">MUST NOT</span> release all OIDC claims to all SPs by default. Each
-SP-Binding <span class="bcp14">MUST</span> have an explicit attribute release allowlist that is
-maintained administratively and not derived from the contents of a given ID
-Token.<a href="#section-15.8-4" class="pilcrow">¶</a></p>
+<p id="section-15.8-4">Per-SP attribute release rules are normative in
+<a href="#claim-attribute-mapping" class="auto internal xref">Section 12.2</a>; the SP-Binding's explicit allowlist
+governs what the Bridge releases, regardless of which claims the ID
+Token contains.<a href="#section-15.8-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="refresh-token-compromise">
@@ -3747,6 +3837,10 @@ this document does not modify those registrations.<a href="#section-17.1-3" clas
         <dd>
 <span class="refAuthor">Lodderstedt, T.</span>, <span class="refAuthor">Bradley, J.</span>, <span class="refAuthor">Labunets, A.</span>, and <span class="refAuthor">D. Fett</span>, <span class="refTitle">"Best Current Practice for OAuth 2.0 Security"</span>, <span class="seriesInfo">BCP 240</span>, <span class="seriesInfo">RFC 9700</span>, <span class="seriesInfo">DOI 10.17487/RFC9700</span>, <time datetime="2025-01" class="refDate">January 2025</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9700">https://www.rfc-editor.org/rfc/rfc9700</a>&gt;</span>. </dd>
 <dd class="break"></dd>
+<dt id="SAML-OIDC-MIGRATION">[SAML-OIDC-MIGRATION]</dt>
+        <dd>
+<span class="refAuthor">McGuinness, K.</span>, <span class="refTitle">"OpenID Connect Migration Profile for SAML 2.0 Service Providers"</span>, <span>&lt;<a href="https://datatracker.ietf.org/doc/draft-connect-saml-migration-profile/">https://datatracker.ietf.org/doc/draft-connect-saml-migration-profile/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
 <dt id="SAML2-BINDINGS">[SAML2-BINDINGS]</dt>
         <dd>
 <span class="refAuthor">OASIS</span>, <span class="refTitle">"Bindings for the OASIS Security Assertion Markup Language (SAML) V2.0"</span>, <time datetime="2005" class="refDate">2005</time>, <span>&lt;<a href="https://docs.oasis-open.org/security/saml/v2.0/saml-bindings-2.0-os.pdf">https://docs.oasis-open.org/security/saml/v2.0/saml-bindings-2.0-os.pdf</a>&gt;</span>. </dd>
@@ -3789,12 +3883,8 @@ this document does not modify those registrations.<a href="#section-17.1-3" clas
 <span class="refAuthor">Campbell, B.</span>, <span class="refAuthor">Mortimore, C.</span>, and <span class="refAuthor">M. Jones</span>, <span class="refTitle">"Security Assertion Markup Language (SAML) 2.0 Profile for OAuth 2.0 Client Authentication and Authorization Grants"</span>, <span class="seriesInfo">RFC 7522</span>, <span class="seriesInfo">DOI 10.17487/RFC7522</span>, <time datetime="2015-05" class="refDate">May 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7522">https://www.rfc-editor.org/rfc/rfc7522</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC7662">[RFC7662]</dt>
-        <dd>
-<span class="refAuthor">Richer, J., Ed.</span>, <span class="refTitle">"OAuth 2.0 Token Introspection"</span>, <span class="seriesInfo">RFC 7662</span>, <span class="seriesInfo">DOI 10.17487/RFC7662</span>, <time datetime="2015-10" class="refDate">October 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7662">https://www.rfc-editor.org/rfc/rfc7662</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="SAML-OIDC-MIGRATION">[SAML-OIDC-MIGRATION]</dt>
       <dd>
-<span class="refAuthor">McGuinness, K.</span>, <span class="refTitle">"OpenID Connect Migration Profile for SAML 2.0 Service Providers"</span>, <span>&lt;<a href="https://datatracker.ietf.org/doc/draft-connect-saml-migration-profile/">https://datatracker.ietf.org/doc/draft-connect-saml-migration-profile/</a>&gt;</span>. </dd>
+<span class="refAuthor">Richer, J., Ed.</span>, <span class="refTitle">"OAuth 2.0 Token Introspection"</span>, <span class="seriesInfo">RFC 7662</span>, <span class="seriesInfo">DOI 10.17487/RFC7662</span>, <time datetime="2015-10" class="refDate">October 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7662">https://www.rfc-editor.org/rfc/rfc7662</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 </dl>
 </section>
@@ -3834,6 +3924,10 @@ with the following configuration:<a href="#appendix-A-1" class="pilcrow">¶</a><
 </li>
         <li class="normal" id="appendix-A-4.4">
           <p id="appendix-A-4.4.1">Attribute release: <code>mail</code>, <code>displayName</code>, <code>givenName</code>, <code>sn</code><a href="#appendix-A-4.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-4.5">
+          <p id="appendix-A-4.5.1">Authorized OP <code>client_id</code> values for the Token Exchange variant:
+<code>migration-tool</code><a href="#appendix-A-4.5.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 <div id="bridge-authorization-server-metadata">
@@ -3903,6 +3997,7 @@ exchanges it for tokens and receives an ID Token whose claims include:<a href="#
   "iat": 1776804900,
   "auth_time": 1776794400,
   "nonce": "xyz789",
+  "sid": "op-sid-abc123",
   "acr": "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport",
   "email": "alice@example.com",
   "given_name": "Alice",
@@ -3925,8 +4020,7 @@ pairwise NameID for the calendar SP-Binding, and constructs the following SAML
   &lt;saml:Subject&gt;
     &lt;saml:NameID
         Format="urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"
-        SPNameQualifier="https://calendar.example.com/saml/sp"
-        NameQualifier="https://bridge.example.com/saml/idp"&gt;
+        SPNameQualifier="https://calendar.example.com/saml/sp"&gt;
       _pairwise-8a3f21bc9d4e5f6a7b
     &lt;/saml:NameID&gt;
     &lt;saml:SubjectConfirmation
@@ -3947,7 +4041,7 @@ pairwise NameID for the calendar SP-Binding, and constructs the following SAML
   &lt;/saml:Conditions&gt;
   &lt;saml:AuthnStatement
       AuthnInstant="2026-04-25T15:00:00Z"
-      SessionIndex="_sid-op-abc123"&gt;
+      SessionIndex="op-sid-abc123"&gt;
     &lt;saml:AuthnContext&gt;
       &lt;saml:AuthnContextClassRef&gt;
         urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport
@@ -3992,11 +4086,33 @@ it to the calendar ACS at <code>https://calendar.example.com/saml/acs</code>.<a 
         <h3 id="name-token-exchange-id-token-to-s">
 <a href="#appendix-A.3" class="section-number selfRef">A.3. </a><a href="#name-token-exchange-id-token-to-s" class="section-name selfRef">Token Exchange: ID Token to SAML Assertion</a>
         </h3>
-<p id="appendix-A.3-1">A migration tool has obtained an ID Token from the OP on behalf of Alice using
-a permitted OIDC flow and needs to produce a SAML assertion for the calendar
-SP to test a migration scenario. It presents the ID Token to the
-Bridge's Token Exchange endpoint:<a href="#appendix-A.3-1" class="pilcrow">¶</a></p>
-<div class="lang-http sourcecode" id="appendix-A.3-2">
+<p id="appendix-A.3-1">A migration tool, registered at the OP as <code>migration-tool</code> and at the
+Bridge with <code>saml_sp_entity_id=https://calendar.example.com/saml/sp</code>,
+has obtained an ID Token from the OP on behalf of Alice using a
+permitted OIDC flow and needs to produce a SAML assertion for the
+calendar SP. The decoded ID Token payload is:<a href="#appendix-A.3-1" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="appendix-A.3-2">
+<pre>
+{
+  "iss": "https://op.example.com",
+  "sub": "248289761001",
+  "aud": "migration-tool",
+  "exp": 1776808500,
+  "iat": 1776804900,
+  "jti": "op-id-token-7f3a",
+  "auth_time": 1776794400,
+  "acr": "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport",
+  "email": "alice@example.com",
+  "given_name": "Alice",
+  "family_name": "Ng",
+  "name": "Alice Ng"
+}
+</pre><a href="#appendix-A.3-2" class="pilcrow">¶</a>
+</div>
+<p id="appendix-A.3-3">The migration tool authenticates and presents the ID Token to the
+Bridge's Token Exchange endpoint (<code>subject_token</code> shown as a shortened
+placeholder):<a href="#appendix-A.3-3" class="pilcrow">¶</a></p>
+<div class="lang-http sourcecode" id="appendix-A.3-4">
 <pre>
 POST /token HTTP/1.1
 Host: bridge.example.com
@@ -4004,15 +4120,15 @@ Content-Type: application/x-www-form-urlencoded
 
 grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 &amp;subject_token_type=urn:ietf:params:oauth:token-type:id_token
-&amp;subject_token=eyJhbGciOiJSUzI1NiIsImtpZCI6IjEifQ.eyJpc3MiOiJodHRwczovL29wLmV4YW1wbGUuY29tIiwic3ViIjoiMjQ4Mjg5NzYxMDAxIiwiYXVkIjoiYnJpZGdlLWNsaWVudCIsImV4cCI6MTc3NjgwODUwMCwiaWF0IjoxNzc2ODA0OTAwLCJqdGkiOiJvcC1pZC10b2tlbi03ZjNhIiwiYXV0aF90aW1lIjoxNzc2Nzk0NDAwLCJhY3IiOiJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6YWM6Y2xhc3NlczpQYXNzd29yZFByb3RlY3RlZFRyYW5zcG9ydCIsImVtYWlsIjoiYWxpY2VAZXhhbXBsZS5jb20iLCJnaXZlbl9uYW1lIjoiQWxpY2UiLCJmYW1pbHlfbmFtZSI6Ik5nIiwibmFtZSI6IkFsaWNlIE5nIn0.signature
+&amp;subject_token=eyJhbGciOi...signature
 &amp;requested_token_type=urn:ietf:params:oauth:token-type:saml2
 &amp;client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer
 &amp;client_assertion=eyJhbGciOiJSUzI1NiJ9...
-</pre><a href="#appendix-A.3-2" class="pilcrow">¶</a>
+</pre><a href="#appendix-A.3-4" class="pilcrow">¶</a>
 </div>
-<p id="appendix-A.3-3">The Bridge authenticates the client, validates the ID Token, derives
-Alice's pairwise NameID for the calendar SP-Binding, and returns:<a href="#appendix-A.3-3" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="appendix-A.3-4">
+<p id="appendix-A.3-5">The Bridge authenticates the client, validates the ID Token, derives
+Alice's pairwise NameID for the calendar SP-Binding, and returns:<a href="#appendix-A.3-5" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="appendix-A.3-6">
 <pre>
 {
   "issued_token_type": "urn:ietf:params:oauth:token-type:saml2",
@@ -4020,12 +4136,12 @@ Alice's pairwise NameID for the calendar SP-Binding, and returns:<a href="#appen
   "token_type": "N_A",
   "expires_in": 300
 }
-</pre><a href="#appendix-A.3-4" class="pilcrow">¶</a>
+</pre><a href="#appendix-A.3-6" class="pilcrow">¶</a>
 </div>
-<p id="appendix-A.3-5">The <code>access_token</code> value is a base64url-encoded SAML assertion constructed
+<p id="appendix-A.3-7">The <code>access_token</code> value is a base64url-encoded SAML assertion constructed
 identically to the browser-based flow example, except that <code>InResponseTo</code> is
 omitted from <code>SubjectConfirmationData</code> because no prior <code>AuthnRequest</code> was
-issued.<a href="#appendix-A.3-5" class="pilcrow">¶</a></p>
+issued.<a href="#appendix-A.3-7" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
