@@ -40,7 +40,7 @@ non-disruptive migration of an SP onto OpenID Connect without forcing
 end users to reauthenticate or administrators to relink existing
 accounts.
 
-* [Editor's Copy](https://mcguinness.github.io/draft-connect-saml-migration/#go.draft-connect-saml-migration-profile.html)
+* [Editor's Copy](https://mcguinness.github.io/connect-saml-profiles/#go.draft-connect-saml-migration-profile.html)
 
 ## OpenID Connect Bridge Profile for SAML 2.0 Service Providers
 
@@ -67,7 +67,7 @@ SP-initiated SAML Web SSO where the Bridge serves as the SAML IdP
 endpoint; and a Token Exchange variant in which an OIDC ID Token is
 exchanged for a SAML assertion without a browser-based flow.
 
-* [Editor's Copy](https://mcguinness.github.io/draft-connect-saml-migration/#go.draft-connect-saml-bridge-profile.html)
+* [Editor's Copy](https://mcguinness.github.io/connect-saml-profiles/#go.draft-connect-saml-bridge-profile.html)
 
 ## OpenID Connect Provider Profile for SAML 2.0 Identity Providers
 
@@ -93,7 +93,7 @@ SAML IdP is retired; onboarding OIDC relying parties while SAML remains
 authoritative; and operating a phased SAML deprecation where the OP can
 later be paired with the Bridge and Migration profiles.
 
-* [Editor's Copy](https://mcguinness.github.io/draft-connect-saml-migration/#go.draft-connect-saml-idp-profile.html)
+* [Editor's Copy](https://mcguinness.github.io/connect-saml-profiles/#go.draft-connect-saml-idp-profile.html)
 
 ## How the profiles fit together
 
@@ -143,7 +143,7 @@ authority.
 ## Contributing
 
 See the
-[guidelines for contributions](https://github.com/mcguinness/draft-connect-saml-migration/blob/main/CONTRIBUTING.md).
+[guidelines for contributions](https://github.com/mcguinness/connect-saml-profiles/blob/main/CONTRIBUTING.md).
 
 The contributing file also has tips on how to make contributions, if you
 don't already know how to do that.
