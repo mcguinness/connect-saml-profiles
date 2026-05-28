@@ -2076,8 +2076,9 @@ Table of Contents
 
    [SAML-OIDC-MIGRATION]
               McGuinness, K., "OpenID Connect Migration Profile for SAML
-              2.0 Service Providers", <https://datatracker.ietf.org/doc/
-              draft-connect-saml-migration-profile/>.
+              2.0 Service Providers", <https://mcguinness.github.io/
+              connect-saml-profiles/#go.draft-connect-saml-migration-
+              profile.html>.
 
    [SAML2-BINDINGS]
               OASIS, "Bindings for the OASIS Security Assertion Markup
