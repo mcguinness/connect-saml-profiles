@@ -104,50 +104,39 @@ normative:
       - ins: M.B. Jones
       - ins: J. Bradley
     date: false
-
-informative:
-  RFC7009:
-  RFC7522:
-  RFC7662:
   SAML-OIDC-MIGRATION:
     title: "OpenID Connect Migration Profile for SAML 2.0 Service Providers"
     target: "https://datatracker.ietf.org/doc/draft-connect-saml-migration-profile/"
     author:
       - ins: K. McGuinness
     date: false
+
+informative:
+  RFC7009:
+  RFC7522:
+  RFC7662:
   I-D.ietf-oauth-identity-assertion-authz-grant:
 
 ...
 
 --- abstract
 
-This document defines an interoperability profile for deployments that present
-a SAML 2.0 Identity Provider interface to existing Service Providers (SPs)
-while using an OpenID Provider (OP) as the underlying authentication authority.
-The profile specifies how a Bridge component, acting simultaneously as an OIDC
-Relying Party toward the OP and as a SAML IdP facade toward the SP, translates
-OIDC authentication results into SAML assertions while preserving subject
-continuity, enforcing audience restrictions, and maintaining per-SP attribute
-release policies.
+This document defines an interoperability profile for deployments
+that present a SAML 2.0 Identity Provider interface to existing
+Service Providers (SPs) while using an OpenID Provider (OP) as the
+underlying authentication authority. A Bridge component acts as an
+OIDC Relying Party toward the OP and as a SAML IdP facade toward
+the SP, translating OIDC authentication into a signed SAML
+assertion.
 
-Two operational patterns are defined. The browser-based flow allows a SAML SP
-to initiate authentication through the Bridge using standard SAML Web SSO; the
-Bridge in turn authenticates the end-user via the OP and constructs a signed
-SAML assertion for delivery to the SP's Assertion Consumer Service. A Token
-Exchange variant allows a confidential client to present an OIDC ID Token to
-the Bridge's token endpoint and receive a SAML 2.0 assertion, without a
-browser-based SAML exchange.
+Two operational patterns are defined. The browser-based flow lets a
+SAML SP initiate authentication through the Bridge using SAML Web
+SSO; the Bridge authenticates the end-user via the OP and delivers
+a SAML assertion to the SP's ACS endpoint. A Token Exchange variant
+lets a confidential client exchange an OIDC ID Token for a SAML
+assertion without a browser-based SAML exchange.
 
-The intent is to let an OP serve existing SAML SPs without changes to the SPs'
-trust configuration, metadata, or ACS endpoints, and without re-federating each
-SP one by one. The profile is scoped to federation interoperability and
-identity continuity; it does not define a generalized SAML IdP, authorization
-architectures, provisioning, or governance models.
-
-This document is the inverse companion to the OpenID Connect Migration Profile
-for SAML 2.0 Service Providers {{SAML-OIDC-MIGRATION}}. The two profiles are
-designed to be deployed together, using the same Bridge entity as the
-translation point in both directions.
+This document is the inverse companion to {{SAML-OIDC-MIGRATION}}.
 
 --- middle
 
@@ -200,13 +189,78 @@ This profile:
 * defines a Token Exchange variant in which an ID Token is exchanged for a
   SAML assertion without a browser-based flow.
 
-What this profile does not define is enumerated in {{non-goals}}.
+This profile is the inverse companion to {{SAML-OIDC-MIGRATION}},
+which defines how a SAML assertion can be exchanged for an OAuth 2.0
+or OpenID Connect token. The two profiles share a common Bridge
+entity and are designed to be deployed together when an organization
+needs to maintain SAML SPs on different migration timelines.
 
-This profile is the inverse companion to {{SAML-OIDC-MIGRATION}}, which defines
-how a SAML assertion can be exchanged for an OAuth 2.0 or OpenID Connect token.
-The two profiles share a common Bridge entity and are designed to be deployed
-together when an organization needs to maintain SAML SPs on different migration
-timelines.
+## Overview {#overview}
+
+This profile involves four actors:
+
+* **SAML SP** -- the existing SAML 2.0 Service Provider, unmodified.
+* **Bridge** -- the component this profile defines. The Bridge
+  acts as a SAML IdP toward the SP and as an OIDC Relying Party
+  toward the OP.
+* **OP** -- the backing OpenID Provider that authenticates
+  end-users.
+* **Client** (Token Exchange mode only) -- a confidential OAuth
+  client that has obtained an OIDC ID Token from the OP through
+  its own registration and exchanges it for a SAML assertion.
+
+The Bridge serves SAML SPs in two modes.
+
+### Browser-Based Mode {#overview-browser}
+
+~~~
+   +--------+                              +----------+
+   |        |---(A)-- SAML AuthnRequest -->|          |
+   |        |                              |          |
+   |  SAML  |   (Bridge runs an OIDC       |          |
+   |   SP   |    Authorization Code flow   |  Bridge  |
+   |        |    with the OP; end-user     |          |
+   |        |    authenticates at the OP)  |          |
+   |        |<--(B)-- SAML Response -------|          |
+   +--------+         (signed assertion)   +----------+
+~~~
+
+(A) The SAML SP redirects the end-user's browser to the Bridge
+    with a SAML `AuthnRequest`. The Bridge starts an OIDC
+    Authorization Code flow at the backing OP and receives an ID
+    Token after the end-user authenticates.
+
+(B) The Bridge derives an SP-specific NameID
+    ({{nameid-construction}}), maps OIDC claims to SAML attributes
+    per the SP-Binding's policy ({{claim-attribute-mapping}}), and
+    posts a signed SAML `Response` to the SP's ACS endpoint
+    ({{browser-based-flow}}).
+
+### Token Exchange Mode {#overview-token-exchange}
+
+~~~
+   +---------+                              +----------+
+   |         |---(A)-- OIDC ID Token ------>|          |
+   |         |         (token-exchange)     |          |
+   | Client  |                              |  Bridge  |
+   |         |<--(B)-- SAML Assertion ------|          |
+   |         |         (signed)             |          |
+   +---------+                              +----------+
+~~~
+
+(A) A confidential client at the Bridge's token endpoint, having
+    obtained an ID Token from the OP through its own OIDC client
+    registration, presents the ID Token as the `subject_token` of
+    an {{RFC8693}} Token Exchange request.
+
+(B) The Bridge validates the ID Token, derives an SP-specific
+    NameID for the SP-Binding bound to the authenticated client,
+    constructs a signed SAML assertion, and returns it
+    ({{token-exchange}}). No browser interaction is involved.
+
+In both modes, the SP sees the Bridge as a standard SAML IdP and
+needs no change to its SAML metadata, ACS configuration, or trust
+relationship.
 
 ## Non-Goals {#non-goals}
 
@@ -254,15 +308,16 @@ This profile involves OIDC and OAuth client registrations in three distinct
 places. Where ambiguity is possible, this document uses the qualifying
 prepositional phrase rather than a separate term:
 
-* the Bridge's OIDC client at the OP — used in the browser-based flow, and
-  the expected `aud` value of ID Tokens consumed in that flow;
-* a Token Exchange client's OAuth client at the Bridge's token endpoint —
-  used to authenticate the client and to look up its bound
-  `saml_sp_entity_id`; and
-* a Token Exchange client's OIDC client at the OP — separate from the
-  Bridge's — used to obtain the ID Token the client later submits to the
-  Bridge. Each SP-Binding configures the set of these OP client identifiers
-  it accepts as ID Token `aud`.
+* the Bridge's OIDC client at the OP. Used in the browser-based
+  flow. Its `client_id` is the expected `aud` value of ID Tokens
+  consumed in that flow.
+* a Token Exchange client's OAuth client at the Bridge's token
+  endpoint. Used to authenticate the client and to look up its bound
+  `saml_sp_entity_id`.
+* a Token Exchange client's OIDC client at the OP. Separate from the
+  Bridge's own client. Used to obtain the ID Token the client later
+  submits to the Bridge. Each SP-Binding configures the set of these
+  OP client identifiers it accepts as ID Token `aud`.
 
 SAML SP Entity ID:
 : The SAML entityID of a Service Provider that receives SAML assertions from
@@ -348,13 +403,18 @@ issue an assertion to a given SP remains a Bridge policy decision, grounded
 in the SP-Binding configuration established before any assertion request is
 processed.
 
-Before constructing a SAML assertion, the Bridge MUST have an issuance
-basis bound to the resolved Local Account and the target SP-Binding, that
-authorizes the specific NameID format and attributes to be released, and —
-for the Token Exchange variant — that authorizes the authenticated client
-to request assertions for that SP-Binding. The issuance basis MAY come
-from static SP-Binding configuration, administrative policy, or any
-equivalent mechanism established before the assertion is issued.
+Before constructing a SAML assertion, the Bridge MUST have an
+issuance basis. The basis MUST:
+
+* be bound to the resolved Local Account and the target SP-Binding;
+* authorize the specific NameID format and attributes to be released;
+  and
+* for the Token Exchange variant, authorize the authenticated client
+  to request assertions for that SP-Binding.
+
+The issuance basis MAY come from static SP-Binding configuration,
+administrative policy, or any equivalent mechanism established
+before the assertion is issued.
 
 The Bridge MUST NOT create, expand, or infer an issuance basis solely from
 the presence, validity, or contents of the ID Token. OIDC claims MAY inform
@@ -441,38 +501,36 @@ changes `saml_sp_entity_id`.
 
 ## NameID Format Policy {#nameid-format-policy}
 
-Each SP-Binding MUST specify the NameID format to use for assertions issued to
-that SP. The following formats are supported under this profile:
+Each SP-Binding MUST specify the NameID format for issued assertions.
+Supported formats:
 
-* `urn:oasis:names:tc:SAML:2.0:nameid-format:persistent`: A stable,
-  non-reassignable identifier. Derived as defined in
+* `...persistent`: stable, non-reassignable. Derived per
   {{pairwise-nameid-construction}} or {{public-nameid-construction}}.
-* `urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress`: An email address
-  derived from the OIDC `email` claim. MUST only be used when the SP-Binding
-  explicitly permits it and when the `email` claim is present and permitted for
-  release to this SP.
-* `urn:oasis:names:tc:SAML:2.0:nameid-format:transient`: A session-scoped
-  random identifier. The Bridge MUST generate a fresh random value per
-  assertion and MUST NOT persist or reuse it.
-* `urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified`: Deployment-defined
-  semantics. SHOULD NOT be used for new SP-Bindings; supported only for
-  compatibility with SPs that historically expect this format, in which
-  case the SP-Binding MUST define the identifier semantics explicitly.
+* `...emailAddress`: derived from the OIDC `email` claim. Permitted
+  only when the SP-Binding allows it and `email` is releasable.
+* `...transient`: session-scoped, freshly generated per assertion.
+  MUST NOT be persisted or reused. MUST NOT be used for SPs
+  requiring cross-session continuity.
+* `...unspecified`: SHOULD NOT be used for new SP-Bindings.
+  Permitted only for legacy SPs and only when the SP-Binding defines
+  the identifier semantics.
 
-The Bridge MUST NOT use `urn:oasis:names:tc:SAML:2.0:nameid-format:transient`
-as a NameID format for any SP that requires subject continuity across sessions.
+When an `AuthnRequest` includes `NameIDPolicy`, the Bridge MUST
+verify format compatibility with the SP-Binding and MUST return a
+SAML error on incompatibility.
 
-If an `AuthnRequest` includes a `NameIDPolicy` element, the Bridge MUST verify
-that the requested format matches or is compatible with the format configured
-for the SP-Binding. If the requested format is incompatible, the Bridge MUST
-return a SAML error response and MUST NOT issue an assertion.
+`NameIDPolicy/@AllowCreate` applies only to persistent NameID formats
+per {{SAML2-CORE}}. When the requested format is persistent and
+`@AllowCreate="false"`:
 
-If `NameIDPolicy/@AllowCreate` is `false` and no persisted NameID mapping
-exists for the resolved Local Account and SP-Binding, the Bridge MUST return
-a SAML error response with `StatusCode`
-`urn:oasis:names:tc:SAML:2.0:status:InvalidNameIDPolicy` and MUST NOT create
-a new NameID mapping. If a persisted mapping already exists, the Bridge MUST
-use it regardless of the `AllowCreate` value.
+* if no NameID mapping is persisted for the Local Account and
+  SP-Binding, the Bridge MUST return SAML status
+  `urn:oasis:names:tc:SAML:2.0:status:InvalidNameIDPolicy` and MUST
+  NOT create a mapping;
+* if a mapping is already persisted, the Bridge MUST use it.
+
+For non-persistent formats (transient, emailAddress), the Bridge MUST
+ignore `@AllowCreate`.
 
 # Bridge Metadata {#bridge-metadata}
 
@@ -482,8 +540,11 @@ The Bridge MUST expose a SAML `EntityDescriptor` as defined by {{SAML2-METADATA}
 with the Bridge's SAML IdP Entity ID as its `entityID`. This metadata:
 
 * MUST include an `IDPSSODescriptor` element;
-* MUST set `IDPSSODescriptor/@WantAuthnRequestsSigned="true"`, reflecting the
-  default-MUST signature requirement in {{authn-request-processing}};
+* MUST set `IDPSSODescriptor/@WantAuthnRequestsSigned="true"` when
+  every configured SP-Binding requires signed `AuthnRequest` messages.
+  When at least one SP-Binding permits unsigned requests, the Bridge
+  MAY publish `"false"`. In either case, the per-SP-Binding rules in
+  {{authn-request-processing}} remain authoritative;
 * MUST include at least one `SingleSignOnService` endpoint using the HTTP-POST
   or HTTP-Redirect binding;
 * MUST include the key material the Bridge uses to sign SAML assertions in
@@ -536,13 +597,14 @@ A client MUST NOT assume support for the Token Exchange variant unless
 
 ## Federation Metadata Coexistence {#federation-metadata-coexistence}
 
-A Bridge operates two protocol stacks in parallel: SAML 2.0 toward SPs, and
-OpenID Connect / OAuth 2.0 toward the backing OP and (when offered) toward
-Token Exchange clients. The two stacks publish metadata through independent
-mechanisms — `EntityDescriptor` documents ({{SAML2-METADATA}}) and
-`.well-known/oauth-authorization-server` or `.well-known/openid-configuration`
-({{RFC8414}}, {{OIDC-DISCOVERY}}) — that this profile does not unify.
-Deployments SHOULD observe the following:
+A Bridge operates two protocol stacks in parallel. SAML 2.0 toward
+SPs uses `EntityDescriptor` metadata ({{SAML2-METADATA}}). OpenID
+Connect and OAuth 2.0 toward the backing OP, and toward Token
+Exchange clients when offered, use
+`.well-known/oauth-authorization-server` or
+`.well-known/openid-configuration` ({{RFC8414}}, {{OIDC-DISCOVERY}}).
+This profile does not unify the two. Deployments SHOULD observe the
+following.
 
 * The Bridge's SAML IdP `entityID`, the backing OP's `issuer`, and the
   Bridge's own token endpoint `issuer` are distinct values used in their own
@@ -560,57 +622,48 @@ Deployments SHOULD observe the following:
 
 ## Accepted ID Token Inputs {#accepted-id-token-inputs}
 
-The Bridge MUST only accept ID Tokens issued by the OP identified by
-`oidc_op_issuer`. ID Tokens from any other issuer MUST be rejected.
+The Bridge MUST validate ID Tokens per {{OIDC-CORE}} Section 3.1.3.7.
+This profile adds the following constraints on top of {{OIDC-CORE}}:
 
-The Bridge MUST perform full ID Token validation as required by {{OIDC-CORE}}
-Section 3.1.3.7, including:
+* the `iss` claim MUST match `oidc_op_issuer`. ID Tokens from any
+  other issuer MUST be rejected;
+* `aud` validation is flow-specific, see below;
+* the `iat` freshness window is enforced per {{id-token-freshness}};
+* for ID Tokens received via Token Exchange, the Bridge MUST NOT
+  validate `nonce`. The Bridge did not issue the authorization
+  request and has no expected `nonce` value.
 
-* verifying the `iss` claim matches the `oidc_op_issuer` value;
-* verifying the ID Token signature using the OP's JOSE signing keys obtained
-  via the OP's `jwks_uri`;
-* verifying the `aud` claim as described below;
-* verifying that the `exp` claim has not passed;
-* verifying that the `iat` claim is not unreasonably far in the past, subject
-  to a locally configured freshness window; and
-* verifying the `nonce` claim when the ID Token was obtained through the
-  browser-based flow, against the nonce the Bridge included in the OIDC
-  authorization request. For the Token Exchange variant, the ID Token was
-  not obtained through a Bridge-issued authorization request and the Bridge
-  has no expected `nonce` value to validate against; the Bridge MUST NOT
-  validate `nonce` for ID Tokens received via Token Exchange.
+The `aud` claim and (when `aud` is a JSON array) the `azp` claim
+are validated against a set of authorized OP `client_id` values
+that depends on the flow:
 
-For the browser-based flow, the Bridge validates the ID Token it receives after
-completing the authorization code exchange; the `aud` claim MUST contain the
-Bridge's own `client_id` at the OP.
+* browser-based flow: the singleton {Bridge's own `client_id` at
+  the OP};
+* Token Exchange variant: the SP-Binding's administratively
+  configured authorized OP `client_id` set.
 
-For the Token Exchange variant, the client obtains an ID Token from
-the OP using its own OIDC client registration; the `aud` claim therefore
-contains the client's `client_id` at the OP, not the Bridge's. The
-Bridge MUST validate the `aud` claim against the set of authorized OP
-`client_id` values configured in the SP-Binding for this purpose. An ID Token
-whose `aud` is not in that authorized set MUST be rejected. This set MUST be
-maintained administratively and MUST NOT be inferred from the presented token.
-
-When the ID Token's `aud` claim is a JSON array, the Bridge MUST require an
-`azp` claim and MUST validate it against the same authorized client
-identifier(s) as `aud` (the Bridge's own `client_id` for the browser-based
-flow, or the SP-Binding's authorized OP client set for the Token Exchange
-variant). An ID Token whose `azp` is not authorized MUST be rejected.
+The Bridge MUST reject an ID Token whose `aud` (and `azp` when
+required) is not in the applicable authorized set. The Token
+Exchange authorized set MUST NOT be inferred from the presented
+token.
 
 ## Freshness and Authentication Time {#id-token-freshness}
 
-When the ID Token contains `auth_time`, the Bridge SHOULD verify that the
-time elapsed since `auth_time` does not exceed a deployment-configured
-freshness window before issuing a SAML assertion that represents that
-authentication event. Recommended defaults: 8 hours for the browser-based
-flow (consistent with typical enterprise SSO session durations); 5 minutes
-for the Token Exchange variant (because the ID Token is presented as a
-credential at rest). The Bridge MUST also verify `iat` freshness; 5 minutes
-is RECOMMENDED for the Token Exchange variant.
+The Bridge MUST enforce a freshness window before issuing a SAML
+assertion. When `auth_time` is present, the Bridge MUST verify that
+the time elapsed since `auth_time` does not exceed the configured
+window. Recommended defaults:
 
-When the Bridge derives `AuthnInstant` from `auth_time`, the freshness
-window MUST be evaluated against `auth_time`, not `iat`.
+* 8 hours for the browser-based flow;
+* 5 minutes for the Token Exchange variant (the ID Token is a
+  credential at rest).
+
+For the Token Exchange variant, when `auth_time` is absent the
+Bridge MUST apply the same 5-minute window against `iat`. The Bridge
+MUST always verify `iat` freshness.
+
+When deriving `AuthnInstant` from `auth_time`, the freshness window
+MUST be evaluated against `auth_time`, not `iat`.
 
 ## ID Token Claims Required for This Profile {#required-id-token-claims}
 
@@ -685,8 +738,11 @@ Upon receiving a SAML `AuthnRequest`, the Bridge MUST:
    over which the request was received. The Bridge MUST require
    `AuthnRequest/Issuer/@Format` to be absent or
    `urn:oasis:names:tc:SAML:2.0:nameid-format:entity`; other formats MUST be
-   rejected. The Bridge MUST ignore `AuthnRequest/Scoping` and MUST NOT alter
-   its OIDC flow based on its contents. `AuthnRequest/NameIDPolicy/@SPNameQualifier`,
+   rejected. The Bridge MUST NOT honor `AuthnRequest/Scoping`. If
+   `Scoping/IDPList` is non-empty and excludes the Bridge's
+   configured OP, the Bridge SHOULD reject with
+   `urn:oasis:names:tc:SAML:2.0:status:NoSupportedIDP`.
+   `AuthnRequest/NameIDPolicy/@SPNameQualifier`,
    when present, MUST equal the SAML SP Entity ID of the issuing SP-Binding;
    other values MUST be rejected;
 3. verify that `AuthnRequest/@Destination`, when present, exactly matches the
@@ -698,46 +754,35 @@ Upon receiving a SAML `AuthnRequest`, the Bridge MUST:
    processed within the freshness window;
 6. if `NameIDPolicy` is present, verify that the requested format is
    compatible with the SP-Binding's configured NameID format;
-7. if `RequestedAuthnContext` is present, record the requested
-   `AuthnContextClassRef` values and the `Comparison` attribute for use in
-   constructing the `AuthnContext` of the issued assertion. This profile
-   supports `Comparison` values of `exact` (the default per {{SAML2-CORE}})
-   and `minimum` only; if `Comparison` is `maximum` or `better`, the Bridge
-   MUST return a SAML error response with `StatusCode`
-   `urn:oasis:names:tc:SAML:2.0:status:NoAuthnContext`. For `exact`, the
-   Bridge MUST NOT issue an assertion whose `AuthnContextClassRef` is not
-   identical to one of the requested values, and MUST return a SAML error if
-   no such value can be produced. For `minimum`, the Bridge MUST NOT issue an
-   assertion whose `AuthnContextClassRef` has a lower assurance level than
-   the requested class under the SP-Binding's ACR ordering policy, and MUST
-   return a SAML error if this cannot be satisfied;
-8. if `@ForceAuthn` is `true`, the Bridge MUST cause a fresh end-user
-   authentication at the OP by including `prompt=login` (or, when an exact
-   recency bound is required, `max_age=0`) in the OIDC authorization request;
-9. if `@IsPassive` is `true`, the Bridge MUST include `prompt=none` in the
-   OIDC authorization request and MUST return a SAML error response with
-   `StatusCode` `urn:oasis:names:tc:SAML:2.0:status:NoPassive` if the OP
-   indicates that interaction would be required;
-10. record `AuthnRequest/@ID` for inclusion in `Response/@InResponseTo` and
-    `SubjectConfirmationData/@InResponseTo`; and
-11. if `AssertionConsumerServiceURL` is present, verify that its value
-    exactly matches one of the registered ACS URLs in the SP-Binding
-    configuration or in the SP's SAML metadata. If no match is found, the
-    Bridge MUST return a SAML error response and MUST NOT proceed. If
-    absent, use the default ACS URL from the SP-Binding configuration. If
-    `AssertionConsumerServiceIndex` is present, the Bridge MUST resolve it
-    against the SP's SAML metadata `AssertionConsumerService` entries
-    indexed by `index`. `AssertionConsumerServiceURL` and
+7. if `RequestedAuthnContext` is present, record the values and
+   `Comparison` for use in constructing the issued assertion's
+   `AuthnContext`. This profile supports `Comparison` of `exact`
+   (the {{SAML2-CORE}} default) and `minimum` only; `maximum` and
+   `better` MUST be rejected with
+   `urn:oasis:names:tc:SAML:2.0:status:NoAuthnContext`. The Bridge
+   MUST NOT issue an assertion that does not satisfy the recorded
+   `Comparison` semantics, and MUST return a SAML error if it
+   cannot satisfy them;
+8. if `@ForceAuthn` is `true`, cause a fresh end-user
+   authentication by including `prompt=login` in the OIDC
+   authorization request. The Bridge MAY also include `max_age=0`;
+9. if `@IsPassive` is `true`, include `prompt=none` and return SAML
+   status `...NoPassive` when the OP indicates interaction would
+   be required;
+10. record `AuthnRequest/@ID` for inclusion in `InResponseTo`; and
+11. resolve the destination ACS. If `AssertionConsumerServiceURL`
+    is present it MUST match a registered ACS URL; if absent, use
+    the SP-Binding default; if `AssertionConsumerServiceIndex` is
+    present, resolve it against the SP's SAML metadata.
+    `AssertionConsumerServiceURL` and
     `AssertionConsumerServiceIndex` MUST NOT both be present.
 
-The Bridge MUST reject `AuthnRequest` messages that reference SP entities
-without a configured SP-Binding. The Bridge MUST NOT issue assertions to SPs
-that have not been administratively registered.
+The Bridge MUST reject `AuthnRequest` messages for unregistered SP
+entities.
 
-The Bridge MAY preserve the `AuthnRequest`'s `RelayState` value through the
-OIDC flow and reflect it on the SAML `Response` POST to the SP's ACS, subject
-to the length limit in {{SAML2-BINDINGS}} (80 bytes). The Bridge MUST NOT
-treat `RelayState` as carrying any authorization or identity semantics.
+The Bridge MAY preserve `RelayState` through the OIDC flow within
+the {{SAML2-BINDINGS}} length limit. The Bridge MUST NOT treat
+`RelayState` as carrying authorization or identity semantics.
 
 ## OIDC Authorization Request {#oidc-authorization-request}
 
@@ -748,15 +793,16 @@ When initiating the OIDC Authorization Code flow, the Bridge:
 * MUST include a fresh, unpredictable `nonce` value bound to the SAML
   `AuthnRequest` context (for example, by computing it as an HMAC over the
   request ID under a Bridge-held key);
-* MUST include a `state` value that is unpredictable to third parties and
-  bound to the SAML `AuthnRequest` context, so the returned authorization
-  response can be matched to the original SAML request and cannot be spliced
-  with an unrelated request;
+* MUST include a `state` value that is unpredictable to third
+  parties and integrity-protected (for example, an HMAC over the
+  SAML `AuthnRequest/@ID` and a fresh nonce under a Bridge-held key,
+  or an authenticated-encryption payload), so the returned response
+  can be matched to the original SAML request and cannot be spliced;
 * MUST use PKCE {{RFC7636}} with the `S256` code challenge method, in
   accordance with current OAuth security best practice {{RFC9700}};
-* SHOULD request the `auth_time` claim in the ID Token, either via the
-  `claims` parameter or by including `max_age=0` when an exact `auth_time`
-  value is required;
+* SHOULD request the `auth_time` claim via the `claims` parameter.
+  Per {{OIDC-CORE}}, `max_age=0` forces re-authentication; it does
+  not merely request `auth_time`;
 * MAY translate `RequestedAuthnContext` values from the `AuthnRequest` into
   `acr_values` in the OIDC authorization request, when local policy defines
   this translation;
@@ -862,10 +908,10 @@ be rejected with `invalid_request`.
 The Bridge derives the target SP from the authenticated client's registered
 `saml_sp_entity_id`. This profile does not define use of the `audience`,
 `resource`, `scope`, `actor_token`, or `actor_token_type` Token Exchange
-parameters; clients MUST NOT send them. If any are present, the Bridge MUST
-either reject the request with `invalid_request` or ignore the parameter; the
-Bridge MUST NOT allow such parameters to alter the target SP, audience,
-release policy, or delegation chain of the issued assertion.
+parameters; clients MUST NOT send them. If any are present, the Bridge
+MUST reject the request with `invalid_request`. The Bridge MUST NOT
+allow such parameters to alter the target SP, audience, release policy,
+or delegation chain of the issued assertion.
 
 Per {{sp-binding-saml-sp-entity-id}}, the Token Exchange variant is defined
 only for confidential clients. The authenticated client MUST be a
@@ -920,8 +966,12 @@ defined by {{RFC8693}} with:
   characters (`=`); and
 * `token_type` set to `N_A`.
 
-The Bridge SHOULD include `expires_in` reflecting the SAML assertion's
-`SubjectConfirmationData/@NotOnOrAfter` duration.
+The Bridge SHOULD set `expires_in` to the time, in seconds, until
+`SubjectConfirmationData/@NotOnOrAfter` (the delivery window).
+`expires_in` MUST NOT exceed the time until
+`Conditions/@NotOnOrAfter`. The Bridge SHOULD make
+`SubjectConfirmationData/@NotOnOrAfter` no later than
+`Conditions/@NotOnOrAfter` ({{subject-confirmation-data}}).
 
 The Bridge MUST NOT include a `refresh_token` in the Token Exchange response.
 SAML assertions issued under this profile are short-lived bearer artifacts
@@ -946,22 +996,25 @@ SAML 2.0 assertion when `issued_token_type` is
 
 ## Error Response {#token-exchange-error-response}
 
-If the request is malformed, the Bridge MUST return an error response as defined
-by {{RFC6749}} and {{RFC8693}}.
+Error responses follow {{RFC6749}} Section 5.2 and {{RFC8693}}
+Section 2.4. Error code selection follows {{RFC7522}} Section 2.1.1:
+defects in the `subject_token` (the OIDC ID Token) are reported as
+`invalid_grant`, defects in request structure as `invalid_request`.
 
-The Bridge MUST use `invalid_request` for malformed or internally inconsistent
-Token Exchange parameters, including an ID Token that is invalid, expired,
-issued by an unexpected OP, addressed to a different audience, or otherwise
-unacceptable under this profile.
+The Bridge MUST use:
 
-The Bridge SHOULD use:
-
-* `unauthorized_client` when the authenticated client is not permitted to use
-  the bound SP-Binding or to request assertions for the bound SP Entity ID;
-* `invalid_request` when the ID Token lacks a `jti` claim, the (`iss`, `jti`)
-  pair has been previously accepted, the ID Token `aud` is not in the
-  SP-Binding's authorized set, subject resolution fails, the ID Token contains
-  no usable `sub` claim, or the Bridge cannot derive a NameID for the target SP.
+* `invalid_request` for malformed or inconsistent parameters.
+  Examples: missing `subject_token_type`, unsupported
+  `requested_token_type`, or presence of any prohibited parameter
+  per {{token-exchange-request}};
+* `invalid_grant` when the ID Token is parseable but unacceptable.
+  This covers an invalid, expired, or wrong-issuer ID Token; an
+  `aud` outside the SP-Binding's authorized set; missing or replayed
+  `jti`; missing or unresolvable `sub`;
+* `unauthorized_client` when the client is not permitted to use the
+  bound SP-Binding or its SP Entity ID;
+* `server_error` for failures not attributable to the request or the
+  ID Token (for example, transient infrastructure issues).
 
 # Local Subject Resolution {#local-subject-resolution}
 
@@ -1012,25 +1065,31 @@ consider the SAML V2.0 Subject Identifier Attributes Profile
 addresses the existing `persistent` NameID continuity expectations of SPs
 that have not adopted that profile.
 
-1. If the Bridge already has a persisted pairwise NameID mapping for the same
-   resolved Local Account and SP-Binding, it MUST reuse that mapping.
-2. If no persisted mapping exists, the Bridge MUST derive a deterministic,
-   non-reassignable pairwise identifier by combining the (`iss`, `sub`) pair
-   from the ID Token, the SAML SP Entity ID, and a deployment-specific salt
-   using a collision-resistant method. A suitable derivation function is:
+1. If a pairwise NameID mapping is already persisted for the same
+   Local Account and SP-Binding, the Bridge MUST reuse it.
+2. Otherwise the Bridge MUST derive a deterministic, non-reassignable
+   pairwise identifier using:
 
 ~~~
-NameID = base64url( SHA-256( issuer || ":" || sub || ":" || sp_entity_id || ":" || salt ) )
+DST    = "SAML-OIDC-BRIDGE-PAIRWISE-V1"
+input  = b64url(DST) || "." || b64url(issuer) || "." || b64url(sub)
+       || "." || b64url(sp_entity_id) || "." || b64url(salt)
+NameID = base64url( SHA-256( utf8(input) ) )
 ~~~
 
-   where `issuer` and `sub` are the `iss` and `sub` values from the ID Token,
-   `sp_entity_id` is the SAML SP Entity ID from the SP-Binding, and `salt` is
-   a deployment-specific secret value maintained by the Bridge. The Bridge MUST
-   persist the resulting NameID mapping for future use.
+   where `b64url(s)` is the unpadded base64url encoding ({{RFC4648}}
+   Section 5) of the UTF-8 octets of `s`. The inputs `issuer` and
+   `sub` come from the ID Token. The `sp_entity_id` comes from the
+   SP-Binding. The `salt` is a deployment-held secret. The Bridge
+   MUST persist the resulting mapping.
 
-The `salt` value MUST be at least 128 bits of entropy and MUST be kept
-confidential. Compromise of the salt allows derivation of NameID values from
-known (`iss`, `sub`, `sp_entity_id`) inputs, which could expose cross-SP
+The `.` separator cannot appear inside a base64url-encoded value, so
+the segment join is injective. The leading DST reserves headroom for
+a future revision of the derivation.
+
+The `salt` MUST be at least 128 bits of entropy and MUST be kept
+confidential. Salt compromise allows derivation of NameID values
+from known `(iss, sub, sp_entity_id)` inputs and enables cross-SP
 correlation.
 
 The Bridge MUST NOT expose a pairwise NameID value to any SP other than the SP
@@ -1043,15 +1102,24 @@ When the SP-Binding uses a public or issuer-scoped persistent `NameID`
 SP receives the assertion), the Bridge MUST reuse any persisted public
 NameID mapping for the resolved Local Account.
 
-If no persisted mapping exists, the Bridge MUST mint a new public NameID
-value using either a randomly generated opaque identifier with at least 128
-bits of entropy (RECOMMENDED), or a deterministic derivation from the
-(`iss`, `sub`) pair combined with a Bridge-held secret salt of at least 128
-bits, e.g. `base64url(SHA-256(issuer || ":" || sub || ":" || salt))`. The
-Bridge MUST persist the resulting Local-Account-to-NameID mapping. A purely
-deterministic derivation without a Bridge-held secret MUST NOT be used,
-because it would allow any party knowing the OP `iss` and `sub` to
-reproduce the public NameID.
+If no persisted mapping exists, the Bridge MUST mint a new public
+NameID value using one of:
+
+* a randomly generated opaque identifier with at least 128 bits of
+  entropy (RECOMMENDED); or
+* the segment encoding from {{pairwise-nameid-construction}}, with
+  the `sp_entity_id` segment omitted and a distinct DST:
+
+~~~
+DST    = "SAML-OIDC-BRIDGE-PUBLIC-V1"
+input  = b64url(DST) || "." || b64url(issuer)
+       || "." || b64url(sub) || "." || b64url(salt)
+NameID = base64url( SHA-256( utf8(input) ) )
+~~~
+
+The Bridge MUST persist the resulting mapping. A purely deterministic
+derivation without a Bridge-held secret MUST NOT be used. Any party
+knowing the OP `iss` and `sub` could otherwise reproduce the NameID.
 
 The `salt` used here MAY be the same value as the pairwise salt
 ({{pairwise-nameid-construction}}). It MUST be kept confidential and is
@@ -1074,11 +1142,16 @@ subject to the following conditions:
 
 ## Transient NameID {#transient-nameid}
 
-When the SP-Binding specifies `urn:oasis:names:tc:SAML:2.0:nameid-format:transient`,
-the Bridge MUST generate a fresh, unpredictable random value per assertion.
-The Bridge MUST NOT persist or reuse transient NameID values. Transient NameIDs
-MUST only be used for SPs that explicitly require them and that do not rely on
-subject continuity.
+When the SP-Binding specifies
+`urn:oasis:names:tc:SAML:2.0:nameid-format:transient`, the Bridge
+MUST generate a fresh value per assertion from a cryptographically
+secure random source. The value MUST contain at least 128 bits of
+entropy. Guessable transient NameIDs enable SubjectConfirmation
+forgery and session-fixation against SPs that key on them.
+
+The Bridge MUST NOT persist or reuse transient NameID values. The
+Bridge MUST NOT use the transient format for SPs that require subject
+continuity across sessions.
 
 ## Common Rules {#nameid-common-rules}
 
@@ -1103,51 +1176,35 @@ attributes and authentication context for the issued assertion.
 
 ## Authentication Context Mapping {#authn-context-mapping}
 
-The Bridge MUST populate an `AuthnStatement` in every issued assertion. The
-`AuthnStatement` MUST include:
+Every issued assertion MUST contain an `AuthnStatement`.
 
-* `AuthnInstant`: the time of the end-user's authentication, derived as follows:
-  * if the ID Token contains an `auth_time` claim, `AuthnInstant` MUST be set
-    to that value, converted from a NumericDate (seconds since epoch) to an XML
-    `dateTime` value in UTC;
-  * if `auth_time` is absent from the ID Token and the SP-Binding permits it,
-    `AuthnInstant` MAY be set to the Bridge's assertion issuance time; and
-  * the Bridge MUST NOT set `AuthnInstant` to the time of the Token Exchange
-    or OIDC token issuance event unless that event is confirmed to represent the
-    actual end-user authentication.
-* `SessionIndex`: OPTIONAL. The Bridge MAY populate `SessionIndex` from the
-  OIDC `sid` claim when present and when the SP-Binding requires session
-  continuity for logout support. If the raw `sid` value is not suitable as a
-  SAML `SessionIndex` (e.g., it is not unique within the Bridge's SAML issuer),
-  the Bridge MUST derive and persist a Bridge-scoped session identifier bound to
-  the OIDC session.
+`AuthnInstant` is set from the ID Token `auth_time` (converted from
+NumericDate to XML `dateTime`). When `auth_time` is absent and the
+SP-Binding permits it, the Bridge MAY use its assertion issuance
+time. The Bridge MUST NOT use the OIDC token issuance time as
+`AuthnInstant` when it does not represent the actual authentication.
 
-The `AuthnContext` element MUST include an `AuthnContextClassRef`. The Bridge
-MUST determine this value as follows:
+`SessionIndex` is OPTIONAL. When emitted, it carries the OIDC `sid`
+when that value is unique within the Bridge's SAML issuer;
+otherwise the Bridge derives and persists a Bridge-scoped session
+identifier bound to the OIDC session.
 
-* if the SP-Binding defines an explicit ACR-to-AuthnContextClassRef mapping
-  table, the Bridge MUST apply that mapping and use the mapped value;
-* if the ID Token contains an `acr` claim, the SP-Binding does not define an
-  explicit mapping, and the SP-Binding explicitly permits passthrough of
-  unmapped ACR values, the Bridge MAY use the `acr` value as
-  `AuthnContextClassRef` only when that exact value appears in the SP-Binding's
-  configured ACR allowlist; the Bridge MUST NOT pass through arbitrary `acr`
-  strings as `AuthnContextClassRef` values;
-* if the `acr` claim is absent or cannot be resolved to a configured value, the
-  Bridge MUST use `urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified` unless
-  the SP-Binding defines a different default; and
-* the Bridge MUST NOT produce an `AuthnContextClassRef` that asserts higher
-  assurance than the OP's authenticated event warrants.
+`AuthnContext` MUST include `AuthnContextClassRef`, determined as
+follows. If the SP-Binding defines an `acr`-to-`AuthnContextClassRef`
+mapping, the Bridge MUST apply it. Otherwise, when the SP-Binding
+permits passthrough, the Bridge MAY emit an ID Token `acr` value
+only when it appears in the SP-Binding's allowlist. Otherwise the
+Bridge emits `urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified`,
+or another default named by the SP-Binding. The Bridge MUST NOT
+emit an `AuthnContextClassRef` asserting higher assurance than the
+OP's authentication event warrants.
 
-The `amr` claim {{RFC8176}} in an ID Token lists authentication method
-references and does not map directly to a SAML `AuthnContextClassRef`. The
-Bridge:
-
-* MUST NOT copy `amr` values directly into `AuthnContextClassRef`;
-* MAY reflect `amr` content in an extension element within `AuthnContext` when
-  the SP-Binding defines such an extension and the SP is known to process it;
-  and
-* MUST NOT overstate authentication assurance based on `amr` values alone.
+The OIDC `amr` claim {{RFC8176}} carries authentication-method
+references, not context classes. The Bridge MUST NOT copy `amr`
+into `AuthnContextClassRef`. The Bridge MAY reflect `amr` in an
+SP-Binding-defined `AuthnContext` extension element; {{SAML2-CORE}}
+defines no such generic extension, so the SP-Binding MUST specify
+its namespace, schema, and processing rules.
 
 ## Attribute Claim Mapping {#claim-attribute-mapping}
 
@@ -1189,10 +1246,19 @@ Attribute processing MUST follow these rules:
 * the Bridge MUST NOT include `AttributeStatement` at all if no attributes
   are permitted for release to the target SP.
 
-If the `email_verified` claim is `false` or absent, the Bridge MUST NOT emit
-any attribute that implies the email address has been verified unless the
-SP-Binding explicitly overrides this. The Bridge MUST NOT infer verification
-status from the presence of a `phone_number` claim.
+If the `email_verified` claim is `false` or absent, the Bridge MUST
+NOT emit any SAML attribute whose semantics signal verified-email
+status. Examples include `eduPersonPrincipalName`
+(`urn:oid:1.3.6.1.4.1.5923.1.1.1.6`), a `mail` attribute
+(`urn:oid:0.9.2342.19200300.100.1.3`) released with an attribute-level
+verification flag, or a deployment-specific verified-email indicator.
+
+The SP-Binding MAY override this rule by explicitly identifying the
+specific attribute or attributes whose verified-status semantics are
+accepted.
+
+The Bridge MUST NOT infer verification status from the presence of a
+`phone_number` claim.
 
 ## Assertion and Session Lifetimes {#session-validity-bound}
 
@@ -1238,8 +1304,9 @@ The Bridge MUST include the following in every issued assertion:
     up to 30 seconds is RECOMMENDED;
   * `NotOnOrAfter`: set to a short interval after issuance. The Bridge SHOULD
     set this to no more than 5 minutes from the assertion's `IssueInstant`;
-  * at least one `AudienceRestriction` element containing the SAML SP Entity ID
-    as the sole `Audience` value; and
+  * at least one `AudienceRestriction` containing the SAML SP Entity
+    ID as one of its `Audience` values. The Bridge MAY include
+    additional configured `Audience` values per {{SAML2-CORE}}; and
   * a `OneTimeUse` condition SHOULD be included to instruct the SP to enforce
     one-time consumption of the assertion per {{SAML2-CORE}} Section 2.5.1.5.
 
@@ -1275,9 +1342,12 @@ The `SubjectConfirmationData` element MUST include:
 * `NotOnOrAfter`: a short expiration time for the subject confirmation, MUST
   NOT exceed the `Conditions/@NotOnOrAfter` value and SHOULD be set to the same
   value; and
-* `InResponseTo`: for SP-initiated browser-based flows, MUST be set to the
-  `AuthnRequest/@ID`. For IdP-initiated flows and the Token Exchange variant,
-  this attribute SHOULD be omitted.
+* `InResponseTo`: for SP-initiated browser-based flows, MUST be set
+  to the `AuthnRequest/@ID`. For IdP-initiated flows and the Token
+  Exchange variant, this attribute MUST be omitted. These flows
+  produce unsolicited assertions, and {{SAML2-PROFILES}} requires
+  `InResponseTo` to be present only when responding to a specific
+  `<AuthnRequest>`.
 
 ## SAML Response Wrapper {#response-wrapper}
 
@@ -1289,7 +1359,9 @@ MUST include:
 * `IssueInstant`: the current time;
 * `Issuer`: the Bridge's SAML IdP Entity ID, as a child element of `Response`;
 * `Destination`: the ACS URL of the target SP;
-* `InResponseTo`: the `AuthnRequest/@ID`, for SP-initiated flows;
+* `InResponseTo`: the `AuthnRequest/@ID`, for SP-initiated flows; MUST
+  be omitted for IdP-initiated flows (and the Token Exchange variant
+  does not produce a `Response` wrapper at all);
 * `Status/StatusCode/@Value`:
   `urn:oasis:names:tc:SAML:2.0:status:Success`; and
 * the signed `Assertion` as a direct child element.
@@ -1342,11 +1414,25 @@ the authorization code exchange (browser-based flow) or assertion issuance
 (Token Exchange variant) and bind it to the SAML sessions it subsequently
 creates.
 
-When `sid` is absent, logout propagation from the OP to the Bridge depends on
-the Bridge detecting token revocation or expiry through the standard refresh
-flow rather than through a push notification. Deployments that rely on this
-fallback MUST document the relationship between OP-side termination and
-Bridge detection in local policy.
+When `sid` is absent, logout propagation from the OP to the Bridge
+depends on the Bridge detecting token revocation or expiry through
+the refresh flow rather than a push notification. Deployments
+relying on this fallback MUST document the relationship in local
+policy.
+
+The Token Exchange variant has a further limitation. The Bridge
+holds no refresh token at the OP (the client holds the ID Token
+directly), so the Bridge cannot detect OP-side termination through a
+refresh failure. Discovery of OP-side termination requires either
+(a) a {{OIDC-BC-LOGOUT}} back-channel logout from the OP to the
+Bridge carrying a bound `sid`, or (b) an out-of-band revocation
+channel.
+
+Deployments using the Token Exchange variant for SPs that require
+timely logout propagation SHOULD configure the OP to emit `sid` and
+SHOULD register the Bridge as a back-channel logout client at the OP.
+Otherwise the SAML session at the SP MUST be treated as valid for
+the assertion's `SessionNotOnOrAfter` window.
 
 ## Session Termination {#session-termination}
 
@@ -1395,8 +1481,11 @@ SLO:
   * terminate the SAML session with the requesting SP;
 * the Bridge SHOULD propagate the logout to the OP by initiating RP-Initiated
   Logout or revoking the relevant tokens;
-* the Bridge SHOULD propagate the logout to other SPs sharing the same OIDC
-  session by sending `LogoutRequest` messages to their SLO endpoints;
+* the Bridge SHOULD propagate the logout to other SPs sharing the
+  same OIDC session by sending `LogoutRequest` to their SLO
+  endpoints. The Bridge MUST maintain a record of SAML sessions
+  per OIDC `sid` (or per Bridge-scoped session identifier when `sid`
+  is absent) populated at issuance time ({{session-binding}});
 * the Bridge MUST return a `LogoutResponse` to the initiating SP even if
   propagation to other parties fails; and
 * the Bridge MUST tolerate partial propagation failures gracefully and MUST
@@ -1421,18 +1510,20 @@ This profile assumes the following:
 
 In-scope attacker capabilities and the rules that mitigate them:
 
-* obtaining an ID Token in transit — three-way binding
+* obtaining an ID Token in transit. Mitigated by three-way binding
   ({{binding-and-issuance-model}}), `aud`/`azp` validation
-  ({{accepted-id-token-inputs}}), `jti` replay ({{assertion-id}});
-* attempting unauthorized `saml_sp_entity_id` registration —
-  {{sp-binding-saml-sp-entity-id-authorization}};
+  ({{accepted-id-token-inputs}}), and `jti` replay
+  ({{assertion-id}}).
+* attempting unauthorized `saml_sp_entity_id` registration. Mitigated
+  by {{sp-binding-saml-sp-entity-id-authorization}}.
 * forging, replaying, or manipulating a SAML `AuthnRequest` or
-  `LogoutRequest` — signature, `Destination`, freshness, ID-replay, and XSW
-  rules in {{authn-request-processing}}, {{saml-single-logout}}, and
-  {{xsw-incoming}};
-* splicing an OIDC authorization response across SAML contexts — `state`,
-  `nonce`, and PKCE rules in {{oidc-authorization-request}}; and
-* compromising the Bridge's refresh token at the OP — see
+  `LogoutRequest`. Mitigated by signature, `Destination`, freshness,
+  ID-replay, and XSW rules in {{authn-request-processing}},
+  {{saml-single-logout}}, and {{xsw-incoming}}.
+* splicing an OIDC authorization response across SAML contexts.
+  Mitigated by `state`, `nonce`, and PKCE rules in
+  {{oidc-authorization-request}}.
+* compromising the Bridge's refresh token at the OP. See
   {{refresh-token-compromise}}.
 
 Out of scope: compromise of the OP or Bridge themselves; infrastructure
@@ -1499,16 +1590,13 @@ issuance to outlive the underlying OIDC session.
 
 ## OIDC Authorization Response Splicing {#authorization-response-splicing}
 
-A browser-based attacker may attempt to splice an authorization response
-obtained in one context onto a SAML `AuthnRequest` issued by the Bridge in a
-different context. The Bridge MUST prevent this by:
-
-* binding the OIDC `state` and `nonce` values to the SAML `AuthnRequest` ID
-  it is processing, as required by {{oidc-authorization-request}};
-* using PKCE {{RFC7636}} with `S256` so that an intercepted authorization
-  code cannot be exchanged by another party at the OP's token endpoint; and
-* validating on the authorization response that the returned `state` matches
-  the value the Bridge issued for the SAML `AuthnRequest` being completed.
+A browser-based attacker may attempt to splice an authorization
+response obtained in one context onto a SAML `AuthnRequest` issued
+by the Bridge in a different context. The `state`, `nonce`, and
+PKCE requirements in {{oidc-authorization-request}} defeat this
+attack: an intercepted authorization code cannot be exchanged by
+another party at the OP, and the returned `state` cannot match the
+Bridge's expected value for the targeted `AuthnRequest`.
 
 ## Metadata Fetching and SSRF {#metadata-ssrf}
 
@@ -1571,10 +1659,10 @@ allowlist and is never copied blindly from `acr`. The `amr` claim
 The Bridge MUST NOT expose the OP `sub` value as a SAML `Attribute` element.
 The OIDC subject is translated exclusively into the SAML `NameID`.
 
-The Bridge MUST NOT release all OIDC claims to all SPs by default. Each
-SP-Binding MUST have an explicit attribute release allowlist that is
-maintained administratively and not derived from the contents of a given ID
-Token.
+Per-SP attribute release rules are normative in
+{{claim-attribute-mapping}}; the SP-Binding's explicit allowlist
+governs what the Bridge releases, regardless of which claims the ID
+Token contains.
 
 ## Refresh Token Compromise {#refresh-token-compromise}
 
@@ -1702,6 +1790,8 @@ and an SP-Binding for a calendar application:
 * ACS URL: `https://calendar.example.com/saml/acs`
 * NameID format: `urn:oasis:names:tc:SAML:2.0:nameid-format:persistent` (pairwise)
 * Attribute release: `mail`, `displayName`, `givenName`, `sn`
+* Authorized OP `client_id` values for the Token Exchange variant:
+  `migration-tool`
 
 ## Bridge Authorization Server Metadata
 
@@ -1763,6 +1853,7 @@ exchanges it for tokens and receives an ID Token whose claims include:
   "iat": 1776804900,
   "auth_time": 1776794400,
   "nonce": "xyz789",
+  "sid": "op-sid-abc123",
   "acr": "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport",
   "email": "alice@example.com",
   "given_name": "Alice",
@@ -1785,8 +1876,7 @@ pairwise NameID for the calendar SP-Binding, and constructs the following SAML
   <saml:Subject>
     <saml:NameID
         Format="urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"
-        SPNameQualifier="https://calendar.example.com/saml/sp"
-        NameQualifier="https://bridge.example.com/saml/idp">
+        SPNameQualifier="https://calendar.example.com/saml/sp">
       _pairwise-8a3f21bc9d4e5f6a7b
     </saml:NameID>
     <saml:SubjectConfirmation
@@ -1807,7 +1897,7 @@ pairwise NameID for the calendar SP-Binding, and constructs the following SAML
   </saml:Conditions>
   <saml:AuthnStatement
       AuthnInstant="2026-04-25T15:00:00Z"
-      SessionIndex="_sid-op-abc123">
+      SessionIndex="op-sid-abc123">
     <saml:AuthnContext>
       <saml:AuthnContextClassRef>
         urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport
@@ -1848,10 +1938,32 @@ it to the calendar ACS at `https://calendar.example.com/saml/acs`.
 
 ## Token Exchange: ID Token to SAML Assertion
 
-A migration tool has obtained an ID Token from the OP on behalf of Alice using
-a permitted OIDC flow and needs to produce a SAML assertion for the calendar
-SP to test a migration scenario. It presents the ID Token to the
-Bridge's Token Exchange endpoint:
+A migration tool, registered at the OP as `migration-tool` and at the
+Bridge with `saml_sp_entity_id=https://calendar.example.com/saml/sp`,
+has obtained an ID Token from the OP on behalf of Alice using a
+permitted OIDC flow and needs to produce a SAML assertion for the
+calendar SP. The decoded ID Token payload is:
+
+~~~ json
+{
+  "iss": "https://op.example.com",
+  "sub": "248289761001",
+  "aud": "migration-tool",
+  "exp": 1776808500,
+  "iat": 1776804900,
+  "jti": "op-id-token-7f3a",
+  "auth_time": 1776794400,
+  "acr": "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport",
+  "email": "alice@example.com",
+  "given_name": "Alice",
+  "family_name": "Ng",
+  "name": "Alice Ng"
+}
+~~~
+
+The migration tool authenticates and presents the ID Token to the
+Bridge's Token Exchange endpoint (`subject_token` shown as a shortened
+placeholder):
 
 ~~~ http
 POST /token HTTP/1.1
@@ -1860,7 +1972,7 @@ Content-Type: application/x-www-form-urlencoded
 
 grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 &subject_token_type=urn:ietf:params:oauth:token-type:id_token
-&subject_token=eyJhbGciOiJSUzI1NiIsImtpZCI6IjEifQ.eyJpc3MiOiJodHRwczovL29wLmV4YW1wbGUuY29tIiwic3ViIjoiMjQ4Mjg5NzYxMDAxIiwiYXVkIjoiYnJpZGdlLWNsaWVudCIsImV4cCI6MTc3NjgwODUwMCwiaWF0IjoxNzc2ODA0OTAwLCJqdGkiOiJvcC1pZC10b2tlbi03ZjNhIiwiYXV0aF90aW1lIjoxNzc2Nzk0NDAwLCJhY3IiOiJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6YWM6Y2xhc3NlczpQYXNzd29yZFByb3RlY3RlZFRyYW5zcG9ydCIsImVtYWlsIjoiYWxpY2VAZXhhbXBsZS5jb20iLCJnaXZlbl9uYW1lIjoiQWxpY2UiLCJmYW1pbHlfbmFtZSI6Ik5nIiwibmFtZSI6IkFsaWNlIE5nIn0.signature
+&subject_token=eyJhbGciOi...signature
 &requested_token_type=urn:ietf:params:oauth:token-type:saml2
 &client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer
 &client_assertion=eyJhbGciOiJSUzI1NiJ9...
