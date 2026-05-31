@@ -1,7 +1,7 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-05-28T01:30:52.178956+00:00",
-  "repo": "mcguinness/draft-connect-saml-migration",
+  "timestamp": "2026-05-31T02:00:30.657376+00:00",
+  "repo": "mcguinness/connect-saml-profiles",
   "labels": [
     {
       "name": "bug",
@@ -50,5 +50,34 @@
     }
   ],
   "issues": [],
-  "pulls": []
+  "pulls": [
+    {
+      "number": 1,
+      "id": "PR_kwDOSJN3187gZ5zY",
+      "title": "Family-wide editorial + Overview + correctness pass (3 specs)",
+      "url": "https://github.com/mcguinness/connect-saml-profiles/pull/1",
+      "state": "MERGED",
+      "author": "mcguinness",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "## Summary\n\nThree per-spec commits, one per draft, applying the editorial,\nstructural, and correctness work from the recent review cycle:\n\n- **Migration profile** (`e6dcf25`) \u2014 IANA fixes (correct RFC 9493\n  registry name; drop conflicting `sub_id` JWT re-registration),\n  Token Exchange error-code split (`invalid_request` vs\n  `invalid_grant` per RFC 7522 \u00a72.1.1), scope-envelope rewrite per\n  RFC 6749 \u00a73.3, perspective-neutral `saml_idp_entity_id`\n  description so Bridge and IdP can reuse it, `# Migration Binding\n  Rationale` renamed to `# Binding and Issuance Model` for\n  family-level consistency, `# Authorization and Consent Model`\n  demoted to a subsection, padding strength aligned with RFC 7522\n  \u00a72.1, ACR-mapping passthrough rule disambiguated, `sub_id`\n  release rules consolidated, Overview section added (RFC 6749\n  \u00a71.2 style with diagram and lettered steps), abstract trimmed\n  from 27 to 17 lines, terminology additions, RFC 9396 / 9449 /\n  8705 informative references added.\n\n- **Bridge profile** (`4285b4b`) \u2014 NameID derivation collision fix\n  (replaced non-injective `\":\"`-separated SHA-256 input with a\n  JWS-style segment encoding using `base64url`-per-field and `.`\n  separator, with a domain-separation tag for version headroom),\n  `InResponseTo` MUST omit (not SHOULD) for unsolicited\n  assertions, `aud`/`azp` validation consolidated and split by\n  flow, Token Exchange error-code split per RFC 7522 \u00a72.1.1,\n  freshness window MUST (not SHOULD), `max_age=0` semantics\n  clarified, `@AllowCreate` scoped to persistent NameID formats,\n  transient NameID requires 128 bits of entropy, `state` value\n  MUST be integrity-protected, `AuthnRequest/Scoping` rejected\n  with `NoSupportedIDP` instead of silently ignored, Token\n  Exchange session-termination gap addressed,\n  `AudienceRestriction` no longer requires sole `Audience`,\n  Overview section added (two diagrams for the two modes),\n  abstract trimmed from 29 to 16 lines, four example\n  contradictions fixed.\n\n- **IdP-backed OP profile** (`31c9db5`) \u2014 `SameSite=Lax` cookie\n  fallback fixed (the SAML Response ACS POST is cross-site and\n  does not carry Lax cookies; mandates `SameSite=None;Secure`),\n  `max_age > 0` enforcement added (OP MUST treat as upper bound\n  on `AuthnInstant`), `RequestedAuthnContext/@Comparison`\n  required per IdP-Binding policy (default SHOULD `\"exact\"`),\n  AuthnRequest signing now binding-specific per SAML 2.0\n  Bindings (detached for HTTP-Redirect, enveloped for\n  HTTP-POST), multi-valued `AuthnContextClassRef` selection rule\n  defined, NameID reassignment detection required, ID Token\n  `exp` constraints versus SAML times specified, OIDC Session\n  Management explicitly out of scope, Multi-IdP per-IdP issuer\n  aliasing permitted with explicit metadata/JWKS/rotation rules,\n  SLO `LogoutResponse` signing requirements specified, `OIDC RP\n  Authorization` Security Considerations section now references\n  the canonical authorization-basis rules instead of restating,\n  `# Multi-IdP Deployments` trimmed to a reading-aid\n  cross-reference, `## Issuance Authorization` renamed\n  `## Authorization Basis and Release Policy`, Overview section\n  added (RFC 6749 \u00a71.2 style with diagram and lettered steps),\n  Unicode arrow replaced with ASCII, `sub_id` correctly\n  attributed to RFC 9493, terminology additions.\n\n## Verification\n\n- All three drafts build clean (`make clean && make`):\n  kramdown-rfc \u2192 xml2rfc-txt \u2192 xml2rfc-html all OK.\n- No stale cross-references: every anchor removed from `main`\n  (`#migration-binding-rationale`, `#saml-key-material`,\n  `#iana-security-event-identifier-formats`, `#flow-overview`)\n  has zero remaining `{{xref}}` references in the branch.\n- All IANA registry values used in the body of any draft remain\n  registered or are appropriately deferred with editor's notes.\n- Normative-keyword counts (MUST/SHOULD/MAY): Migration 466\u2192417,\n  Bridge 297\u2192282, IdP 228\u2192247 (IdP gains 19 normatives from new\n  security/correctness rules; Migration and Bridge lose 49 / 15\n  from editorial consolidation, all consolidations verified as\n  intentional with no rule lost).\n\n## Test plan\n\n- [ ] Spot-check the Overview sections in all three drafts.\n- [ ] Spot-check the IANA section in Migration (Subject\n      Identifier Formats registration vs the old Security Event\n      Identifier Formats heading).\n- [ ] Verify the Bridge NameID derivation formula renders\n      correctly in the published HTML/PDF.\n- [ ] Verify the IdP `<->` ASCII arrow renders as intended in\n      the published text output.",
+      "createdAt": "2026-05-28T21:00:03Z",
+      "updatedAt": "2026-05-28T21:50:05Z",
+      "baseRepository": "mcguinness/connect-saml-profiles",
+      "baseRefName": "main",
+      "baseRefOid": "665b1f05000aa1c4a6ac7873c0aba2f265978f50",
+      "headRepository": "mcguinness/connect-saml-profiles",
+      "headRefName": "family-review",
+      "headRefOid": "31c9db578ba057559abc42ae82b9bd4fe2d71e73",
+      "closedAt": "2026-05-28T21:49:55Z",
+      "mergedAt": "2026-05-28T21:49:55Z",
+      "mergedBy": "mcguinness",
+      "mergeCommit": {
+        "oid": "c72d711c8b2e401b4de71216d93b56f9f7beac0e"
+      },
+      "comments": [],
+      "reviews": []
+    }
+  ]
 }
